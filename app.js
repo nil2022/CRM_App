@@ -8,14 +8,13 @@ const app = express();
 const bcrypt = require('bcrypt')
 const constants = require('./utils/constants')
 const { PORT, DB_URL } = require('./configs/db.config')
-
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
 app.use(cors());
 app.use(logger(':remote-addr - :remote-user [:date[iso]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"'))
 
 
-const db_url = DB_URL|| 'mongodb://127.0.0.1:27017/crm_db'
+const db_url = DB_URL
 
 //Create System User or check if already present
 async function init() {
@@ -68,8 +67,6 @@ connectDB().then(() => {
   }).catch((e)=>console.log(e)) // IF DB CONNECT FAILED, CATCH ERROR
 
 app.get('/', (req, res) => {
-  const log = logger('[:date[iso]]');
-  console.log(log);
     res.status(200).send(`<h2>CRM Backend Running! 🎉</h2>`)
   });
 
