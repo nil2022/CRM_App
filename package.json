@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "jest --testEnvironment=node --runInBand --detectOpenHandles --coverage ./tests",
-    "build": "npm install bcrypt dotenv express jest jsonwebtoken mongodb-memory-server mongoose node-rest-client nodemailer nodemon morgan cors --save",
+    "build": "npm install bcrypt cors dotenv express jest jsonwebtoken mongodb-memory-server mongoose morgan node-rest-client nodemon validator --save",
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
@@ -18,7 +18,7 @@
     "mongoose",
     "nodemon",
     "morgan",
-    "cors"
+    "cors", "validator"
   ],
   "author": "Nilanjan Haldar",
   "license": "ISC",
@@ -33,7 +33,6 @@
     "mongoose": "^6.12.0",
     "morgan": "^1.10.0",
     "node-rest-client": "^3.1.1",
-    "nodemailer": "^6.9.5",
     "nodemon": "^2.0.22",
     "validator": "^13.11.0"
   },
