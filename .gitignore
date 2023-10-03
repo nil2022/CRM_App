@@ -1,0 +1,9 @@
+#NODE-MODULES
+node_modules/
+
+#UNIT-TESTS
+coverage/
+tests/
+
+#.env
+.env
