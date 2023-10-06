@@ -5,9 +5,10 @@
   "main": "app.js",
   "scripts": {
     "test": "jest --testEnvironment=node --runInBand --detectOpenHandles --coverage ./tests",
-    "build": "npm install bcrypt cors dotenv express jest jsonwebtoken mongodb-memory-server mongoose morgan node-rest-client nodemon validator --save",
+    "build": "npm install bcrypt cors dotenv express jest jsonwebtoken mongodb-memory-server mongoose morgan nodemon validator --save",
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "lint:fix": "eslint --fix ./*.js"
   },
   "keywords": [
     "nodejs",
@@ -18,11 +19,13 @@
     "mongoose",
     "nodemon",
     "morgan",
-    "cors", "validator"
+    "cors",
+    "validator"
   ],
   "author": "Nilanjan Haldar",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.5.1",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -32,12 +35,8 @@
     "mongodb-memory-server": "^8.15.1",
     "mongoose": "^6.12.0",
     "morgan": "^1.10.0",
-    "node-rest-client": "^3.1.1",
     "nodemon": "^2.0.22",
     "validator": "^13.11.0"
-  },
-  "devDependencies": {
-    "tailwindcss": "^3.3.3"
   },
   "directories": {
     "test": "tests"
@@ -49,5 +48,12 @@
   "bugs": {
     "url": "https://github.com/nil2022/CRM_App/issues"
   },
-  "homepage": "https://github.com/nil2022/CRM_App#readme"
+  "homepage": "https://github.com/nil2022/CRM_App#readme",
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-n": "^16.1.0",
+    "eslint-plugin-promise": "^6.1.1"
+  }
 }
