@@ -1,16 +1,18 @@
+/* eslint-disable eqeqeq */
 const User = require('../models/user.model')
 const Ticket = require('../models/ticket.model')
 const constants = require('../utils/constants')
 const objectConverter = require('../utils/objectConverter')
 const sendEmail = require('../utils/NotificationClient')
 
+/* -------- CREATE A TICKET API----------- */
 exports.createTicket = async (req, res) => {
   const ticketObject = {
-    title : req.body.title,
+    title: req.body.title,
     ticketPriority: req.body.ticketPriority,
     description: req.body.description,
     status: req.body.status,
-    reporter: req.body.userId,
+    reporter: req.body.userId
   }
 
   const engineer = await User.findOne({
@@ -18,12 +20,11 @@ exports.createTicket = async (req, res) => {
     userStatus: constants.userStatus.approved
   })
 
-
   try {
     if (!engineer) {
-      console.log('No Engineers/Approved Engineers available'); //LOOP HOLE
+      console.log('No Engineers/Approved Engineers available') // LOOP HOLE
       return res.status(500).send({
-        message :'Engineer not available'
+        message: 'Engineer not available'
       })
     }
     ticketObject.assignee = engineer.userId
@@ -62,6 +63,7 @@ const canUpdate = (user, ticket) => {
             user.userType == constants.userTypes.admin
 }
 
+/* -------- UPDATE A TICKET API----------- */
 exports.updateTicket = async (req, res) => {
   try {
     const ticket = await Ticket.findOne({ _id: req.params.id })
@@ -111,11 +113,12 @@ exports.updateTicket = async (req, res) => {
       })
     }
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error:', error)
     res.status(500).send('Some Internal Error Occured!', error.message)
   }
 }
 
+/* -------- GET ALL TICKETS API----------- */
 exports.getAllTickets = async (req, res) => {
   /**
      * Use cases:
@@ -141,13 +144,15 @@ exports.getAllTickets = async (req, res) => {
 
   const tickets = await Ticket.find(queryObj)
   if (tickets.length == 0) {
-    console.log('tickets is NULL, check with status');
+    console.log('tickets is NULL, check with status')
     return res.status(401).send({
-      message :  `There is NO tickets with this status [${req.query.status}]`
-    })}
+      message: `There is NO tickets with this status [${req.query.status}]`
+    })
+  }
   res.status(200).send(objectConverter.ticketListResponse(tickets))
 }
 
+/* -------- GET A TICKET API----------- */
 exports.getOneTicket = async (req, res) => {
   try {
     const ticket = await Ticket.findOne({
@@ -156,7 +161,7 @@ exports.getOneTicket = async (req, res) => {
     if (!ticket) throw new Error('No tickets in DB')
     res.status(200).send(objectConverter.ticketResponse(ticket))
   } catch (err) {
-    console.log('Ticket Id entered wrong, pls check --> ', err.message);
+    console.log('Ticket Id entered wrong, pls check --> ', err.message)
     res.status(400).send({
       message: 'WRONG ticket ID!'
     })

@@ -1,7 +1,5 @@
-require('dotenv').config();
+require('dotenv').config()
 
-module.exports =  {
-    secretKey : process.env.SECRET_KEY 
+module.exports = {
+  secretKey: process.env.SECRET_KEY
 }
-
-

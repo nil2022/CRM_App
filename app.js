@@ -41,7 +41,6 @@ async function initialise () {
 }
 
 mongoose.set('strictQuery', true)
-// connect to MongoDB
 // Event handlers for successful connection and connection error
 mongoose.connect(process.env.DB_URL, {
   useNewUrlParser: true,

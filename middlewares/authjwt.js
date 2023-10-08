@@ -7,6 +7,7 @@ const app = express()
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 
+/* -------- CHECK IF TOKEN IS PROVIDED & VERIFY TOKEN ----------- */
 const verifyToken = (req, res, next) => {
   const token = req.headers['x-access-token']
 
@@ -28,6 +29,7 @@ const verifyToken = (req, res, next) => {
   })
 }
 
+/* -------- CHECK WHETHER USER IS ADMIN OR NOT ----------- */
 const isAdmin = async (req, res, next) => {
   const user = await User.findOne({
     userId: req.body.userId
@@ -42,37 +44,7 @@ const isAdmin = async (req, res, next) => {
   }
 }
 
-const isEmailRegistered = async (req, res, next) => {
-  // EMAIL check in DB
-  const user = await User.findOne({
-    email: req.body.email
-  })
-
-  if (!user) {
-    next()
-  } else {
-    console.log('User:', user)
-    return res.status(400).send('Email already registered!')
-  }
-}
-
-const isUserIdRegistered = async (req, res, next) => {
-  // EMAIL check in DB
-  const user = await User.findOne({
-    userId: req.body.userId
-  })
-
-  if (!user) {
-    next()
-  } else {
-    console.log('User:', user)
-    return res.status(400).send('User Id already registered!')
-  }
-}
-
 module.exports = {
   verifyToken,
-  isAdmin,
-  isEmailRegistered,
-  isUserIdRegistered
+  isAdmin
 }

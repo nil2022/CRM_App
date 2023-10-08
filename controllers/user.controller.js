@@ -112,7 +112,7 @@ exports.findAll = async (req, res) => {
     })
   } catch (err) {
     res.status(400).send({
-      message: 'Internal Server Error',
+      message: 'Internal Server Error'
     })
   }
 }
@@ -149,11 +149,11 @@ exports.update = async (req, res) => {
       userId: userIdReq
     }, {
       name: req.body.name,
-      // password: bcrypt.hashSync(req.body.password, 8), Don't change password here, make separate function for password change.
+      password: bcrypt.hashSync(req.body.password, 8),
       email: req.body.email,
       updatedAt: timeNow,
       userStatus: req.body.userStatus,
-      __v: __vUpdate.__v+1
+      __v: __vUpdate.__v + 1
     }).exec()
     res.status(200).send({
       message: 'User record has been updated successfully'
@@ -172,7 +172,7 @@ exports.delete = async (req, res) => {
   try {
     const user = await User.findOneAndDelete({ userId: userIdReq }).exec()
     if (user == null) throw Error
-    console.log('Request to delete user for',user)
+    console.log('Request to delete user for', user)
     res.status(200).send({
       message: 'User record has been deleted successfully'
     })

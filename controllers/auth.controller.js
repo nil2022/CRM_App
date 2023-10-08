@@ -1,24 +1,17 @@
 const User = require('../models/user.model')
-const constants = require('../utils/constants')
+const { userTypes, userStatus } = require('../utils/constants')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
+/* -------- SIGNUP API----------- */
 exports.signup = async (req, res) => {
-  let userStatus
-  // code added by me -> START
-  const user = await User.findOne({ userId: req.body.userId })
-  if (user) {
-    console.log(`'${user}' user already present in DB`)
-    return res.status(403).send({
-      message: `'${user.userId}' user already present`
-    })
-  }
-  // code added by me -> END
-  if (req.body.userType == constants.userTypes.engineer ||
-        req.body.userType == constants.userTypes.admin) {
-    userStatus = constants.userStatus.pending
+  let userStatusReq
+
+  if (req.body.userType === userTypes.engineer ||
+          req.body.userType === userTypes.admin) {
+    userStatusReq = userStatus.pending
   } else {
-    userStatus = constants.userStatus.approved
+    userStatusReq = userStatus.approved
   }
 
   const salt = await bcrypt.genSalt(10) // Salt generate to Hash Password
@@ -28,7 +21,7 @@ exports.signup = async (req, res) => {
     email: req.body.email,
     userType: req.body.userType,
     password: bcrypt.hashSync(req.body.password, salt),
-    userStatus
+    userStatus: userStatusReq
   }
 
   try {
@@ -58,6 +51,7 @@ exports.signup = async (req, res) => {
   }
 }
 
+/* -------- SIGNIN API----------- */
 exports.signin = async (req, res) => {
   const user = await User.findOne({ userId: req.body.userId })
   console.log('Signin Request for ', user)
@@ -67,7 +61,7 @@ exports.signin = async (req, res) => {
     return
   }
 
-  if (user.userStatus != constants.userStatus.approved) {
+  if (user.userStatus !== userStatus.approved) {
     res.status(403).send({
       message: `Can't allow login as user is in status : [${user.userStatus}]`
     })
@@ -81,11 +75,11 @@ exports.signin = async (req, res) => {
 
   if (!passwordIsValid) {
     console.log('Invalid Password!')
-    res.status(401).send('<h1>Invalid Password!</h1>')
+    res.status(401).send('Invalid Password!')
     return
   }
   const token = jwt.sign({ userId: user.userId }, process.env.SECRET_KEY, {
-    expiresIn: '1d' // 24 hours
+    expiresIn: '7d' // 7 Days
   })
 
   const signInResponse = {
