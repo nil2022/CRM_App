@@ -57,7 +57,7 @@ exports.signin = async (req, res) => {
   console.log('Signin Request for ', user)
 
   if (!user) {
-    res.status(400).send("<h1>Failed! UserId doesn't exist!</h1>")
+    res.status(400).send("Failed! UserId doesn't exist!")
     return
   }
 

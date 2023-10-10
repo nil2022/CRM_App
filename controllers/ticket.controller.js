@@ -12,9 +12,11 @@ exports.createTicket = async (req, res) => {
     ticketPriority: req.body.ticketPriority,
     description: req.body.description,
     status: req.body.status,
-    reporter: req.body.userId
+    reporter: req.userId // this will be retrieved from the middleware
   }
-
+  /**
+    * Logic to find an Engineer in the Approved state
+    */
   const engineer = await User.findOne({
     userType: constants.userTypes.engineer,
     userStatus: constants.userStatus.approved
@@ -22,24 +24,27 @@ exports.createTicket = async (req, res) => {
 
   try {
     if (!engineer) {
-      console.log('No Engineers/Approved Engineers available') // LOOP HOLE
+      console.log('No Engineers/Approved Engineers available')
       return res.status(500).send({
-        message: 'Engineer not available'
+        message: 'Some Internal error occured'
       })
     }
     ticketObject.assignee = engineer.userId
     const ticket = await Ticket.create(ticketObject)
 
     if (ticket) {
+      // Updating the customer
       const user = await User.findOne({
-        userId: req.body.userId
+        userId: req.userId
       })
       user.ticketsCreated.push(ticket._id)
       await user.save()
 
+      // Updating the Engineer
       engineer.ticketsAssigned.push(ticket._id)
       await engineer.save()
 
+      // Send Notification to Notification CLient to Send mail to Users
       sendEmail(ticket._id,
                     `🎫Ticket with id : ${ticket._id} created`,
                     ticket.description,
@@ -50,7 +55,7 @@ exports.createTicket = async (req, res) => {
       res.status(201).send(objectConverter.ticketResponse(ticket))
     }
   } catch (err) {
-    console.log('Some error happened while creating ticket', err.message)
+    console.log('Some error happened while creating ticket:', err.message)
     res.status(500).send({
       message: 'Some internal server error'
     })

@@ -1,17 +1,17 @@
 const ticketController = require('../controllers/ticket.controller')
-const authJwt = require('../middlewares/authJWT')
+const authJWT = require('../middlewares/AuthJWT')
 
 module.exports = function (app) {
   app.post('/crm/api/tickets/',
-    [authJwt.verifyToken],
+    [authJWT.verifyToken],
     ticketController.createTicket)
   app.put('/crm/api/tickets/:id',
-    [authJwt.verifyToken],
+    [authJWT.verifyToken],
     ticketController.updateTicket)
   app.get('/crm/api/tickets/',
-    [authJwt.verifyToken],
+    [authJWT.verifyToken],
     ticketController.getAllTickets)
   app.get('/crm/api/tickets/:id',
-    [authJwt.verifyToken],
+    [authJWT.verifyToken],
     ticketController.getOneTicket)
 }
