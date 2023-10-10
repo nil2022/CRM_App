@@ -1,5 +1,5 @@
 const ticketController = require('../controllers/ticket.controller')
-const authJWT = require('../middlewares/AuthJWT')
+const authJWT = require('../middlewares/auth.jwt')
 
 module.exports = function (app) {
   app.post('/crm/api/tickets/',
