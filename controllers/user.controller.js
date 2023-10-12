@@ -102,7 +102,7 @@ exports.findAll = async (req, res) => {
     } else {
       users = await fetchAll(res)
     }
-    if (users.length == 0) {
+    if (users.length === 0) {
       console.log("users is null in 'exports.findAll' in 'user.controller.js', check if [name] is entered correctly")
       throw new Error()
     }
@@ -149,7 +149,7 @@ exports.update = async (req, res) => {
       userId: userIdReq
     }, {
       name: req.body.name,
-      password: bcrypt.hashSync(req.body.password, 8),
+      password: bcrypt.hashSync(req.body.password, 10),
       email: req.body.email,
       updatedAt: timeNow,
       userStatus: req.body.userStatus,

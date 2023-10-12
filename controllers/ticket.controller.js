@@ -74,7 +74,7 @@ exports.updateTicket = async (req, res) => {
     const ticket = await Ticket.findOne({ _id: req.params.id })
 
     const savedUser = await User.findOne({
-      userId: req.body.userId
+      userId: req.userId
     })
 
     if (canUpdate(savedUser, ticket)) {
