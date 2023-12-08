@@ -38,12 +38,6 @@ npm run dev
 - **dev**: Starts the application in development mode with automatic restarting.
 - **lint:fix**: Fixes linting issues using ESLint.
 
-## Author
-- [Nilanjan Haldar](https://github.com/NilanjanHaldar)
-
-## License
-ISC
-
 ## Bugs/Issues
 Report any bugs or issues [here](https://github.com/nil2022/CRM_App/issues).
 
