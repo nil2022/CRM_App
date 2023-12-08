@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken')
 const constants = require('../utils/constants')
 const User = require('../models/user.model')
-const express = require('express')
-const app = express()
+// const express = require('express')
+// const app = express()
 
-app.use(express.urlencoded({ extended: false }))
-app.use(express.json())
+// app.use(express.urlencoded({ extended: false }))
+// app.use(express.json())
 
 /* -------- CHECK IF TOKEN IS PROVIDED & VERIFY TOKEN ----------- */
 const verifyToken = (req, res, next) => {
