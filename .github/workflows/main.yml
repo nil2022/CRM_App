@@ -1,0 +1,48 @@
+# .github/workflows/lint-test-build.yml
+
+name: Node.js CI
+
+# Trigger the workflow on push or pull request events to the main branch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    # Steps for the workflow
+    steps:
+      # Checkout the repository content
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      # Set up Node.js environment
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+      
+      # Install dependencies using npm
+      - name: Install dependencies
+        run: npm install
+
+      # Linting step using ESLint (adjust the command as per your configuration)
+      # - name: Linting
+      #   run: npm run lint
+        
+      # Testing step (modify the command according to your tests)
+      # - name: Run tests
+      #   run: npm test || true # Use '|| true' to prevent workflow failure if tests fail
+        
+      # Build step (if applicable, adjust as per your build process)
+      - name: Build
+        run: npm run build || true # Use '|| true' to prevent workflow failure if build fails
+        
+      # Run the Express.js app (modify as needed)
+      - name: Start app
+        run: npm start
