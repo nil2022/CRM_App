@@ -4,8 +4,9 @@
   "description": "It is an app developed for resolving customer queries using backend libraries viz. express, bcrypt, jsonwebtoken, dotenv, mongoose, etc.",
   "main": "app.js",
   "scripts": {
-    "test": "jest --testEnvironment=node --runInBand --detectOpenHandles --coverage ./tests",
-    "build": "npm install axios bcrypt cors dotenv express jest jsonwebtoken mongodb-memory-server mongoose morgan nodemon validator --save",
+    "test": "jest",
+    "test:cov": "jest --testEnvironment=node --runInBand --detectOpenHandles --coverage ./tests",
+    "build": "npm install axios bcrypt cors dotenv express jest jsonwebtoken mongodb-memory-server mongoose morgan validator --save",
     "start": "node app.js",
     "dev": "nodemon app.js",
     "lint:fix": "eslint --fix ./*.js"
@@ -35,8 +36,18 @@
     "mongodb-memory-server": "^8.15.1",
     "mongoose": "^6.12.0",
     "morgan": "^1.10.0",
-    "nodemon": "^2.0.22",
     "validator": "^13.11.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-n": "^16.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.19.0"
   },
   "directories": {
     "test": "tests"
@@ -48,25 +59,5 @@
   "bugs": {
     "url": "https://github.com/nil2022/CRM_App/issues"
   },
-  "homepage": "https://github.com/nil2022/CRM_App#readme",
-  "devDependencies": {
-    "assert": "^2.1.0",
-    "browserify-zlib": "^0.2.0",
-    "crypto-browserify": "^3.12.0",
-    "eslint": "^8.50.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.28.1",
-    "eslint-plugin-n": "^16.1.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "events": "^3.3.0",
-    "os-browserify": "^0.3.0",
-    "path-browserify": "^1.0.1",
-    "process": "^0.11.10",
-    "punycode": "^1.4.1",
-    "querystring-es3": "^0.2.1",
-    "stream-browserify": "^3.0.0",
-    "stream-http": "^3.2.0",
-    "url": "^0.11.3",
-    "util": "^0.12.5"
-  }
+  "homepage": "https://github.com/nil2022/CRM_App#readme"
 }

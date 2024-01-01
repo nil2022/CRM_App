@@ -1,7 +1,11 @@
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config()
+require('dotenv').config()
+
+let serverPort = 4500
+
+if (process.env.NODE_ENV !== 'development') {
+  serverPort = process.env.PORT
 }
 
 module.exports = {
-  PORT: process.env.PORT || 3001
+  serverPort
 }
