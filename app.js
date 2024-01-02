@@ -2,6 +2,7 @@ require('dotenv').config()
 const mongoose = require('mongoose')
 const express = require('express')
 const cors = require('cors')
+const helmet = require('helmet') // Add additional security headers to request
 const User = require('./models/user.model')
 const app = express()
 const bcrypt = require('bcrypt')
@@ -13,6 +14,7 @@ const dateTime = new Date()
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json()) // parse JSON data & add it to the request.body object
 app.use(cors()) // cors middleware
+app.use(helmet()) // helmet middleware for additional security
 app.use(limiter) // express-rate-limit middleware
 app.use((req, res, next) => {
   for (const [key, value] of Object.entries(req.headers)) {
