@@ -1,5 +1,11 @@
 # CRM App
 
+<p align="left">
+<a href="https://github.com/nil2022/CRM_App/actions/workflows/main.yml" target="_blank"> <img src="https://github.com/nil2022/CRM_App/actions/workflows/main.yml/badge.svg?branch=master" alt="Node.js Vulnerability Check" /></a>
+<a href="https://github.com/nil2022/CRM_App/actions/workflows/github-code-scanning/codeql" target="_blank"><img src="https://github.com/nil2022/CRM_App/actions/workflows/github-code-scanning/codeql/badge.svg?branch=master" alt="CodeQL" /></a>
+</a>
+</p>
+
 ## Description
 It is an application developed to handle customer queries efficiently using backend libraries such as Express, Bcrypt, JSON Web Token, Dotenv, Mongoose, and more.
 
@@ -30,6 +36,8 @@ npm run dev
 - **Morgan**: For HTTP request logging.
 - **Nodemon**: For automatic server restarting during development.
 - **Validator**: For input validation.
+- **Cors**: For handling cross-origin requests.
+- **Express Rate Limit**: For rate limiting requests.
 
 ## Scripts
 - **test**: Runs tests using Jest.

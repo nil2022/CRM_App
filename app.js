@@ -2,26 +2,23 @@ require('dotenv').config()
 const mongoose = require('mongoose')
 const express = require('express')
 const cors = require('cors')
-const logger = require('morgan')
 const User = require('./models/user.model')
 const app = express()
 const bcrypt = require('bcrypt')
 const constants = require('./utils/constants')
 const { PORT } = require('./configs/server.config')
+const { limiter } = require('./utils/api-rate-limit')
 const dateTime = new Date()
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json()) // parse JSON data & add it to the request.body object
-app.use(cors())
-// app.use(logger('combined'))
+app.use(cors()) // cors middleware
+app.use(limiter) // express-rate-limit middleware
 app.use((req, res, next) => {
   for (const [key, value] of Object.entries(req.headers)) {
-    // console.log(`${key}: ${value}`)
-    if (key === 'user-agent') {
-      console.log(`User-Agent: ${value}`)
-    }
-  }
-  console.log(`IP: ${req.protocol}://${req.hostname}:${req.socket.localPort}${req.originalUrl} [${req.method}] - [${dateTime.toString()}]`)
+    if (key === 'user-agent') console.log(`User-Agent: ${value}`)
+  }// LOG THE IP Address who is accessing the API
+  console.log(`IP -> ${req.protocol}://${req.hostname}:${req.socket.localPort}${req.originalUrl} [${req.method}] - [${dateTime.toLocaleString()}]`)
   next()
 })
 
