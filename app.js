@@ -2,6 +2,7 @@ require('dotenv').config()
 const mongoose = require('mongoose')
 const express = require('express')
 const cors = require('cors')
+const helmet = require('helmet') // Add additional security headers to request 
 const logger = require('morgan')
 const User = require('./models/user.model')
 const app = express()
@@ -9,10 +10,11 @@ const bcrypt = require('bcrypt')
 const constants = require('./utils/constants')
 const { PORT } = require('./configs/server.config')
 const dateTime = new Date()
-
+const { limiter } = require('./utils/api-rate-limit')
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json()) // parse JSON data & add it to the request.body object
 app.use(cors())
+app.use(helmet())
 // app.use(logger('combined'))
 app.use((req, res, next) => {
   for (const [key, value] of Object.entries(req.headers)) {
@@ -30,7 +32,7 @@ async function initialise () {
   const user = await User.findOne({ userId: process.env.ADMIN_USERID })
 
   if (user) {
-    console.log('Admin user already present', user)
+    // console.log('Admin user already present', user)
     console.log('Welcome System Administrator!')
     return
   }
@@ -44,7 +46,7 @@ async function initialise () {
       password: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10),
       userStatus: constants.userStatus.approved
     })
-    console.log(user)
+    // console.log(user)
     console.log('Welcome System Administrator!')
   } catch (err) {
     console.log('Error creating user!', err.message)
@@ -76,5 +78,6 @@ app.get('/', (req, res) => {
 })
 
 require('./routes/auth.routes')(app)
-require('./routes/user.routes')(app)
 require('./routes/ticket.routes')(app)
+app.use(limiter)
+require('./routes/user.routes')(app)
