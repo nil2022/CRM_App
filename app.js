@@ -20,7 +20,7 @@ app.use((req, res, next) => {
   for (const [key, value] of Object.entries(req.headers)) {
     if (key === 'user-agent') console.log(`User-Agent: ${value}`)
   }// LOG THE IP Address who is accessing the API
-  console.log(`IP -> ${req.protocol}://${req.hostname}:${req.socket.localPort}${req.originalUrl} [${req.method}] - [${dateTime.toLocaleString()}]`)
+  console.log(`IP -> ${req.protocol}://${req.hostname}${req.originalUrl} [${req.method}] - [${dateTime.toJSON()}]`)
   next()
 })
 
@@ -35,7 +35,7 @@ async function initialise () {
   }
 
   try {
-    const user = await User.create({
+    await User.create({
       name: process.env.ADMIN_NAME,
       userId: process.env.ADMIN_USERID,
       email: process.env.ADMIN_EMAIL,
@@ -43,7 +43,6 @@ async function initialise () {
       password: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10),
       userStatus: constants.userStatus.approved
     })
-    // console.log(user)
     console.log('Welcome System Administrator!')
   } catch (err) {
     console.log('Error creating user!', err.message)
