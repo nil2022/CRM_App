@@ -8,11 +8,22 @@ const app = express()
 const bcrypt = require('bcrypt')
 const constants = require('./utils/constants')
 const { PORT } = require('./configs/server.config')
+const dateTime = new Date()
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json()) // parse JSON data & add it to the request.body object
 app.use(cors())
-app.use(logger('dev'))
+// app.use(logger('combined'))
+app.use((req, res, next) => {
+  for (const [key, value] of Object.entries(req.headers)) {
+    // console.log(`${key}: ${value}`)
+    if (key === 'user-agent') {
+      console.log(`User-Agent: ${value}`)
+    }
+  }
+  console.log(`IP: ${req.protocol}://${req.hostname}:${req.socket.localPort}${req.originalUrl} [${req.method}] - [${dateTime.toString()}]`)
+  next()
+})
 
 // Create System User and log in into App
 async function initialise () {
@@ -43,8 +54,8 @@ async function initialise () {
 mongoose.set('strictQuery', true)
 // Event handlers for successful connection and connection error
 mongoose.connect(process.env.DB_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+  // useNewUrlParser: true,  // DEPRECATED
+  // useUnifiedTopology: true  // DEPRECATED
 })
 // FIRST CONNECT TO MONGODB THEN START LISTENING TO REQUESTS
   .then((connect) => {
@@ -61,7 +72,6 @@ mongoose.connect(process.env.DB_URL, {
 
 /* ---------HOME PAGE ROUTE-------- */
 app.get('/', (req, res) => {
-  console.log(req.headers)
   res.status(200).send('<h2>CRM Backend Running! 🎉</h2>')
 })
 

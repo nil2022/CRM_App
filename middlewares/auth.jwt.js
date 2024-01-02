@@ -32,7 +32,7 @@ const verifyToken = (req, res, next) => {
 /* -------- CHECK WHETHER USER IS ADMIN OR NOT ----------- */
 const isAdmin = async (req, res, next) => {
   const user = await User.findOne({
-    userId: req.body.userId
+    userId: req.userId
   })
 
   if (user && user.userType === constants.userTypes.admin) {
