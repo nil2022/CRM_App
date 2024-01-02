@@ -27,7 +27,7 @@ async function initialise () {
   const user = await User.findOne({ userId: process.env.ADMIN_USERID })
 
   if (user) {
-    console.log('Admin user already present', user)
+    // console.log('Admin user already present', user)
     console.log('Welcome System Administrator!')
     return
   }
@@ -41,7 +41,7 @@ async function initialise () {
       password: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10),
       userStatus: constants.userStatus.approved
     })
-    console.log(user)
+    // console.log(user)
     console.log('Welcome System Administrator!')
   } catch (err) {
     console.log('Error creating user!', err.message)
@@ -73,5 +73,6 @@ app.get('/', (req, res) => {
 })
 
 require('./routes/auth.routes')(app)
-require('./routes/user.routes')(app)
 require('./routes/ticket.routes')(app)
+app.use(limiter)
+require('./routes/user.routes')(app)
