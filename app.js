@@ -11,6 +11,7 @@ const constants = require('./utils/constants')
 const { PORT } = require('./configs/server.config')
 const dateTime = new Date()
 const { limiter } = require('./utils/api-rate-limit')
+
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json()) // parse JSON data & add it to the request.body object
 app.use(cors())
