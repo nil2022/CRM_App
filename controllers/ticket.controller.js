@@ -139,7 +139,7 @@ exports.getAllTickets = async (req, res) => {
   //   queryObj.status = req.query.status
   // }
 
-  const savedUser = await User.findOne({ userid: req.body.userId })
+  const savedUser = await User.findOne({ userid: { $eq: req.body.userId } })
 
   if (savedUser.userType == constants.userTypes.admin) {
     // Do anything
@@ -151,7 +151,7 @@ exports.getAllTickets = async (req, res) => {
 
   const tickets = await Ticket.find(queryObj)
   if (tickets.length == 0) {
-    console.log('tickets is NULL, check with status')
+    console.log(`tickets is ${queryObj.status}, check with status`)
     return res.status(401).send({
       message: `There is NO tickets with this status [${queryObj.status}]`
     })
