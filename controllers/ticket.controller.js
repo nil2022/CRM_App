@@ -132,10 +132,12 @@ exports.getAllTickets = async (req, res) => {
      *  - ENGINEER : should get all the tickets assigned to him/her
      */
   const queryObj = {}
+  // if status is not provided in query params by default we show the approved user
+  queryObj.status = req.query.status || constants.userStatus.approved
 
-  if (req.query.status != undefined) {
-    queryObj.status = req.query.status
-  }
+  // if (req.query.status != undefined) {
+  //   queryObj.status = req.query.status
+  // }
 
   const savedUser = await User.findOne({ userid: req.body.userId })
 
@@ -151,7 +153,7 @@ exports.getAllTickets = async (req, res) => {
   if (tickets.length == 0) {
     console.log('tickets is NULL, check with status')
     return res.status(401).send({
-      message: `There is NO tickets with this status [${req.query.status}]`
+      message: `There is NO tickets with this status [${queryObj.status}]`
     })
   }
   res.status(200).send(objectConverter.ticketListResponse(tickets))
