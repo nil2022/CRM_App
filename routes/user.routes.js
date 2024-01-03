@@ -1,6 +1,5 @@
 const authJwt = require('../middlewares/auth.jwt')
 const userController = require('../controllers/user.controller')
-
 module.exports = function (app) {
   /* ------ GET ALL USERS API -------- */
   app.get('/crm/api/users/',
