@@ -131,27 +131,34 @@ exports.getAllTickets = async (req, res) => {
      *  - CUSTOMER : should get all the tickets created by him/her
      *  - ENGINEER : should get all the tickets assigned to him/her
      */
-  const queryObj = {}
+  const queryObj = {
+    status: { $eq: '' },
+    reporter: { $eq: '' },
+    assignee: { $eq: '' }
 
-  if (req.query.status != undefined) {
-    queryObj.status = req.query.status
   }
+  // if status is not provided in query params by default we show the approved user
+  queryObj.status.$eq = req.query.status || constants.userStatus.approved
+  console.log(queryObj)
+  // if (req.query.status != undefined) {
+  //   queryObj.status = req.query.status
+  // }
 
-  const savedUser = await User.findOne({ userid: req.body.userId })
+  const savedUser = await User.findOne({ userid: { $eq: req.body.userId } })
 
   if (savedUser.userType == constants.userTypes.admin) {
     // Do anything
   } else if (savedUser.userType == constants.userTypes.customer) {
-    queryObj.reporter = savedUser.userId
+    queryObj.reporter.$eq = savedUser.userId
   } else {
-    queryObj.assignee = savedUser.userId
+    queryObj.assignee.$eq = savedUser.userId
   }
 
   const tickets = await Ticket.find(queryObj)
   if (tickets.length == 0) {
-    console.log('tickets is NULL, check with status')
+    console.log(`tickets is ${queryObj.status.$eq}, check with status`)
     return res.status(401).send({
-      message: `There is NO tickets with this status [${req.query.status}]`
+      message: `There is NO tickets with this status [${queryObj.status.$eq}]`
     })
   }
   res.status(200).send(objectConverter.ticketListResponse(tickets))

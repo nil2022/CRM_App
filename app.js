@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet') // Add additional security headers to request
+// const logger = require('morgan')
 const User = require('./models/user.model')
 const app = express()
 const bcrypt = require('bcrypt')
@@ -43,6 +44,9 @@ async function initialise () {
       password: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10),
       userStatus: constants.userStatus.approved
     })
+
+    console.log(user)
+
     console.log('Welcome System Administrator!')
   } catch (err) {
     console.log('Error creating user!', err.message)
@@ -74,6 +78,6 @@ app.get('/', (req, res) => {
 })
 
 require('./routes/auth.routes')(app)
-require('./routes/ticket.routes')(app)
 app.use(limiter)
+require('./routes/ticket.routes')(app)
 require('./routes/user.routes')(app)
