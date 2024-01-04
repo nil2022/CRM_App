@@ -72,7 +72,7 @@ const fetchByStatus = async (userStatusReq, res) => {
   let users
   try {
     users = await User.find({
-      userStatus: userStatusReq
+      userStatus: { $eq: userStatusReq }
     })
   } catch (err) {
     console.err(`error while fetching the user for userStatus [${userStatusReq}] `)
@@ -137,6 +137,14 @@ exports.findById = async (req, res) => {
 }
 
 exports.update = async (req, res) => {
+  const { name, email, userStatus } = req.body
+  if (typeof name !== 'string' || typeof email !== 'string' || typeof userStatus !== 'string') {
+    console.log('Invalid data type')
+    res.status(400).send({
+      message: 'Invalid data type'
+    })
+    return
+  }
   const userIdReq = req.params.userId
   try {
     const __vUpdate = await User.findOne({ userId: userIdReq }) // fetching userID record from DB to update '__v'
@@ -145,14 +153,14 @@ exports.update = async (req, res) => {
       throw new Error('No user is available with this data')
     }
     // console.log(__vUpdate.__v);
-    const user = await User.findOneAndUpdate({
+    await User.findOneAndUpdate({
       userId: userIdReq
     }, {
-      name: req.body.name,
+      name,
       password: bcrypt.hashSync(req.body.password, 10),
-      email: req.body.email,
+      email,
       updatedAt: timeNow,
-      userStatus: req.body.userStatus,
+      userStatus,
       __v: __vUpdate.__v + 1
     }).exec()
     res.status(200).send({
