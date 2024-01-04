@@ -72,7 +72,7 @@ const fetchByStatus = async (userStatusReq, res) => {
   let users
   try {
     users = await User.find({
-      userStatus: userStatusReq
+      userStatus: { $eq: userStatusReq }
     })
   } catch (err) {
     console.err(`error while fetching the user for userStatus [${userStatusReq}] `)
