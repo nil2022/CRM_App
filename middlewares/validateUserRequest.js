@@ -15,6 +15,12 @@ const isPasswordProvided = async (req, res, next) => {
 /* -------- CHECK WHETHER EMAIL IS PROVIDED OR NOT & ALREADY REGISTERED OR NOT ----------- */
 const isEmailRegisteredOrProvided = async (req, res, next) => {
   const emailReq = req.body.email
+  if (typeof emailReq !== 'string') {
+    console.log('Invalid Email Format')
+    return res.status(403).send({
+      message: 'Invalid Email Format'
+    })
+  }
 
   if (!emailReq) {
     return res.status(403).send({
@@ -28,7 +34,7 @@ const isEmailRegisteredOrProvided = async (req, res, next) => {
   }
   // EMAIL check in DB
   const user = await User.findOne({
-    email: req.body.email
+    email: emailReq
   })
 
   if (!user) {
