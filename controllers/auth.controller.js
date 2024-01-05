@@ -53,7 +53,8 @@ exports.signup = async (req, res) => {
 
 /* -------- SIGNIN API----------- */
 exports.signin = async (req, res) => {
-  const user = await User.findOne({ userId: req.body.userId })
+  const { userId, password } = req.body
+  const user = await User.findOne({ userId: { $eq: userId } })
   console.log('Signin Request for ', user)
 
   if (!user) {
@@ -68,18 +69,23 @@ exports.signin = async (req, res) => {
     return
   }
 
+  if (typeof password !== 'string') {
+    console.log(`Invalid Password! Password type is [${typeof password}]`)
+    res.status(400).send('Invalid Password!')
+    return
+  }
   const passwordIsValid = bcrypt.compareSync(
-    req.body.password,
+    password,
     user.password
   )
-
   if (!passwordIsValid) {
     console.log('Invalid Password!')
     res.status(401).send('Invalid Password!')
     return
   }
-  const token = jwt.sign({ userId: user.userId }, process.env.SECRET_KEY, {
-    expiresIn: '7d' // 7 Days
+
+  const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRY
   })
 
   const signInResponse = {
@@ -91,7 +97,7 @@ exports.signin = async (req, res) => {
     accessToken: token
   }
   res.status(201).send({
-    message: 'Signed in successfully!',
+    message: `${user.name} signed in successfully!`,
     Response: signInResponse
   })
 }

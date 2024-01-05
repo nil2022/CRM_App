@@ -9,21 +9,19 @@ const app = express()
 const bcrypt = require('bcrypt')
 const constants = require('./utils/constants')
 const { PORT } = require('./configs/server.config')
-const dateTime = new Date()
 const { limiter } = require('./utils/api-rate-limit')
+const dateTime = new Date()
+
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json()) // parse JSON data & add it to the request.body object
-app.use(cors())
-app.use(helmet())
-// app.use(logger('combined'))
+app.use(cors()) // cors middleware
+app.use(helmet()) // helmet middleware for additional security
+app.use(limiter) // express-rate-limit middleware
 app.use((req, res, next) => {
   for (const [key, value] of Object.entries(req.headers)) {
-    // console.log(`${key}: ${value}`)
-    if (key === 'user-agent') {
-      console.log(`User-Agent: ${value}`)
-    }
-  }
-  console.log(`IP: ${req.protocol}://${req.hostname}:${req.socket.localPort}${req.originalUrl} [${req.method}] - [${dateTime.toString()}]`)
+    if (key === 'user-agent') console.log(`User-Agent: ${value}`)
+  }// LOG THE IP Address who is accessing the API
+  console.log(`IP -> ${req.protocol}://${req.hostname}${req.originalUrl} [${req.method}] - [${dateTime.toJSON()}]`)
   next()
 })
 
@@ -38,7 +36,7 @@ async function initialise () {
   }
 
   try {
-    const user = await User.create({
+    await User.create({
       name: process.env.ADMIN_NAME,
       userId: process.env.ADMIN_USERID,
       email: process.env.ADMIN_EMAIL,
@@ -46,7 +44,9 @@ async function initialise () {
       password: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10),
       userStatus: constants.userStatus.approved
     })
+
     console.log(user)
+
     console.log('Welcome System Administrator!')
   } catch (err) {
     console.log('Error creating user!', err.message)

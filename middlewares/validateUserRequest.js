@@ -15,6 +15,12 @@ const isPasswordProvided = async (req, res, next) => {
 /* -------- CHECK WHETHER EMAIL IS PROVIDED OR NOT & ALREADY REGISTERED OR NOT ----------- */
 const isEmailRegisteredOrProvided = async (req, res, next) => {
   const emailReq = req.body.email
+  if (typeof emailReq !== 'string') {
+    console.log('Invalid Email Format')
+    return res.status(403).send({
+      message: 'Invalid Email Format'
+    })
+  }
 
   if (!emailReq) {
     return res.status(403).send({
@@ -28,7 +34,7 @@ const isEmailRegisteredOrProvided = async (req, res, next) => {
   }
   // EMAIL check in DB
   const user = await User.findOne({
-    email: req.body.email
+    email: emailReq
   })
 
   if (!user) {
@@ -49,7 +55,7 @@ const isUserIdRegisteredOrProvided = async (req, res, next) => {
     })
   }
   // userId check in DB
-  const user = await User.findOne({ userId: req.body.userId })
+  const user = await User.findOne({ userId: { $eq: req.body.userId } })
   if (user) {
     console.log(`'${user.userId}' user already present in DB`)
     return res.status(403).send({
@@ -68,7 +74,7 @@ const isUserIdProvided = async (req, res, next) => {
     })
   }
   // userId check in DB
-  const user = await User.findOne({ userId: userIdReq })
+  const user = await User.findOne({ userId: { $eq: userIdReq } })
   if (!user) {
     console.log('User not present in DB, please Register/Signup')
     return res.status(403).send({
