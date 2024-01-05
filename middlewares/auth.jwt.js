@@ -17,7 +17,7 @@ const verifyToken = (req, res, next) => {
     })
   }
 
-  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
       console.log('Error with JWT -', err.message)
       return res.status(401).send({
