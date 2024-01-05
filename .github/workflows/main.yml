@@ -22,21 +22,22 @@ jobs:
     - name: Fix Vulnerabilities
       run: npm audit fix --force --json
     
-    - name: Cache
+    - name: Cache node modules
+      id: cache-npm
       uses: actions/cache@v3.3.2
+      env:
+        cache-name: cache-node-modules
       with:
-        # A list of files, directories, and wildcard patterns to cache and restore
-        path: '/'
-        # An explicit key for restoring and saving the cache
-        key: npm-feature-d5ea0750
-        # An ordered list of keys to use for restoring stale cache if no cache hit occurred for key. Note `cache-hit` returns false in this case.
-        restore-keys: # optional
-        # The chunk size used to split up large files during upload, in bytes
-        upload-chunk-size: # optional
-        # An optional boolean when enabled, allows windows runners to save or restore caches that can be restored or saved respectively on other platforms
-        enableCrossOsArchive: # optional, default is false
-        # Fail the workflow if cache entry is not found
-        fail-on-cache-miss: # optional, default is false
-        # Check if a cache entry exists for the given input(s) (key, restore-keys) without downloading the cache
-        lookup-only: # optional, default is false
+        # npm cache files are stored in `~/.npm` on Linux/macOS
+        path: ~/.npm
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+      name: List the state of node modules
+      continue-on-error: true
+      run: npm list
               
