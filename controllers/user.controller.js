@@ -57,7 +57,7 @@ const fetchByType = async (userTypeReq, res) => {
   let users
   try {
     users = await User.find({
-      userType: userTypeReq
+      userType: { $eq: userTypeReq }
     })
   } catch (err) {
     console.err(`error while fetching the user for userType [${userTypeReq}] `)
