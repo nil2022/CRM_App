@@ -26,10 +26,10 @@ const fetchByName = async (userNameReq, res) => {
   let users
   try {
     users = await User.find({
-      name: { $regex: userNameReq, $options: 'i' } // $regex operator to find all documents in a collection, $options parameter to specify case-insensitivity
+      name: { $regex: userNameReq.replace(/\n|\r/g, ''), $options: 'i' } // $regex operator to find all documents in a collection, $options parameter to specify case-insensitivity
     })
   } catch (err) {
-    console.log('Error while fetching the user for Name : ', userNameReq)
+    console.log('Error while fetching the user for Name : ', userNameReq.replace(/\n|\r/g, ''))
     res.status(500).send({
       message: 'Some internal error occured'
     })
