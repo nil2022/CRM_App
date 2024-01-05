@@ -124,7 +124,7 @@ exports.findById = async (req, res) => {
     user = await User.find({
       userId: userIdReq
     })
-    if (user.length == 0) {
+    if (user.length === 0) {
       throw new Error()
     }
     res.status(200).send(ObjectConverter.userResponse(user))

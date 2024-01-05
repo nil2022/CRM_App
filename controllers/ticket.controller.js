@@ -70,6 +70,17 @@ const canUpdate = (user, ticket) => {
 
 /* -------- UPDATE A TICKET API----------- */
 exports.updateTicket = async (req, res) => {
+  const { title, description, ticketPriority, status, assignee } = req.body
+  if (typeof title !== 'string' ||
+      typeof description !== 'string' ||
+      typeof ticketPriority !== 'string' ||
+      typeof status !== 'string' ||
+      typeof assignee !== 'string') {
+    console.log('Invalid data type')
+    return res.status(400).send({
+      message: 'Invalid data type'
+    })
+  }
   try {
     const ticket = await Ticket.findOne({ _id: req.params.id })
 
@@ -78,20 +89,20 @@ exports.updateTicket = async (req, res) => {
     })
 
     if (canUpdate(savedUser, ticket)) {
-      ticket.title = req.body.title != undefined
-        ? req.body.title
+      ticket.title = title != undefined
+        ? title
         : ticket.title
-      ticket.description = req.body.description != undefined
-        ? req.body.description
+      ticket.description = description != undefined
+        ? description
         : ticket.description
-      ticket.ticketPriority = req.body.ticketPriority != undefined
-        ? req.body.ticketPriority
+      ticket.ticketPriority = ticketPriority != undefined
+        ? ticketPriority
         : ticket.ticketPriority
-      ticket.status = req.body.status != undefined
-        ? req.body.status
+      ticket.status = status != undefined
+        ? status
         : ticket.status
-      ticket.assignee = req.body.assignee != undefined
-        ? req.body.assignee
+      ticket.assignee = assignee != undefined
+        ? assignee
         : ticket.assignee
       await ticket.save()
 
