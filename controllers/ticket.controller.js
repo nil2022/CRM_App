@@ -96,11 +96,11 @@ exports.updateTicket = async (req, res) => {
       await ticket.save()
 
       const engineer = await User.findOne({
-        userId: ticket.assignee
+        userId: { $eq: ticket.assignee }
       })
 
       const reporter = await User.findOne({
-        userId: ticket.reporter
+        userId: { $eq: ticket.reporter }
       })
 
       sendEmail(ticket._id,
