@@ -7,6 +7,7 @@ const limiter = rateLimit({
   skipFailedRequests: true, // If any request not failed that will not count
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  keyGenerator: (req) => `${req.protocol}://${req.hostname}${req.originalUrl}`,
   message: async (req, res) => {
     console.log(`\n${req.protocol}://${req.hostname}${req.originalUrl} [${req.method}] -> API is Rate-limited`)
     return res.status(429).json({
