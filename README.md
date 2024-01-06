@@ -38,6 +38,8 @@ npm run dev
 - **Validator**: For input validation.
 - **Cors**: For handling cross-origin requests.
 - **Express Rate Limit**: For rate limiting requests.
+- **Helmet**: For setting security headers.
+- **Axios**: For making HTTP requests.
 
 ## Scripts
 - **test**: Runs tests using Jest.

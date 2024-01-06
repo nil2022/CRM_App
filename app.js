@@ -12,8 +12,8 @@ const { PORT } = require('./configs/server.config')
 const { limiter } = require('./utils/api-rate-limit')
 const dateTime = new Date()
 
-app.use(express.urlencoded({ extended: true }))
-app.use(express.json()) // parse JSON data & add it to the request.body object
+app.use(express.urlencoded({ extended: true })) // parse URL-encoded data & add it to the req.body object
+app.use(express.json()) // parse JSON data & add it to the req.body object
 app.use(cors()) // cors middleware
 app.use(helmet()) // helmet middleware for additional security
 app.use(limiter) // express-rate-limit middleware
@@ -76,6 +76,8 @@ mongoose.connect(process.env.DB_URL, {
 app.get('/', (req, res) => {
   res.status(200).send('<h2>CRM Backend Running! 🎉</h2>')
 })
+
+module.exports = app
 
 require('./routes/auth.routes')(app)
 app.use(limiter)
