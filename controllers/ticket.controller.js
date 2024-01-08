@@ -63,9 +63,9 @@ exports.createTicket = async (req, res) => {
 }
 
 const canUpdate = (user, ticket) => {
-  return user.userId == ticket.reporter ||
-            user.userId == ticket.assignee ||
-            user.userType == constants.userTypes.admin
+  return user.userId === ticket.reporter ||
+            user.userId === ticket.assignee ||
+            user.userType === constants.userTypes.admin
 }
 
 /* -------- UPDATE A TICKET API----------- */
@@ -157,16 +157,16 @@ exports.getAllTickets = async (req, res) => {
 
   const savedUser = await User.findOne({ userid: { $eq: req.body.userId } })
 
-  if (savedUser.userType == constants.userTypes.admin) {
+  if (savedUser.userType === constants.userTypes.admin) {
     // Do anything
-  } else if (savedUser.userType == constants.userTypes.customer) {
+  } else if (savedUser.userType === constants.userTypes.customer) {
     queryObj.reporter.$eq = savedUser.userId
   } else {
     queryObj.assignee.$eq = savedUser.userId
   }
 
   const tickets = await Ticket.find(queryObj)
-  if (tickets.length == 0) {
+  if (tickets.length === 0) {
     console.log(`tickets is ${queryObj.status.$eq}, check with status`)
     return res.status(401).send({
       message: `There is NO tickets with this status [${queryObj.status.$eq}]`
