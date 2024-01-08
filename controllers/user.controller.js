@@ -41,8 +41,8 @@ const fetchByTypeAndStatus = async (userTypeReq, userStatusReq, res) => {
   let users
   try {
     users = await User.find({
-      userType: userTypeReq,
-      userStatus: userStatusReq
+      userType: { $eq: userTypeReq },
+      userStatus: { $eq: userStatusReq } // $eq operator userStatusReq
     })
   } catch (err) {
     console.err(`error while fetching the user for userType [${userTypeReq}] and userStatus [${userStatusReq}]`)
