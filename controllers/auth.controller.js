@@ -55,7 +55,7 @@ exports.signup = async (req, res) => {
 exports.signin = async (req, res) => {
   const { userId, password } = req.body
   const user = await User.findOne({ userId: { $eq: userId } })
-  console.log('Signin Request for ', user)
+  console.log('Signin Request for userId:', user.userId)
 
   if (!user) {
     res.status(400).send("Failed! UserId doesn't exist!")
