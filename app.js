@@ -21,7 +21,7 @@ app.use((req, res, next) => {
   for (const [key, value] of Object.entries(req.headers)) {
     if (key === 'user-agent') console.log(`User-Agent: ${value}`)
   }// LOG THE IP Address who is accessing the API
-  console.log(`IP -> ${req.protocol}://${req.hostname}${req.originalUrl} [${req.method}] - [${dateTime.toJSON()}]`)
+  console.log(`IP -> ${req.protocol}://${req.hostname.replace(/\n|\r/g, '')}${req.originalUrl.replace(/\n|\r/g, '')} [${req.method}] - [${dateTime.toJSON()}]`)
   next()
 })
 
