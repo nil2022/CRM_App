@@ -89,19 +89,19 @@ exports.updateTicket = async (req, res) => {
     })
 
     if (canUpdate(savedUser, ticket)) {
-      ticket.title = title != undefined
+      ticket.title = title !== undefined
         ? title
         : ticket.title
-      ticket.description = description != undefined
+      ticket.description = description !== undefined
         ? description
         : ticket.description
-      ticket.ticketPriority = ticketPriority != undefined
+      ticket.ticketPriority = ticketPriority !== undefined
         ? ticketPriority
         : ticket.ticketPriority
-      ticket.status = status != undefined
+      ticket.status = status !== undefined
         ? status
         : ticket.status
-      ticket.assignee = assignee != undefined
+      ticket.assignee = assignee !== undefined
         ? assignee
         : ticket.assignee
       await ticket.save()
