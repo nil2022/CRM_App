@@ -8,8 +8,8 @@
     "test": "jest",
     "test:cov": "jest --testEnvironment=node --runInBand --detectOpenHandles --coverage ./tests --forceExit",
     "build": "npm install axios bcrypt cors dotenv express jest jsonwebtoken mongodb-memory-server mongoose morgan validator express-rate-limit helmet --save",
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node -r dotenv/config src/app.js",
+    "dev": "nodemon -r dotenv/config src/app.js",
     "lint:fix": "eslint --fix ./*.js"
   },
   "jest": {
