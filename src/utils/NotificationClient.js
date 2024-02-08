@@ -1,4 +1,4 @@
-require('dotenv').config()
+// require('dotenv').config()
 const axios = require('axios')
 
 module.exports = async (ticketId, subject, content, emailIds, requester) => {

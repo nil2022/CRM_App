@@ -12,7 +12,7 @@ module.exports = function (app) {
       authJwt.isAdmin],
     userController.findById)
   /* ----- UPDATE A USER API -------- */
-  app.put('/crm/api/users/:userId',
+  app.patch('/crm/api/users/:userId',
     [authJwt.verifyToken,
       authJwt.isAdmin],
     userController.update)

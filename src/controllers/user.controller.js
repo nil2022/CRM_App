@@ -6,8 +6,6 @@
 const bcrypt = require('bcrypt')
 const User = require('../models/user.model')
 const ObjectConverter = require('../utils/objectConverter')
-const date = new Date()
-const timeNow = date.toString() // Current time to update in DB
 
 const fetchAll = async (res) => {
   let users
@@ -147,21 +145,16 @@ exports.update = async (req, res) => {
   }
   const userIdReq = req.params.userId
   try {
-    const __vUpdate = await User.findOne({ userId: userIdReq }) // fetching userID record from DB to update '__v'
-    if (!__vUpdate) {
-      console.log('No user is available with this data')
-      throw new Error('No user is available with this data')
-    }
-    // console.log(__vUpdate.__v);
     await User.findOneAndUpdate({
       userId: userIdReq
     }, {
-      name,
-      password: bcrypt.hashSync(req.body.password, 10),
-      email,
-      updatedAt: timeNow,
-      userStatus,
-      __v: __vUpdate.__v + 1
+      name: name !== undefined ? name : this.name,
+      password: req.body.password !== undefined ? bcrypt.hashSync(req.body.password, 10) : this.password,
+      email: email !== undefined ? email : this.email,
+      updatedAt: Date.now(),
+      userStatus
+    }, {
+      new: true
     }).exec()
     res.status(200).send({
       message: 'User record has been updated successfully'
@@ -169,7 +162,7 @@ exports.update = async (req, res) => {
   } catch (err) {
     console.log('Error while updating the record:', err.message)
     res.status(500).send({
-      message: 'Some internal error occured'
+      message: 'Something went wrong !'
     })
   }
 }
@@ -179,7 +172,10 @@ exports.delete = async (req, res) => {
   const userIdReq = req.params.userId
   try {
     const user = await User.findOneAndDelete({ userId: userIdReq }).exec()
-    if (user == null) throw Error
+    if (user == null) {
+      console.log('user is not in DB !!')
+      return res.status(400).send('User is not in server !!')
+    }
     console.log('Request to delete user for', user)
     res.status(200).send({
       message: 'User record has been deleted successfully'
@@ -187,7 +183,7 @@ exports.delete = async (req, res) => {
   } catch (err) {
     console.log(`Error while deleting the record, User not Present ***${err}***`)
     res.status(500).send({
-      message: 'Some internal error occured'
+      message: 'Something went wrong !'
     })
   }
 }

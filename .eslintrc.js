@@ -23,6 +23,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest'
   },
+  ignorePatterns: ['.eslintrc.js', 'node_modules/**'],
   rules: {
   }
 }

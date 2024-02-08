@@ -46,7 +46,7 @@ exports.createTicket = async (req, res) => {
 
       // Send Notification to Notification CLient to Send mail to Users
       sendEmail(ticket._id,
-                    `🎫Ticket with id : ${ticket._id} created`,
+                    `🎫Ticket with id : ${ticket._id} created, STATUS:${constants.ticketStatus.open}`,
                     ticket.description,
                     user.email + ',' + engineer.email,
                     user.name
@@ -71,6 +71,7 @@ const canUpdate = (user, ticket) => {
 /* -------- UPDATE A TICKET API----------- */
 exports.updateTicket = async (req, res) => {
   const { title, description, ticketPriority, status, assignee } = req.body
+  // console.log(`typeof title ${typeof title}`)
   if (typeof title !== 'string' ||
       typeof description !== 'string' ||
       typeof ticketPriority !== 'string' ||
@@ -115,7 +116,7 @@ exports.updateTicket = async (req, res) => {
       })
 
       sendEmail(ticket._id,
-            `🎫Ticket with id: '${ticket._id}' updated`,
+            `🎫Ticket with id: '${ticket._id}' updated, STATUS:${status}`,
             ticket.description,
             savedUser.email + ',' + engineer.email + ',' + reporter.email,
             savedUser.name
@@ -146,33 +147,58 @@ exports.getAllTickets = async (req, res) => {
     status: { $eq: '' },
     reporter: { $eq: '' },
     assignee: { $eq: '' }
-
-  }
-  // if status is not provided in query params by default we show the approved user
-  queryObj.status.$eq = req.query.status || constants.userStatus.approved
-  console.log(queryObj)
-  // if (req.query.status != undefined) {
-  //   queryObj.status = req.query.status
-  // }
-
-  const savedUser = await User.findOne({ userid: { $eq: req.body.userId } })
-
-  if (savedUser.userType === constants.userTypes.admin) {
-    // Do anything
-  } else if (savedUser.userType === constants.userTypes.customer) {
-    queryObj.reporter.$eq = savedUser.userId
-  } else {
-    queryObj.assignee.$eq = savedUser.userId
   }
 
-  const tickets = await Ticket.find(queryObj)
-  if (tickets.length === 0) {
-    console.log(`tickets is ${queryObj.status.$eq}, check with status`)
-    return res.status(401).send({
-      message: `There is NO tickets with this status [${queryObj.status.$eq}]`
-    })
+  if (req.query.status === undefined) {
+    console.log('query params not provided !')
+    return res.status(400).send('Resource not available !!')
   }
-  res.status(200).send(objectConverter.ticketListResponse(tickets))
+  try {
+    // if status is not provided in query params by default we show the approved user
+    queryObj.status.$eq = req.query.status.replace(/\s/g, '').toUpperCase() || constants.userStatus.approved
+    /** / write regular express inside this forward slashes /
+     * [ write a expression to find for '\s'-> for any whitespace character]
+     * g - Global pattern flags 'g' modifier: global. All matches (don't return after first match)
+     * + - Matches one or more consecutive `\s` characters.
+     */
+
+    const loggedInUser = await User.findOne({ userId: { $eq: req.userId } })
+    if (!loggedInUser) {
+      console.log('No user in DB !!!')
+      return res.status(500).send('No user in DB !!!')
+    }
+    if (loggedInUser.userType === constants.userTypes.admin) {
+      // Do anything
+    } else if (loggedInUser.userType === constants.userTypes.customer) {
+      queryObj.reporter.$eq = loggedInUser.userId
+    } else {
+      queryObj.assignee.$eq = loggedInUser.userId
+    }
+    /** if logged in user is CUSTOMER then delete assignee(ENGINEER) object from queryObj */
+    if (queryObj.reporter.$eq) {
+      delete queryObj.assignee
+    /** if logged in user is ENGINEER then delete reporter(CUSTOMER) object from queryObj */
+    } else if (queryObj.assignee.$eq) {
+      delete queryObj.reporter
+    /** if logged in user is ADMIN then delete both reporter and assignee objects from queryObj */
+    } else {
+      delete queryObj.assignee
+      delete queryObj.reporter
+    }
+
+    const tickets = await Ticket.find(queryObj)
+
+    if (tickets.length === 0) {
+      console.log('tickets is null, check with status')
+      return res.status(401).send({
+        message: `There is NO tickets with this status [${queryObj.status.$eq}]`
+      })
+    }
+    return res.status(200).send(objectConverter.ticketListResponse(tickets))
+  } catch (error) {
+    console.log(error)
+    return res.status(503).send('Error', error)
+  }
 }
 
 /* -------- GET A TICKET API----------- */

@@ -14,13 +14,12 @@ exports.signup = async (req, res) => {
     userStatusReq = userStatus.approved
   }
 
-  const salt = await bcrypt.genSalt(10) // Salt generate to Hash Password
   const userObj = {
     name: req.body.name,
     userId: req.body.userId,
     email: req.body.email,
     userType: req.body.userType,
-    password: bcrypt.hashSync(req.body.password, salt),
+    password: bcrypt.hashSync(req.body.password, 10),
     userStatus: userStatusReq
   }
 
@@ -63,16 +62,14 @@ exports.signin = async (req, res) => {
   }
 
   if (user.userStatus !== userStatus.approved) {
-    res.status(403).send({
-      message: `Can't allow login as user is in status : [${user.userStatus}]`
+    return res.status(403).send({
+      message: `Can't allow login as user is in "${user.userStatus}" status`
     })
-    return
   }
 
   if (typeof password !== 'string') {
     console.log(`Invalid Password! Password type is [${typeof password}]`)
-    res.status(400).send('Invalid Password!')
-    return
+    return res.status(400).send('Invalid Password!')
   }
   const passwordIsValid = bcrypt.compareSync(
     password,
@@ -96,8 +93,10 @@ exports.signin = async (req, res) => {
     userStatus: user.userStatus,
     accessToken: token
   }
-  res.status(201).send({
-    message: `${user.name} signed in successfully!`,
-    Response: signInResponse
-  })
+  return res
+    .status(201)
+    .json({
+      message: `${user.name} signed in successfully!`,
+      Response: signInResponse
+    })
 }

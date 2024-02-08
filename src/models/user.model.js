@@ -1,6 +1,6 @@
-const mongoose = require('mongoose')
+const { mongoose, Schema } = require('mongoose')
 
-const userSchema = mongoose.Schema({
+const userSchema = new Schema({
   name: {
     type: String,
     required: [true, 'Not Provided']
@@ -8,7 +8,8 @@ const userSchema = mongoose.Schema({
   userId: {
     type: String,
     required: [true, 'Not Provided'],
-    unique: true
+    unique: true,
+    trim: true
   },
   password: {
     type: String,
@@ -20,7 +21,8 @@ const userSchema = mongoose.Schema({
     lowercase: true,
     unique: true,
     isEmail: true,
-    minLength: 10
+    minLength: 10,
+    trim: true
   },
   createdAt: {
     type: Date,
@@ -34,6 +36,7 @@ const userSchema = mongoose.Schema({
   userType: {
     type: String,
     required: true,
+    uppercase: true,
     default: 'CUSTOMER'
   },
   userStatus: {
@@ -42,11 +45,11 @@ const userSchema = mongoose.Schema({
     default: 'APPROVED'
   },
   ticketsCreated: {
-    type: [mongoose.SchemaTypes.ObjectId],
+    type: [Schema.Types.ObjectId],
     ref: 'Ticket'
   },
   ticketsAssigned: {
-    type: [mongoose.SchemaTypes.ObjectId],
+    type: [Schema.Types.ObjectId],
     ref: 'Ticket'
   }
 })

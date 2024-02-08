@@ -1,29 +1,22 @@
-require('dotenv').config()
+// require('dotenv').config()
 const mongoose = require('mongoose')
 const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet') // Add additional security headers to request
-// const logger = require('morgan')
+const logger = require('morgan')
 const User = require('./models/user.model')
 const app = express()
 const bcrypt = require('bcrypt')
 const constants = require('./utils/constants')
 const { PORT } = require('./configs/server.config')
 const { limiter } = require('./utils/api-rate-limit')
-const dateTime = new Date()
 
-app.use(express.urlencoded({ extended: true })) // parse URL-encoded data & add it to the req.body object
-app.use(express.json()) // parse JSON data & add it to the req.body object
+app.use(express.urlencoded({ extended: true, limit: '16kb' })) // parse URL-encoded data & add it to the req.body object
+app.use(express.json({ limit: '16kb' })) // parse JSON data & add it to the req.body object
 app.use(cors()) // cors middleware
 app.use(helmet()) // helmet middleware for additional security
 app.use(limiter) // express-rate-limit middleware
-app.use((req, res, next) => {
-  for (const [key, value] of Object.entries(req.headers)) {
-    if (key === 'user-agent') console.log(`User-Agent: ${value}`)
-  }// LOG THE IP Address who is accessing the API
-  console.log(`IP -> ${req.protocol}://${req.hostname.replace(/\n|\r/g, '')}${req.originalUrl.replace(/\n|\r/g, '')} [${req.method}] - [${dateTime.toJSON()}]`)
-  next()
-})
+app.use(logger('dev'))
 
 // Create System User and log in into App
 async function initialise () {
@@ -74,10 +67,10 @@ mongoose.connect(process.env.DB_URL, {
 
 /* ---------HOME PAGE ROUTE-------- */
 app.get('/', (req, res) => {
-  res.status(200).send('<h2>CRM Backend Running! 🎉</h2>')
+  res.status(200).send('CRM Backend Running! 🎉')
 })
 
-module.exports = app
+// module.exports = app
 
 require('./routes/auth.routes')(app)
 app.use(limiter)
