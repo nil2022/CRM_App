@@ -117,3 +117,31 @@ exports.signin = async (req, res) => {
       Response: signInResponse
     })
 }
+
+/* -------- LOGOUT API----------- */
+exports.logout = async (req, res) => {
+  // remove the refresh token field
+  // clear the cookies
+  await User.findByIdAndUpdate(
+    req.decoded._id,
+    {
+      $unset: {
+        refreshToken: 1
+      }
+    },
+    {
+      new: true
+    }
+  )
+
+  const cookieOptions = {
+    http: true,
+    secure: true
+  }
+
+  return res
+    .status(200)
+    .clearCookie('refreshToken', cookieOptions)
+    .clearCookie('accessToken', cookieOptions)
+    .send('User Logged Out Successfully !!')
+}
