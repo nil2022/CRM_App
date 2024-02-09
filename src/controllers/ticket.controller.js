@@ -4,6 +4,16 @@ const Ticket = require('../models/ticket.model')
 const constants = require('../utils/constants')
 const objectConverter = require('../utils/objectConverter')
 const sendEmail = require('../utils/NotificationClient')
+const ObjectId = require('mongoose').Types.ObjectId
+
+/** * -------- VALIDATE OBJECT ID */
+function isValidObjectId (id) {
+  if (ObjectId.isValid(id)) {
+    if ((String)(new ObjectId(id)) === id) { return true }
+    return false
+  }
+  return false
+}
 
 /* -------- CREATE A TICKET API----------- */
 exports.createTicket = async (req, res) => {
@@ -30,32 +40,40 @@ exports.createTicket = async (req, res) => {
       })
     }
     ticketObject.assignee = engineer.userId
+
+    const user = await User.findOne({
+      userId: req.userId
+    })
+    if (!user) {
+      console.log('User not found in DB !!!')
+      return res.status(400).send({ message: 'User not found, Unauthorized Access !' })
+    }
     const ticket = await Ticket.create(ticketObject)
 
     if (ticket) {
       // Updating the customer
-      const user = await User.findOne({
-        userId: req.userId
-      })
       user.ticketsCreated.push(ticket._id)
-      await user.save()
+      await user.save({ validateBeforeSave: false })
 
       // Updating the Engineer
       engineer.ticketsAssigned.push(ticket._id)
-      await engineer.save()
+      await engineer.save({ validateBeforeSave: false })
 
       // Send Notification to Notification CLient to Send mail to Users
-      sendEmail(ticket._id,
-                    `🎫Ticket with id : ${ticket._id} created, STATUS:${constants.ticketStatus.open}`,
-                    ticket.description,
-                    user.email + ',' + engineer.email,
-                    user.name
+      sendEmail(
+        ticket._id,
+        `🎫Ticket with id : ${ticket._id} created, STATUS:${constants.ticketStatus.open}`,
+        ticket.description,
+        `${user.name} <${user.email}>`,
+        `${engineer.name} <${engineer.email}>` + ',' + `${process.env.ADMIN_NAME} <${process.env.ADMIN_EMAIL}>`,
+        user.name,
+        engineer.name
       )
 
-      res.status(201).send(objectConverter.ticketResponse(ticket))
+      return res.status(201).send(objectConverter.ticketResponse(ticket))
     }
   } catch (err) {
-    console.log('Some error happened while creating ticket:', err.message)
+    console.log('Some error happened while creating ticket:', err)
     res.status(500).send({
       message: 'Some internal server error'
     })
@@ -70,11 +88,9 @@ const canUpdate = (user, ticket) => {
 
 /* -------- UPDATE A TICKET API----------- */
 exports.updateTicket = async (req, res) => {
-  const { title, description, ticketPriority, status, assignee } = req.body
-  // console.log(`typeof title ${typeof title}`)
-  if (typeof title !== 'string' ||
-      typeof description !== 'string' ||
-      typeof ticketPriority !== 'string' ||
+  const { ticketPriority, status, assignee } = req.body
+
+  if (typeof ticketPriority !== 'string' ||
       typeof status !== 'string' ||
       typeof assignee !== 'string') {
     console.log('Invalid data type')
@@ -83,26 +99,48 @@ exports.updateTicket = async (req, res) => {
     })
   }
   try {
-    const ticket = await Ticket.findOne({ _id: req.params.id })
+    if (!isValidObjectId(req.query.id)) {
+      console.log('Invalid TicketID')
+      return res.status(400).send({
+        message: 'Invalid TicketID'
+      })
+    }
 
+    /** get user information who is logged in now [ENGINEER OR CUSTOMER] */
     const savedUser = await User.findOne({
       userId: req.userId
     })
 
+    if (savedUser.userType !== constants.userTypes.admin && savedUser.userType !== constants.userTypes.engineer) {
+      console.log('Unauthorized Access, requires ADMIN or ENGINEER')
+      return res.status(400).send({
+        message: 'Unauthorized Access !!'
+      })
+    }
+
+    const ticket = await Ticket.findOne({ _id: req.query.id })
+    if (!ticket) {
+      console.log('Ticket not found in DB !!!')
+      return res.status(400).send({
+        message: 'Ticket not found !!!'
+      })
+    }
+
     if (canUpdate(savedUser, ticket)) {
-      ticket.title = title !== undefined
-        ? title
-        : ticket.title
-      ticket.description = description !== undefined
-        ? description
-        : ticket.description
-      ticket.ticketPriority = ticketPriority !== undefined
+      /** ticket TITLE and DESCRIPTION are provided by Customer, do not change ! */
+      // ticket.title = title !== ''
+      //   ? title
+      //   : ticket.title
+      // ticket.description = description !== ''
+      //   ? description
+      //   : ticket.description
+      ticket.ticketPriority = ticketPriority !== ''
         ? ticketPriority
         : ticket.ticketPriority
-      ticket.status = status !== undefined
+      ticket.status = status !== ''
         ? status
         : ticket.status
-      ticket.assignee = assignee !== undefined
+      ticket.assignee = assignee !== ''
         ? assignee
         : ticket.assignee
       await ticket.save()
@@ -116,22 +154,23 @@ exports.updateTicket = async (req, res) => {
       })
 
       sendEmail(ticket._id,
-            `🎫Ticket with id: '${ticket._id}' updated, STATUS:${status}`,
+            `🎫Ticket with id: '${ticket._id}' updated, STATUS:${status.toUpperCase()}`,
             ticket.description,
-            savedUser.email + ',' + engineer.email + ',' + reporter.email,
-            savedUser.name
+            `${reporter.name} <${reporter.email}>`,
+            `${engineer.name} <${engineer.email}>` + ',' + `${process.env.ADMIN_NAME} <${process.env.ADMIN_EMAIL}>`,
+            reporter.name,
+            engineer.name
       )
-
-      res.status(200).send(objectConverter.ticketResponse(ticket))
+      return res.status(200).send(objectConverter.ticketResponse(ticket))
     } else {
       console.log('Ticket update was attempted by someone without access to the ticket')
-      res.status(401).send({
+      return res.status(401).send({
         message: 'Ticket can be updated only by the customer who created it'
       })
     }
   } catch (error) {
     console.log('Error:', error)
-    res.status(500).send('Some Internal Error Occured!', error.message)
+    return res.status(500).send('Some Internal Error Occured!', error.message)
   }
 }
 
@@ -204,8 +243,15 @@ exports.getAllTickets = async (req, res) => {
 /* -------- GET A TICKET API----------- */
 exports.getOneTicket = async (req, res) => {
   try {
+    /** validate Ticket id ( Mongodb ObjectID ) */
+    if (!isValidObjectId(req.query.id)) {
+      console.log('Invalid TicketID')
+      return res.status(400).send({
+        message: 'Invalid TicketID'
+      })
+    }
     const ticket = await Ticket.findOne({
-      _id: req.params.id
+      _id: req.query.id
     })
     if (!ticket) throw new Error('No tickets in DB')
     res.status(200).send(objectConverter.ticketResponse(ticket))

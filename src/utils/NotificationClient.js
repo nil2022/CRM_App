@@ -1,16 +1,17 @@
 // require('dotenv').config()
 const axios = require('axios')
 
-module.exports = async (ticketId, subject, content, emailIds, requester) => {
+module.exports = async (ticketId, subject, content, requesterEmailIds, assignedToEmailIds, requester, assignedTo) => {
   /** *************** POST REQ. USING 'AXIOS' ***********************/
-
   await axios.post(process.env.NOTIFICATION_URL,
     {
       subject,
       ticketId,
       content,
-      receipientEmails: emailIds,
-      requester
+      requesterEmailIds,
+      assignedToEmailIds,
+      requester,
+      assignedTo
     },
     {
       headers: {

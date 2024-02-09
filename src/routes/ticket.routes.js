@@ -7,7 +7,7 @@ module.exports = function (app) {
     [authJWT.verifyToken],
     ticketController.createTicket)
   /* ----- UPDATE A TICKET API -------- */
-  app.put('/crm/api/ticket/:id',
+  app.patch('/crm/api/ticket/',
     [authJWT.verifyToken],
     ticketController.updateTicket)
   /* ----- GET ALL TICKETS API -------- */
@@ -15,7 +15,7 @@ module.exports = function (app) {
     [authJWT.verifyToken],
     ticketController.getAllTickets)
   /* ----- GET A TICKET API -------- */
-  app.get('/crm/api/ticket/:id',
+  app.get('/crm/api/ticket/',
     [authJWT.verifyToken],
     ticketController.getOneTicket)
 }
