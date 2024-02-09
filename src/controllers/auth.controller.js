@@ -22,7 +22,6 @@ exports.signup = async (req, res) => {
     password: bcrypt.hashSync(req.body.password, 10),
     userStatus: userStatusReq
   }
-
   try {
     const userCreated = await User.create(userObj)
     const postResponse = {
@@ -77,8 +76,7 @@ exports.signin = async (req, res) => {
   )
   if (!passwordIsValid) {
     console.log('Invalid Password!')
-    res.status(401).send('Invalid Password!')
-    return
+    return res.status(401).send('Invalid Password!')
   }
 
   const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {

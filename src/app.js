@@ -13,14 +13,16 @@ const { limiter } = require('./utils/api-rate-limit')
 
 app.use(express.urlencoded({ extended: true, limit: '16kb' })) // parse URL-encoded data & add it to the req.body object
 app.use(express.json({ limit: '16kb' })) // parse JSON data & add it to the req.body object
-app.use(cors()) // cors middleware
+app.use(cors({
+  origin: process.env.CORS_ORIGIN
+}))
 app.use(helmet()) // helmet middleware for additional security
 app.use(limiter) // express-rate-limit middleware
 app.use(logger('dev'))
 
 // Create System User and log in into App
 async function initialise () {
-  const user = await User.findOne({ userId: process.env.ADMIN_USERID })
+  const user = await User.findOne({ userId: { $eq: process.env.ADMIN_USERID } })
 
   if (user) {
     // console.log('Admin user already present', user)

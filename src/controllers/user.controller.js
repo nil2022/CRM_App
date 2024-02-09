@@ -137,27 +137,35 @@ exports.findById = async (req, res) => {
 exports.update = async (req, res) => {
   const { name, email, userStatus } = req.body
   if (typeof name !== 'string' || typeof email !== 'string' || typeof userStatus !== 'string') {
-    console.log('Invalid data type')
+    console.log('Invalid data type, check either name, email or userStatus is missing or not')
     res.status(400).send({
-      message: 'Invalid data type'
+      message: 'either [name], [email], [password] or [userStatus] is missing or not'
     })
     return
   }
   const userIdReq = req.params.userId
   try {
-    await User.findOneAndUpdate({
-      userId: userIdReq
+    const fetchedUser = await User.findOne({ userId: { $eq: userIdReq } }).select(' -createdAt -updatedAt -ticketsCreated -ticketsAssigned ')
+
+    const user = await User.findOneAndUpdate({
+      userId: { $eq: userIdReq }
     }, {
-      name: name !== undefined ? name : this.name,
-      password: req.body.password !== undefined ? bcrypt.hashSync(req.body.password, 10) : this.password,
-      email: email !== undefined ? email : this.email,
+      name: name !== '' ? name : fetchedUser.name,
+      password: req.body.password !== '' ? bcrypt.hashSync(req.body.password, 10) : fetchedUser.password,
+      email: email !== '' ? email : fetchedUser.email,
       updatedAt: Date.now(),
-      userStatus
+      userStatus: userStatus !== '' ? userStatus.toUpperCase() : fetchedUser.userStatus
     }, {
       new: true
-    }).exec()
-    res.status(200).send({
-      message: 'User record has been updated successfully'
+    }).select(' -createdAt -updatedAt -ticketsCreated -ticketsAssigned -password -__v')
+
+    if (user === null) {
+      console.log('user is not in DB !!')
+      return res.status(400).send('User is not in server !!')
+    }
+    return res.status(200).send({
+      message: 'User record has been updated successfully',
+      user
     })
   } catch (err) {
     console.log('Error while updating the record:', err.message)
@@ -171,12 +179,14 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   const userIdReq = req.params.userId
   try {
-    const user = await User.findOneAndDelete({ userId: userIdReq }).exec()
+    const user = await User.findOneAndDelete({ userId: userIdReq }).select(
+      ' -updatedAt -ticketsCreated -ticketsAssigned -password -__v'
+    )
     if (user == null) {
       console.log('user is not in DB !!')
       return res.status(400).send('User is not in server !!')
     }
-    console.log('Request to delete user for', user)
+    console.log('Request received to delete user for', user)
     res.status(200).send({
       message: 'User record has been deleted successfully'
     })
