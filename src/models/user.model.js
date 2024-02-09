@@ -1,4 +1,5 @@
 const { mongoose, Schema } = require('mongoose')
+const jwt = require('jsonwebtoken')
 
 const userSchema = new Schema({
   name: {
@@ -44,6 +45,9 @@ const userSchema = new Schema({
     required: true,
     default: 'APPROVED'
   },
+  refreshToken: {
+    type: String
+  },
   ticketsCreated: {
     type: [Schema.Types.ObjectId],
     ref: 'Ticket'
@@ -53,5 +57,30 @@ const userSchema = new Schema({
     ref: 'Ticket'
   }
 })
+
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      userId: this.userId,
+      userType: this.userType,
+      userStatus: this.userStatus
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+    })
+}
+
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+    })
+}
 
 module.exports = mongoose.model('User', userSchema)

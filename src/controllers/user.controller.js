@@ -138,10 +138,9 @@ exports.update = async (req, res) => {
   const { name, email, userStatus } = req.body
   if (typeof name !== 'string' || typeof email !== 'string' || typeof userStatus !== 'string') {
     console.log('Invalid data type, check either name, email or userStatus is missing or not')
-    res.status(400).send({
-      message: 'either [name], [email], [password] or [userStatus] is missing or not'
+    return res.status(400).send({
+      message: 'either [name], [email], [password] or [userStatus] is missing'
     })
-    return
   }
   const userIdReq = req.params.userId
   try {
@@ -177,7 +176,7 @@ exports.update = async (req, res) => {
 
 // Code added my me - START
 exports.delete = async (req, res) => {
-  const userIdReq = req.params.userId
+  const userIdReq = req.query.userId.replace(/\s/g, '')
   try {
     const user = await User.findOneAndDelete({ userId: userIdReq }).select(
       ' -updatedAt -ticketsCreated -ticketsAssigned -password -__v'

@@ -17,7 +17,7 @@ module.exports = function (app) {
       authJwt.isAdmin],
     userController.update)
   /* ----- DELETE A USER API -------- */
-  app.delete('/crm/api/users/delete/:userId',
+  app.delete('/crm/api/users/delete/',
     [authJwt.verifyToken,
       authJwt.isAdmin],
     userController.delete)

@@ -10,15 +10,20 @@ const bcrypt = require('bcrypt')
 const constants = require('./utils/constants')
 const { PORT } = require('./configs/server.config')
 const { limiter } = require('./utils/api-rate-limit')
+const cookieParser = require('cookie-parser')
+
+app.use(cors({
+  origin: process.env.CORS_ORIGIN,
+  credentials: true
+}))
 
 app.use(express.urlencoded({ extended: true, limit: '16kb' })) // parse URL-encoded data & add it to the req.body object
 app.use(express.json({ limit: '16kb' })) // parse JSON data & add it to the req.body object
-app.use(cors({
-  origin: process.env.CORS_ORIGIN
-}))
+app.use(express.static('public'))
 app.use(helmet()) // helmet middleware for additional security
 app.use(limiter) // express-rate-limit middleware
 app.use(logger('dev'))
+app.use(cookieParser())
 
 // Create System User and log in into App
 async function initialise () {

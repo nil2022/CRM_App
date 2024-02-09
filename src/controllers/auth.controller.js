@@ -1,7 +1,17 @@
 const User = require('../models/user.model')
 const { userTypes, userStatus } = require('../utils/constants')
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+
+async function generateAccessAndRefreshToken (userId) {
+  const user = await User.findById(userId)
+  const accessToken = user.generateAccessToken()
+  const refreshToken = user.generateRefreshToken()
+
+  user.refreshToken = refreshToken
+  await user.save({ validateBeforeSave: false })
+
+  return { accessToken, refreshToken }
+}
 
 /* -------- SIGNUP API----------- */
 exports.signup = async (req, res) => {
@@ -18,7 +28,7 @@ exports.signup = async (req, res) => {
     name: req.body.name,
     userId: req.body.userId,
     email: req.body.email,
-    userType: req.body.userType,
+    userType: req.body.userType !== '' ? req.body.userType : userTypes.customer,
     password: bcrypt.hashSync(req.body.password, 10),
     userStatus: userStatusReq
   }
@@ -52,7 +62,8 @@ exports.signup = async (req, res) => {
 /* -------- SIGNIN API----------- */
 exports.signin = async (req, res) => {
   const { userId, password } = req.body
-  const user = await User.findOne({ userId: { $eq: userId } })
+
+  const user = await User.findOne({ userId })
   console.log('Signin Request for userId:', user.userId)
 
   if (!user) {
@@ -79,9 +90,7 @@ exports.signin = async (req, res) => {
     return res.status(401).send('Invalid Password!')
   }
 
-  const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRY
-  })
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
   const signInResponse = {
     name: user.name,
@@ -89,10 +98,20 @@ exports.signin = async (req, res) => {
     email: user.email,
     userType: user.userType,
     userStatus: user.userStatus,
-    accessToken: token
+    accessToken,
+    refreshToken,
+    success: true
   }
+
+  const cookieOptions = {
+    http: true,
+    secure: true
+  }
+
   return res
     .status(201)
+    .cookie('accessToken', accessToken, cookieOptions)
+    .cookie('refreshToken', refreshToken, cookieOptions)
     .json({
       message: `${user.name} signed in successfully!`,
       Response: signInResponse
