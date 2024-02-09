@@ -1,15 +1,10 @@
 const jwt = require('jsonwebtoken')
 const constants = require('../utils/constants')
-const User = require('../models/user.model')
-// const express = require('express')
-// const app = express()
-
-// app.use(express.urlencoded({ extended: false }))
-// app.use(express.json())
 
 /* -------- CHECK IF TOKEN IS PROVIDED & VERIFY TOKEN ----------- */
 const verifyToken = (req, res, next) => {
-  const token = req.headers['x-access-token']
+  // get accessToken from cookies
+  const token = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '') || req.headers['x-access-token']
 
   if (!token) {
     return res.status(403).send({
@@ -17,25 +12,21 @@ const verifyToken = (req, res, next) => {
     })
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       console.log('Error with JWT -', err.message)
       return res.status(401).send({
         message: 'Unauthorized!'
       })
     }
-    req.userId = decoded.userId
+    req.decoded = decoded
     next()
   })
 }
 
 /* -------- CHECK WHETHER USER IS ADMIN OR NOT ----------- */
 const isAdmin = async (req, res, next) => {
-  const user = await User.findOne({
-    userId: req.userId
-  })
-
-  if (user && user.userType === constants.userTypes.admin) {
+  if (req.decoded.userType === constants.userTypes.admin) {
     next()
   } else {
     return res.status(403).send({
