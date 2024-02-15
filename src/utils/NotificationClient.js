@@ -24,7 +24,7 @@ module.exports = async (ticketId, subject, content, requesterEmailIds, assignedT
         Response_Data: response.data
       })
     })
-    .catch(function (error) {
-      console.log('Error sending req.:', `${error.name}:${error.message}`)
+    .catch((error) => {
+      console.log('Error sending request to Notification Service:', `${error}`)
     })
 }

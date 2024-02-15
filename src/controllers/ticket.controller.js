@@ -17,22 +17,38 @@ function isValidObjectId (id) {
 
 /* -------- CREATE A TICKET API----------- */
 exports.createTicket = async (req, res) => {
-  const ticketObject = {
-    title: req.body.title,
-    ticketPriority: req.body.ticketPriority,
-    description: req.body.description,
-    status: req.body.status,
-    reporter: req.userId // this will be retrieved from the middleware
+  // create a ticket based on details provided by user (CUSTOMER OR ADMIN)
+  // get the req.body object -> title, description, ticketPriority(if required by ADMIN)
+  // create a ticket object with details provided by user
+  // find an engineer in approved state and check if available
+  // assign ticket to available engineer
+  // fetch user details using _id from decoded accessToken
+  // create ticket(save ticket in DB)
+  // push ticket id to CUSTOMER's user data and ENGINEER's user data and save to DB!
+  // send email to CUSTOMER and ENGINEER using Notification Client(axios request)
+  // return response to user(FRONTEND)
+  const { title, description, ticketPriority } = req.body
+  if (!(title && description)) {
+    console.log('Ticket title or description not provided')
+    return res.status(400).send({ message: 'Ticket title or description not provided' })
   }
+  const ticketObject = {
+    title,
+    description,
+    ticketPriority,
+    reporter: req.decoded.userId // this will be retrieved from the middleware
+  }
+  try {
   /**
     * Logic to find an Engineer in the Approved state
     */
-  const engineer = await User.findOne({
-    userType: constants.userTypes.engineer,
-    userStatus: constants.userStatus.approved
-  })
-
-  try {
+    const engineer = await User.findOne({
+      userType: constants.userTypes.engineer,
+      userStatus: constants.userStatus.approved
+    // add a availability to engineers so that they can be assigned
+    // if engineer is assigned set true else false
+    // availability: true // assign the ticket to the engineer
+    })
     if (!engineer) {
       console.log('No Engineers/Approved Engineers available')
       return res.status(500).send({
@@ -42,7 +58,7 @@ exports.createTicket = async (req, res) => {
     ticketObject.assignee = engineer.userId
 
     const user = await User.findOne({
-      userId: req.userId
+      _id: req.decoded._id
     })
     if (!user) {
       console.log('User not found in DB !!!')
@@ -59,7 +75,7 @@ exports.createTicket = async (req, res) => {
       engineer.ticketsAssigned.push(ticket._id)
       await engineer.save({ validateBeforeSave: false })
 
-      // Send Notification to Notification CLient to Send mail to Users
+      // Send Notification to Notification Client to Send mail to Users, Engineers and Admin
       sendEmail(
         ticket._id,
         `🎫Ticket with id : ${ticket._id} created, STATUS:${constants.ticketStatus.open}`,
@@ -88,6 +104,21 @@ const canUpdate = (user, ticket) => {
 
 /* -------- UPDATE A TICKET API----------- */
 exports.updateTicket = async (req, res) => {
+  /** get req.body object -> ticketPriority, status, assignee (SHOULD BE ADMIN OR ENGINEER)
+   *  ADMIN -> can update ticketPriority, status, assignee
+   *  ENGINEER -> can only update status
+   *  check if provided ticket id is valid Mongoose ObjectId
+   *  get user information who is logged in now [ENGINEER OR CUSTOMER OR ADMIN]
+   *  if user is CUSTOMER return response Unauthorized Access
+   *  fetch ticket using _id from req.query params
+   *  save updated ticket details in DB
+   *  fetch ENGINEER and reporter(CUSTOMER OR ADMIN) details from DB
+   *  send email to ENGINEER and reporter using Notification Client(axios request)
+   *  return response
+   *  additional check -> if a user trying to update ticket not created by him/her
+   *  return response Unauthorized access can only update ticket created by him/her
+   */
+
   const { ticketPriority, status, assignee } = req.body
 
   if (typeof ticketPriority !== 'string' ||
@@ -108,10 +139,10 @@ exports.updateTicket = async (req, res) => {
 
     /** get user information who is logged in now [ENGINEER OR CUSTOMER] */
     const savedUser = await User.findOne({
-      userId: req.userId
+      userId: req.decoded.userId
     })
 
-    if (savedUser.userType !== constants.userTypes.admin && savedUser.userType !== constants.userTypes.engineer) {
+    if (savedUser.userType === constants.userTypes.customer) {
       console.log('Unauthorized Access, requires ADMIN or ENGINEER')
       return res.status(400).send({
         message: 'Unauthorized Access !!'
@@ -178,7 +209,7 @@ exports.updateTicket = async (req, res) => {
 exports.getAllTickets = async (req, res) => {
   /**
      * Use cases:
-     *  - ADMIN    : should get the list of all the tickets
+     *  - ADMIN    : should get the list of all the tickets of any status
      *  - CUSTOMER : should get all the tickets created by him/her
      *  - ENGINEER : should get all the tickets assigned to him/her
      */
@@ -201,7 +232,7 @@ exports.getAllTickets = async (req, res) => {
      * + - Matches one or more consecutive `\s` characters.
      */
 
-    const loggedInUser = await User.findOne({ userId: { $eq: req.userId } })
+    const loggedInUser = await User.findOne({ userId: { $eq: req.decoded.userId } })
     if (!loggedInUser) {
       console.log('No user in DB !!!')
       return res.status(500).send('No user in DB !!!')

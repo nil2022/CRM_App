@@ -87,7 +87,9 @@ exports.signin = async (req, res) => {
   )
   if (!passwordIsValid) {
     console.log('Invalid Password!')
-    return res.status(401).send('Invalid Password!')
+    return res.status(401).send({
+      message: 'Invalid Password!'
+    })
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
@@ -99,8 +101,7 @@ exports.signin = async (req, res) => {
     userType: user.userType,
     userStatus: user.userStatus,
     accessToken,
-    refreshToken,
-    success: true
+    refreshToken
   }
 
   const cookieOptions = {
@@ -114,7 +115,8 @@ exports.signin = async (req, res) => {
     .cookie('refreshToken', refreshToken, cookieOptions)
     .json({
       message: `${user.name} signed in successfully!`,
-      Response: signInResponse
+      Response: signInResponse,
+      success: true
     })
 }
 
@@ -139,6 +141,7 @@ exports.logout = async (req, res) => {
     secure: true
   }
 
+  console.log('User Logged Out Successfully !!')
   return res
     .status(200)
     .clearCookie('refreshToken', cookieOptions)
