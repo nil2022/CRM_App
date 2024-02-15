@@ -78,7 +78,7 @@ const isUserIdProvided = async (req, res, next) => {
   if (!user) {
     console.log('User not present in DB, please Register/Signup')
     return res.status(403).send({
-      message: 'User not Registered, please Register/Signup'
+      message: 'User not found, please Register!'
     })
   } else next()
 }

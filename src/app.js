@@ -11,6 +11,7 @@ const constants = require('./utils/constants')
 const { PORT } = require('./configs/server.config')
 const { limiter } = require('./utils/api-rate-limit')
 const cookieParser = require('cookie-parser')
+const session = require('express-session')
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN,
@@ -24,6 +25,18 @@ app.use(helmet()) // helmet middleware for additional security
 app.use(limiter) // express-rate-limit middleware
 app.use(logger('dev'))
 app.use(cookieParser())
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  name: 'sid',
+  resave: false,
+  saveUninitialized: false,
+  domain: process.env.SESSION_DOMAIN, // Specifies the domain of the cookie
+  expires: process.env.SESSION_EXPIRY, // Specifies the Date object to be the value of the Expires header
+  cookie: {
+    httpOnly: true,
+    secure: true
+  }
+}))
 
 // Create System User and log in into App
 async function initialise () {
@@ -73,8 +86,8 @@ mongoose.connect(process.env.DB_URL, {
   })
 
 /* ---------HOME PAGE ROUTE-------- */
-app.get('/', (req, res) => {
-  res.status(200).send('CRM Backend Running! 🎉')
+app.get('/crm/api/health', (req, res) => {
+  res.status(200).send('CRM app running Successfully 🚀')
 })
 
 // module.exports = app

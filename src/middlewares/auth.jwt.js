@@ -8,7 +8,7 @@ const verifyToken = (req, res, next) => {
 
   if (!token) {
     return res.status(403).send({
-      message: 'No token provided!'
+      message: 'User not logged in or Token not provided, Please Login!'
     })
   }
 
