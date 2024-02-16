@@ -48,7 +48,7 @@ exports.signup = async (req, res) => {
     })
 
     res.status(201).send({
-      Message: 'User Registered Success',
+      message: 'User Registered Success',
       UserData: postResponse
     })
   } catch (err) {
@@ -63,20 +63,14 @@ exports.signup = async (req, res) => {
 exports.signin = async (req, res) => {
   const { userId, password } = req.body
 
-  const user = await User.findOne({ userId })
+  const user = await User.findOne({ userId: { $eq: userId.toLowerCase() } })
   console.log('Signin Request for userId:', user.userId)
 
   if (!user) {
     res.status(400).send("Failed! UserId doesn't exist!")
     return
   }
-
-  if (user.userStatus !== userStatus.approved) {
-    return res.status(403).send({
-      message: `Can't allow login as user is in "${user.userStatus}" status`
-    })
-  }
-
+  /** CHECK IF PASSWORD IS IN STRING FORMAT */
   if (typeof password !== 'string') {
     console.log(`Invalid Password! Password type is [${typeof password}]`)
     return res.status(400).send('Invalid Password!')
@@ -85,12 +79,21 @@ exports.signin = async (req, res) => {
     password,
     user.password
   )
+  /** CHECK IF PASSWORD IS VALID */
   if (!passwordIsValid) {
     console.log('Invalid Password!')
     return res.status(401).send({
       message: 'Invalid Password!'
     })
   }
+  /** CHECK IF USER IS APPROVED */
+  if (user.userStatus !== userStatus.approved) {
+    console.log(`Can't allow login as user is in "${user.userStatus}" status`)
+    return res.status(403).send({
+      message: 'User not APPROVED!! \n Contact Administrator!'
+    })
+  }
+
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
