@@ -69,12 +69,12 @@ const isUserIdProvided = async (req, res, next) => {
   const userIdReq = req.body.userId
 
   if (!userIdReq) {
-    return res.status(403).send({
+    return res.status(403).json({
       message: 'No userId provided!'
     })
   }
   // userId check in DB
-  const user = await User.findOne({ userId: { $eq: userIdReq } })
+  const user = await User.findOne({ userId: { $eq: userIdReq.toLowerCase() } })
   if (!user) {
     console.log('User not present in DB, please Register/Signup')
     return res.status(403).send({
