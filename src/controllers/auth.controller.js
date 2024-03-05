@@ -59,6 +59,14 @@ exports.signup = async (req, res) => {
   }
 }
 
+/* -------- SIGNUP USING GITHUB API----------- */
+// exports.githubLogin = () => {
+//   console.log('controller')
+//   // write business logic for github login
+//   // passport.authenticate('github', { scope: ['user:email'] })
+
+// }
+
 /* -------- SIGNIN API----------- */
 exports.signin = async (req, res) => {
   const { userId, password } = req.body
@@ -94,7 +102,6 @@ exports.signin = async (req, res) => {
     })
   }
 
-
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
   const signInResponse = {
@@ -112,12 +119,14 @@ exports.signin = async (req, res) => {
     secure: true
   }
 
+  console.log(`${user.name} signed in successfully!`)
+
   return res
     .status(201)
     .cookie('accessToken', accessToken, cookieOptions)
     .cookie('refreshToken', refreshToken, cookieOptions)
     .json({
-      message: `${user.name} signed in successfully!`,
+      message: 'Login Successfull',
       Response: signInResponse,
       success: true
     })
@@ -145,9 +154,11 @@ exports.logout = async (req, res) => {
   }
 
   console.log('User Logged Out Successfully !!')
-  return res
+  res
     .status(200)
     .clearCookie('refreshToken', cookieOptions)
     .clearCookie('accessToken', cookieOptions)
-    .send('User Logged Out Successfully !!')
+    .send({
+      message: 'User Logged Out Successfully !!'
+    })
 }
