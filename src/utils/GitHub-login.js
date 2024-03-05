@@ -6,9 +6,6 @@ const session = require('express-session')
 const GitHubStrategy = require('passport-github2').Strategy
 // const partials = require('express-partials')
 
-const GITHUB_CLIENT_ID = '794ea66a710d1cd83f0e' // Nil2022 OAuth
-const GITHUB_CLIENT_SECRET = 'd57a124b5b26a8a8d4e6384810169fcb5352628b' // Nil2022 OAuth
-
 const app = express()
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
@@ -67,9 +64,9 @@ exports.githubAuthorization = async (req, res) => {
   app.use(passport.session())
   // app.use(express.static(__dirname + '/public'))
 
-//   app.get('/', function (req, res) {
-//     res.send('Hii')
-//   })
+  //   app.get('/', function (req, res) {
+  //     res.send('Hii')
+  //   })
 
   // app.get('/account', ensureAuthenticated, function (req, res) {
   //   // res.render('account', { user: req.user });
@@ -102,17 +99,17 @@ exports.githubAuthorization = async (req, res) => {
   //   request.  If authentication fails, the user will be redirected back to the
   //   login page.  Otherwise, the primary route function will be called,
   //   which, in this example, will redirect the user to the home page.
-//   app.get('/crm/api/auth/github/callback',
-//     passport.authenticate('github', { failureRedirect: '/crm/api/auth/signin' }),
-//     function (req, res) {
-//       res.redirect('/')
-//     })
+  //   app.get('/crm/api/auth/github/callback',
+  //     passport.authenticate('github', { failureRedirect: '/crm/api/auth/signin' }),
+  //     function (req, res) {
+  //       res.redirect('/')
+  //     })
 
-//   app.get('/crm/api/auth/logout', function (req, res) {
-//     req.logout(() => {
-//       res.redirect('/crm/api/auth/signin')
-//     })
-//   })
+  //   app.get('/crm/api/auth/logout', function (req, res) {
+  //     req.logout(() => {
+  //       res.redirect('/crm/api/auth/signin')
+  //     })
+  //   })
 
   //   app.listen(3000)
 
