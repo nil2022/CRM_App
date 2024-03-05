@@ -28,8 +28,8 @@ const expressSession = require('express-session')
 // })
 
 // passport.use(new GitHubStrategy({
-//   clientID: '2135b91f7a672cad505d',
-//   clientSecret: '8e9dab5b1b6ea3f165542556e30a1ffff6ce6c13',
+//   clientID: '',
+//   clientSecret: '',
 //   callbackURL: 'http://localhost:5173/crm/api/auth/github/callback'
 // },
 // function (accessToken, refreshToken, profile, done) {
