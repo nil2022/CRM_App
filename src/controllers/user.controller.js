@@ -10,7 +10,7 @@ const ObjectConverter = require('../utils/objectConverter')
 const fetchAll = async (res) => {
   let users
   try {
-    users = await User.find()
+    users = await User.find().select('-password -createdAt -updatedAt -refreshToken -ticketsCreated -ticketsAssigned -__v')
   } catch (err) {
     console.log('Error while fetching the users')
     res.status(500).send({
@@ -105,8 +105,8 @@ exports.findAll = async (req, res) => {
       throw new Error()
     }
     res.status(200).send({
-      message: 'Authenticated!',
-      Response: ObjectConverter.userResponse(users)
+      message: 'Data fetched successfully!',
+      Response: users
     })
   } catch (err) {
     res.status(400).send({

@@ -48,6 +48,7 @@
     "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
+    "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
@@ -58,7 +59,10 @@
     "mongodb-memory-server": "^9.1.6",
     "mongoose": "^8.1.1",
     "morgan": "^1.10.0",
-    "validator": "^13.11.0"
+    "passport": "^0.7.0",
+    "passport-github2": "^0.1.12",
+    "validator": "^13.11.0",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "eslint": "^8.56.0",

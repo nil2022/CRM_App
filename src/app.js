@@ -11,12 +11,71 @@ const constants = require('./utils/constants')
 const { PORT } = require('./configs/server.config')
 const { limiter } = require('./utils/api-rate-limit')
 const cookieParser = require('cookie-parser')
-const session = require('express-session')
+const cookieSession = require('cookie-session')
+const winston = require('winston')
+const passport = require('passport')
+const GitHubStrategy = require('passport-github2').Strategy
+const expressSession = require('express-session')
+
+// passport.serializeUser(function (user, done) {
+//   console.log(' passport.serializeUser')
+//   done(null, user)
+// })
+
+// passport.deserializeUser(function (obj, done) {
+//   console.log('passport.deserializeUser')
+//   done(null, obj)
+// })
+
+// passport.use(new GitHubStrategy({
+//   clientID: '2135b91f7a672cad505d',
+//   clientSecret: '8e9dab5b1b6ea3f165542556e30a1ffff6ce6c13',
+//   callbackURL: 'http://localhost:5173/crm/api/auth/github/callback'
+// },
+// function (accessToken, refreshToken, profile, done) {
+// // asynchronous verification, for effect...
+//   process.nextTick(function () {
+//   // To keep the example simple, the user's GitHub profile is returned to
+//   // represent the logged-in user.  In a typical application, you would want
+//   // to associate the GitHub account with a user record in your database,
+//   // and return that user instead.
+//     return done(null, profile)
+//   })
+// }
+// ))
+
+app.use(expressSession({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+  // cookie: {
+  //   httpOnly: false,
+  //   secure: true
+  // }
+}))
+// app.use(passport.initialize())
+// app.use(passport.session())
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN,
+  allowedHeaders: process.env.CORS_ALLOWED_HEADERS,
   credentials: true
 }))
+
+const winstonLogger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: './logs/error.log', level: 'error' }),
+    new winston.transports.File({ filename: './logs/combined.log' })
+  ]
+})
+
+// if (process.env.NODE_ENV !== 'production') {
+//   winstonLogger.add(new winston.transports.Console({
+//     format: winston.format.simple()
+//   }))
+// }
 
 app.use(express.urlencoded({ extended: true, limit: '16kb' })) // parse URL-encoded data & add it to the req.body object
 app.use(express.json({ limit: '16kb' })) // parse JSON data & add it to the req.body object
@@ -25,18 +84,15 @@ app.use(helmet()) // helmet middleware for additional security
 app.use(limiter) // express-rate-limit middleware
 app.use(logger('dev'))
 app.use(cookieParser())
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  name: 'sid',
-  resave: false,
-  saveUninitialized: false,
-  domain: process.env.SESSION_DOMAIN, // Specifies the domain of the cookie
-  expires: process.env.SESSION_EXPIRY, // Specifies the Date object to be the value of the Expires header
-  cookie: {
-    httpOnly: true,
-    secure: true
-  }
-}))
+// app.use(cookieSession({
+//   secret: process.env.SESSION_SECRET,
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: {
+//     httpOnly: true,
+//     secure: true
+//   }
+// }))
 
 // Create System User and log in into App
 async function initialise () {
@@ -87,12 +143,15 @@ mongoose.connect(process.env.DB_URL, {
 
 /* ---------HOME PAGE ROUTE-------- */
 app.get('/crm/api/health', (req, res) => {
-  res.status(200).send('CRM app running Successfully 🚀')
+  setTimeout(() => {
+    res.status(200).send('CRM app running Successfully (After 3 seconds)🚀')
+  }, 3000)
 })
 
-// module.exports = app
-
-require('./routes/auth.routes')(app)
 app.use(limiter)
-require('./routes/ticket.routes')(app)
-require('./routes/user.routes')(app)
+const authRoutes = require('./routes/auth.routes')
+const ticketRoutes = require('./routes/ticket.routes')
+const userRoutes = require('./routes/user.routes')
+authRoutes(app)
+ticketRoutes(app)
+userRoutes(app)
