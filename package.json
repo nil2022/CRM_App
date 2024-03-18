@@ -57,7 +57,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb-memory-server": "^9.1.7",
-    "mongoose": "^8.2.1",
+    "mongoose": "^8.2.2",
     "morgan": "^1.10.0",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
