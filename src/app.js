@@ -13,6 +13,7 @@ const { limiter } = require('./utils/api-rate-limit')
 const cookieParser = require('cookie-parser')
 const cookieSession = require('cookie-session')
 const winston = require('winston')
+const expressWinston = require('express-winston')
 const passport = require('passport')
 const GitHubStrategy = require('passport-github2').Strategy
 const expressSession = require('express-session')
@@ -47,11 +48,11 @@ const expressSession = require('express-session')
 app.use(expressSession({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false
-  // cookie: {
-  //   httpOnly: false,
-  //   secure: true
-  // }
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: false,
+    secure: true
+  }
 }))
 // app.use(passport.initialize())
 // app.use(passport.session())
@@ -62,12 +63,26 @@ app.use(cors({
   credentials: true
 }))
 
-const winstonLogger = winston.createLogger({
+app.use(expressWinston.logger({
+  transports: [
+    new winston.transports.Console()
+    // new winston.transports.Http()
+  ],
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.json(),
+    winston.format.prettyPrint(),
+    winston.format.timestamp()
+  )
+}))
+
+winston.createLogger({
   level: 'info',
   format: winston.format.json(),
   transports: [
     new winston.transports.File({ filename: './logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: './logs/combined.log' })
+    new winston.transports.File({ filename: './logs/combined.log' }),
+    new winston.transports.File({ filename: './logs/info.log', level: 'info' })
   ]
 })
 
@@ -143,9 +158,10 @@ mongoose.connect(process.env.DB_URL, {
 
 /* ---------HOME PAGE ROUTE-------- */
 app.get('/crm/api/health', (req, res) => {
-  setTimeout(() => {
-    res.status(200).send('CRM app running Successfully (After 3 seconds)🚀')
-  }, 3000)
+  res.status(200).json({
+    message: 'CRM app running Successfully🚀',
+    success: true
+  })
 })
 
 app.use(limiter)
