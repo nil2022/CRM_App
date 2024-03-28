@@ -116,7 +116,7 @@ exports.findAll = async (req, res) => {
 }
 
 exports.findById = async (req, res) => {
-  const userIdReq = req.params.userId
+  const userIdReq = req.query.userId
   let user
   try {
     user = await User.find({

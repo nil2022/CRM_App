@@ -5,7 +5,6 @@ const constants = require('../utils/constants')
 const verifyToken = (req, res, next) => {
   // get accessToken from cookies
 
-  // console.log('req. cookies:', req)
   const token = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '') || req.headers['x-access-token']
 
   if (!token) {
