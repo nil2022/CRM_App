@@ -7,9 +7,10 @@ module.exports = function (app) {
     authJwt.isAdmin,
     userController.findAll)
   /* ------ GET A USER API -------- */
-  app.get('/crm/api/users/:userId',
+  app.get('/crm/api/user/',
     [authJwt.verifyToken,
-      authJwt.isAdmin],
+      // authJwt.isAdmin
+    ],
     userController.findById)
   /* ----- UPDATE A USER API -------- */
   app.patch('/crm/api/users/:userId',

@@ -125,6 +125,7 @@ exports.signin = async (req, res) => {
     .status(201)
     .cookie('accessToken', accessToken, cookieOptions)
     .cookie('refreshToken', refreshToken, cookieOptions)
+    .set('Authorization', `Bearer ${accessToken}`)
     .json({
       message: 'Login Successfull',
       Response: signInResponse,
@@ -158,6 +159,7 @@ exports.logout = async (req, res) => {
     .status(200)
     .clearCookie('refreshToken', cookieOptions)
     .clearCookie('accessToken', cookieOptions)
+    .set('Authorization', '')
     .send({
       message: 'User Logged Out Successfully !!'
     })
