@@ -1,33 +1,13 @@
 {
   "name": "crm-app",
-  "version": "1.0.2",
+  "private": true,
+  "version": "1.0.3",
   "description": "It is an app developed for resolving customer queries using backend libraries viz. express, bcrypt, jsonwebtoken, dotenv, mongoose, etc.",
   "main": "app.js",
   "type": "commonjs",
   "scripts": {
-    "test": "jest",
-    "test:cov": "jest --testEnvironment=node --runInBand --detectOpenHandles --coverage ./tests --forceExit",
-    "build": "npm install axios bcrypt cors dotenv express jest jsonwebtoken mongodb-memory-server mongoose morgan validator express-rate-limit helmet --save",
     "start": "node -r dotenv/config src/app.js",
     "dev": "nodemon -r dotenv/config src/app.js",
-    "lint:fix": "eslint --fix ./*.js"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/"
-    ],
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "app.js",
-      "routes/*.js",
-      "controllers/*.js",
-      "middlewares/*.js",
-      "models/*.js"
-    ]
   },
   "keywords": [
     "nodejs",
@@ -78,9 +58,6 @@
   },
   "engines": {
     "node": ">=18.19.0"
-  },
-  "directories": {
-    "test": "tests"
   },
   "repository": {
     "type": "git",
