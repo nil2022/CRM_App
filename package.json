@@ -7,7 +7,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node -r dotenv/config src/app.js",
-    "dev": "nodemon -r dotenv/config src/app.js",
+    "dev": "nodemon -r dotenv/config src/app.js"
   },
   "keywords": [
     "nodejs",
