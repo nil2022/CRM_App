@@ -1,5 +1,4 @@
-// require('dotenv').config()
-const { rateLimit } = require('express-rate-limit')
+import { rateLimit } from 'express-rate-limit';
 
 const limiter = rateLimit({
   windowMs: process.env.RATE_LIMIT_TIME * 60 * 1000 || 15 * 60 * 1000, // default is 15 minutes
@@ -16,6 +15,4 @@ const limiter = rateLimit({
   }
 })
 
-module.exports = {
-  limiter
-}
+export default limiter;

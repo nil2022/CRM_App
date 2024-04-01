@@ -1,5 +1,5 @@
-const User = require('../models/user.model')
-const validator = require('validator')
+import { User } from '../models/user.model.js'
+import validator from 'validator'
 
 /* -------- CHECK WHETHER PASSWORD IS PROVIDED OR NOT (FOR BOTH SIGNUP & SIGNIN) ----------- */
 const isPasswordProvided = async (req, res, next) => {
@@ -85,7 +85,7 @@ const isUserIdProvided = async (req, res, next) => {
   } else next()
 }
 
-module.exports = {
+export {
   isPasswordProvided,
   isEmailRegisteredOrProvided,
   isUserIdRegisteredOrProvided,

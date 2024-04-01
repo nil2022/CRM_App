@@ -3,11 +3,11 @@
   "private": true,
   "version": "1.0.3",
   "description": "It is an app developed for resolving customer queries using backend libraries viz. express, bcrypt, jsonwebtoken, dotenv, mongoose, etc.",
-  "main": "app.js",
-  "type": "commonjs",
+  "type": "module",
+  "main": "index.js",
   "scripts": {
-    "start": "node -r dotenv/config src/app.js",
-    "dev": "nodemon -r dotenv/config src/app.js"
+    "start": "node -r dotenv/config src/index.js",
+    "dev": "nodemon -r dotenv/config src/index.js"
   },
   "keywords": [
     "nodejs",
