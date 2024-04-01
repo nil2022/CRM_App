@@ -17,10 +17,10 @@ jobs:
         check-latest: true
 
     - name: Run Vulnerability Scan
-      run: npm audit --json
+      run: yarn audit --json
 
     - name: Fix Vulnerabilities
-      run: npm audit fix --force --json
+      run: yarn audit fix --force --json
     
     - name: Cache node modules
       id: cache-npm
@@ -39,5 +39,5 @@ jobs:
     - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
       name: List the state of node modules
       continue-on-error: true
-      run: npm list
+      run: yarn list
               
