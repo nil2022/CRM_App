@@ -20,10 +20,7 @@ export const signup = async (req, res) => {
     let userStatusReq;
     const { fullName, userId, email, password, userType } = req.body;
 
-    if (
-        userType === userTypes.engineer ||
-        userType === userTypes.admin
-    ) {
+    if (userType === userTypes.engineer || userType === userTypes.admin) {
         userStatusReq = userStatus.pending;
     } else {
         userStatusReq = userStatus.approved;
@@ -108,8 +105,11 @@ export const signin = async (req, res) => {
         console.log(
             `Can't allow login as user is in "${user.userStatus}" status`
         );
-        return res.status(403).send({
+        return res.status(403).json({
+            data: {},
             message: "User not APPROVED!! \n Contact Administrator!",
+            statusCode: 403,
+            success: false,
         });
     }
 
@@ -145,7 +145,7 @@ export const signin = async (req, res) => {
         .cookie("refreshToken", refreshToken, cookieOptions)
         .set("Authorization", `Bearer ${accessToken}`)
         .set("x-access-token", accessToken)
-        .set('x-refresh-token', refreshToken)
+        .set("x-refresh-token", refreshToken)
         .json({
             data: {
                 accessToken,
@@ -160,30 +160,49 @@ export const signin = async (req, res) => {
 
 /* -------- GET LOGGED IN USER API----------- */
 export const getLoggedInUser = async (req, res) => {
-    const user = await User.findById({ _id: req.decoded._id });
-    console.log("Current User: ", user);
+    try {
+        const user = await User.findById({ _id: req.decoded._id });
+        console.log("Current User: ", user);
 
-    const userData = {
-        __v: user.__v,
-        _id: user._id,
-        fullName: user.fullName,
-        userId: user.userId,
-        email: user.email,
-        avatar: user.avatar,
-        loginType: user.loginType,
-        isEmailVerified: user.isEmailVerified,
-        userType: user.userType,
-        userStatus: user.userStatus,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-    };
+        if (!user) {
+            return res.status(404).json({
+                data: {},
+                message: "User not found",
+                statusCode: 404,
+                success: false,
+            });
+        }
 
-    res.status(200).json({
-        data: userData,
-        message: "Current user fetched successfully",
-        statusCode: 200,
-        success: true,
-    });
+        const userData = {
+            __v: user.__v,
+            _id: user._id,
+            fullName: user.fullName,
+            userId: user.userId,
+            email: user.email,
+            avatar: user.avatar,
+            loginType: user.loginType,
+            isEmailVerified: user.isEmailVerified,
+            userType: user.userType,
+            userStatus: user.userStatus,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        };
+
+        res.status(200).json({
+            data: userData,
+            message: "Current user fetched successfully",
+            statusCode: 200,
+            success: true,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            data: {},
+            message: "Internal server error",
+            statusCode: 500,
+            success: false,
+        });
+    }
 };
 
 // TODO: controllers to design
@@ -198,7 +217,9 @@ export const getLoggedInUser = async (req, res) => {
 /* -------- REFRESH ACCESS TOKEN API----------- */
 export const refreshAccessToken = async (req, res) => {
     const incomingRefreshToken =
-        req.cookies.refreshToken || req.body.refreshToken || req.header('Authorization')?.replace('Bearer ', '');
+        req.cookies.refreshToken ||
+        req.body.refreshToken ||
+        req.header("Authorization")?.replace("Bearer ", "");
 
     if (!incomingRefreshToken) {
         return res.status(401).json({
@@ -227,7 +248,7 @@ export const refreshAccessToken = async (req, res) => {
             });
         }
 
-        console.log('user:', user.refreshToken)
+        console.log("user:", user.refreshToken);
 
         if (incomingRefreshToken !== user?.refreshToken) {
             return res.status(401).json({

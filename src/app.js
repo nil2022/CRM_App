@@ -32,7 +32,7 @@ app.use(express.urlencoded({ extended: true, limit: '16kb' })) // parse URL-enco
 app.use(express.json({ limit: '16kb' })) // parse JSON data & add it to the req.body object
 app.use(express.static('public'))
 app.use(helmet()) // helmet middleware for additional security
-// app.use(limiter) 
+app.use(limiter)
 app.use(logger('dev'))
 app.use(cookieParser())
 

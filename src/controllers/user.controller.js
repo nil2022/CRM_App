@@ -209,7 +209,7 @@ export const update = async (req, res) => {
                         : fetchedUser.isEmailVerified,
                 updatedAt: Date.now(),
                 userStatus:
-                    userStatus === ""
+                    userStatus !== ""
                         ? userStatus.toUpperCase()
                         : fetchedUser.userStatus,
             },
