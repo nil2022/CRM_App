@@ -1,22 +1,36 @@
-const authController = require('../controllers/auth.controller')
-const { isUserIdRegisteredOrProvided, isEmailRegisteredOrProvided, isPasswordProvided, isUserIdProvided } = require('../middlewares/validateUserRequest')
-const authJwt = require('../middlewares/auth.jwt')
-const passport = require('passport')
+import { Router } from "express";
+import { signup, signin, logout, getLoggedInUser, refreshAccessToken } from "../controllers/auth.controller.js";
+import {
+    isEmailRegisteredOrProvided,
+    isPasswordProvided,
+    isUserIdProvided,
+    isUserIdRegisteredOrProvided,
+} from "../middlewares/validateUserRequest.js";
+import { verifyToken } from "../middlewares/auth.jwt.js";
 
-module.exports = function (app) {
-  /* ------ USER SIGNUP -------- */
-  app.post('/crm/api/auth/signup', [isUserIdRegisteredOrProvided, isEmailRegisteredOrProvided, isPasswordProvided], authController.signup)
-  /* ------ USER SIGNUP/SIGNIN WITH GITHUB -------- */
-  // app.get('/crm/api/auth/github',
-  //   passport.authenticate('github', { scope: ['user:email'] })
-  // )
-  // app.get('/crm/api/auth/github/callback',
-  //   passport.authenticate('github', { failureRedirect: 'http://localhost:5173/' }),
-  //   function (req, res) {
-  //     res.json(req.user)
-  //   })
-  /* ------ USER SIGNIN -------- */
-  app.post('/crm/api/auth/signin', [isUserIdProvided, isPasswordProvided], authController.signin)
-  /* ------ USER LOGOUT -------- */
-  app.get('/crm/api/auth/logout', [authJwt.verifyToken], authController.logout)
-}
+const router = Router();
+
+/* ------ USER SIGNUP -------- */
+router.post(
+    "/register",
+    [
+        isUserIdRegisteredOrProvided,
+        isEmailRegisteredOrProvided,
+        isPasswordProvided,
+    ],
+    signup
+);
+
+/* ------ USER SIGNIN -------- */
+router.post("/login", [isUserIdProvided, isPasswordProvided], signin);
+
+/* ------ GET LOGGED IN USER -------- */
+router.get('/current-user', [verifyToken], getLoggedInUser)
+
+/* ------ REFRESH ACCESS TOKEN -------- */
+router.get('/refresh-token', refreshAccessToken)
+
+/* ------ USER LOGOUT -------- */
+router.get("/logout", [verifyToken], logout);
+
+export default router;
