@@ -3,7 +3,6 @@
  * Only the user of type ADMIN should be able to perform the operations
  * defined in the User Controller
  */
-import bcrypt from "bcrypt";
 import { User } from "../models/user.model.js";
 // const ObjectConverter = require('../utils/objectConverter')
 

@@ -17,19 +17,28 @@ const isEmailRegisteredOrProvided = async (req, res, next) => {
   const emailReq = req.body.email
   if (typeof emailReq !== 'string') {
     console.log('Invalid Email Format')
-    return res.status(403).send({
-      message: 'Invalid Email Format'
+    return res.status(403).json({
+      data: '',
+      message: 'Invalid Email',
+      statusCode: 403,
+      success: false
     })
   }
 
   if (!emailReq) {
-    return res.status(403).send({
-      message: 'No Email provided'
+    return res.status(403).json({
+      data: '',
+      message: 'No Email provided',
+      statusCode: 403,
+      success: false
     })
     // Also checks if Email is in Valid format or not
   } else if (!validator.isEmail(emailReq)) {
-    return res.status(403).send({
-      message: 'Invalid Email Format'
+    return res.status(403).json({
+      data: '',
+      message: 'Invalid Email Format',
+      statusCode: 403,
+      success: false
     })
   }
   // EMAIL check in DB
