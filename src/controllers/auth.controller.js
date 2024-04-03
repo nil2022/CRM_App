@@ -106,8 +106,8 @@ export const signin = async (req, res) => {
             `Can't allow login as user is in "${user.userStatus}" status`
         );
         return res.status(403).json({
-            data: {},
-            message: "User not APPROVED!! \n Contact Administrator!",
+            data: '',
+            message: "User NOT APPROVED, Contact \n ADMIN !",
             statusCode: 403,
             success: false,
         });
