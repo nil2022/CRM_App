@@ -21,7 +21,7 @@ app.use(
     expressWinston.logger({
         transports: [
             new winston.transports.Console(),
-            // new winston.transports.Http()
+            new winston.transports.Http()
         ],
         format: winston.format.combine(
             winston.format.colorize(),
