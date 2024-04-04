@@ -25,6 +25,7 @@ const userSchema = new Schema({
         unique: true,
         minLength: 10,
         trim: true,
+        index: true
     },
     isEmailVerified: {
         type: Boolean,
@@ -36,7 +37,7 @@ const userSchema = new Schema({
     },
     avatar: {
         type: String,
-        default: "https://grabify.link/ORLAAT",
+        default: "",
     },
     createdAt: {
         type: Date,
@@ -60,7 +61,6 @@ const userSchema = new Schema({
     },
     refreshToken: {
         type: String,
-        expiresIn: "10s",
     },
     ticketsCreated: {
         type: [Schema.Types.ObjectId],
@@ -78,6 +78,7 @@ userSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
+
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         {
