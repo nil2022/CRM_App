@@ -15,4 +15,11 @@ const ticketStatus = {
     closed: "CLOSED",
 };
 
-export { userTypes, userStatus, ticketStatus };
+const ticketPriority = {
+    low: "LOW",
+    medium: "MEDIUM",
+    high: "HIGH",
+    critical: "CRITICAL",
+};
+
+export { userTypes, userStatus, ticketStatus, ticketPriority };

@@ -1,21 +1,19 @@
-const ticketController = require('../controllers/ticket.controller')
-const authJWT = require('../middlewares/auth.jwt')
+import { Router } from 'express'
+import { createTicket, getAllTickets, getOneTicket, updateTicket } from '../controllers/ticket.controller.js'
+import { verifyToken } from '../middlewares/auth.jwt.js'
 
-module.exports = function (app) {
+const router = Router();
+
   /* ----- CREATE A TICKET API -------- */
-  app.post('/crm/api/tickets/',
-    [authJWT.verifyToken],
-    ticketController.createTicket)
+  router.post('/create-ticket', [verifyToken], createTicket)
+
   /* ----- UPDATE A TICKET API -------- */
-  app.patch('/crm/api/ticket/',
-    [authJWT.verifyToken],
-    ticketController.updateTicket)
+  router.patch('/update-ticket', [verifyToken], updateTicket)
+
   /* ----- GET ALL TICKETS API -------- */
-  app.get('/crm/api/tickets/',
-    [authJWT.verifyToken],
-    ticketController.getAllTickets)
+  router.get('/', [verifyToken], getAllTickets)
+
   /* ----- GET A TICKET API -------- */
-  app.get('/crm/api/ticket/',
-    [authJWT.verifyToken],
-    ticketController.getOneTicket)
-}
+  router.get('/get-ticket', [verifyToken], getOneTicket)
+
+  export default router;

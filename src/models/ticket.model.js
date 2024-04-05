@@ -1,5 +1,5 @@
-const { mongoose, Schema } = require('mongoose')
-const { ticketStatus } = require('../utils/constants')
+import mongoose, { Schema } from 'mongoose'
+import { ticketPriority, ticketStatus } from '../utils/constants.js'
 
 const ticketSchema = new Schema({
   title: {
@@ -8,8 +8,8 @@ const ticketSchema = new Schema({
   },
   ticketPriority: {
     type: String,
-    required: true,
-    default: 4
+    default: ticketPriority.low,
+    trim: true
   },
   description: {
     type: String,
@@ -33,4 +33,4 @@ const ticketSchema = new Schema({
   timestamps: true
 })
 
-module.exports = mongoose.model('Ticket', ticketSchema)
+export const Ticket = mongoose.model('Ticket', ticketSchema)
