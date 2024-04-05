@@ -1,7 +1,6 @@
-// require('dotenv').config()
-const axios = require('axios')
+import axios from 'axios'
 
-module.exports = async (ticketId, subject, content, requesterEmailIds, assignedToEmailIds, requester, assignedTo) => {
+export const notificationClient = async (ticketId, subject, content, requesterEmailIds, assignedToEmailIds, requester, assignedTo) => {
   /** *************** POST REQ. USING 'AXIOS' ***********************/
   await axios.post(process.env.NOTIFICATION_URL,
     {
@@ -20,8 +19,8 @@ module.exports = async (ticketId, subject, content, requesterEmailIds, assignedT
     })
     .then(function (response) {
       console.log('Request sent:', {
-        Status: [response.status, response.statusText],
-        Response_Data: response.data
+        status: [response.status, response.statusText],
+        response_data: response.data
       })
     })
     .catch((error) => {

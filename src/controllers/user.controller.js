@@ -4,7 +4,6 @@
  * defined in the User Controller
  */
 import { User } from "../models/user.model.js";
-// const ObjectConverter = require('../utils/objectConverter')
 
 export const fetchAll = async (res) => {
     let users;

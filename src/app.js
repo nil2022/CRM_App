@@ -50,11 +50,9 @@ app.get("/health", (_, res) => {
 
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
+import ticketRouter from './routes/ticket.routes.js'
 app.use("/crm/api/v1/auth", authRouter);
 app.use("/crm/api/v1/users", userRouter);
-// const ticketRoutes = require('./routes/ticket.routes')
-// const userRoutes = require('./routes/user.routes')
-// ticketRoutes(app)
-// userRoutes(app)
+app.use("/crm/api/v1/tickets", ticketRouter);
 
 export { app };
