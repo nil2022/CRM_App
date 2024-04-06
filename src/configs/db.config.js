@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import { infoLogger } from '../utils/winstonLogger.js';
 
 export default async function connectDB () {
     /**
@@ -8,5 +9,5 @@ export default async function connectDB () {
      */
     mongoose.set('strictQuery', true)
     const connectionInstance = await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`MongoDB Connected !! DB Host:-> ${connectionInstance.connection.host}`);
+    infoLogger.info(`MongoDB Connected !! DB Host:-> ${connectionInstance.connection.host}`);
 }

@@ -2,16 +2,19 @@ import connectDB from "./configs/db.config.js";
 import { app } from "./app.js";
 import { User } from "./models/user.model.js";
 import { userStatus, userTypes } from "./utils/constants.js";
+import { infoLogger, errorLogger } from "./utils/winstonLogger.js";
 
-// Create System User and log in into App
-async function initialise() {
+/**
+ * * Create Master Administrator User and Login to the System
+ * @returns 
+ */
+async function initialize() {
     const user = await User.findOne({
         userId: { $eq: process.env.ADMIN_USERID },
     });
 
     if (user) {
-        // console.log('Admin user already present', user)
-        console.log("Welcome System Administrator!");
+        infoLogger.info("Welcome System Administrator!");
         return;
     }
 
@@ -28,21 +31,21 @@ async function initialise() {
 
         console.log(user);
 
-        console.log("Welcome System Administrator!");
+        infoLogger.info("Welcome System Administrator!");
     } catch (err) {
-        console.log("Error creating user!", err.message);
+        errorLogger.error(err, "Error creating user!", err.message);
     }
 }
 
 connectDB()
     .then(() => {
-        initialise();
+        initialize();
         app.listen(process.env.SERVER_PORT || 3000, () => {
-            console.log(
-                `⚙️  Listening all requests at http://localhost:${process.env.SERVER_PORT}`
+            infoLogger.info(
+                `⚙️ Listening all requests at http://localhost:${process.env.SERVER_PORT}`
             );
         });
     })
     .catch((error) => {
-        console.log("MongoDB Connection FAILED !!! : ", error.message);
+        errorLogger.error("MongoDB Connection FAILED !!! : ", error);
     });

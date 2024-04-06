@@ -2,6 +2,7 @@ import { User } from "../models/user.model.js";
 import { userStatus, userTypes } from "../utils/constants.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { errorLogger, infoLogger, warningLogger } from "../utils/winstonLogger.js";
 
 /* -------- GENERATE ACCESS AND REFRESH TOKEN ----------- */
 async function generateAccessAndRefreshToken(userId) {
@@ -49,11 +50,12 @@ export const signup = async (req, res) => {
             userStatus: user.userStatus,
             createdAt: user.createdAt,
         };
-        console.log({
-            message: "User Registered Successfully",
+
+        infoLogger.info({
             data: {
                 email: registeredUser.email,
             },
+            message: "User Registered Successfully",
         });
 
         res.status(201).json({
@@ -66,12 +68,16 @@ export const signup = async (req, res) => {
             success: true,
         });
     } catch (err) {
-        console.log(
+        errorLogger.error(
             "Something went wrong while saving to DB",
-            `${err.name}:${err.message}`
+            `${err.name}:${err.message}`,
+            err
         );
-        res.status(500).send({
+        res.status(500).json({
+            data: "",
             message: "Some internal error while inserting the element",
+            statusCode: 500,
+            success: false,
         });
     }
 };
@@ -81,32 +87,43 @@ export const signin = async (req, res) => {
     const { userId, password } = req.body;
 
     const user = await User.findOne({ userId: { $eq: userId.toLowerCase() } });
-    console.log("Signin Request for userId:", user.userId);
+    infoLogger.info("Signin Request for userId:", user.userId);
 
     if (!user) {
-        res.status(400).send("Failed! UserId doesn't exist!");
-        return;
+        return res.status(400).json({
+            data: "",
+            message: "Failed! UserId doesn't exist!",
+            statusCode: 400,
+            success: false,
+        });
     }
     /** CHECK IF PASSWORD IS IN STRING FORMAT */
     if (typeof password !== "string") {
-        console.log(`Invalid Password! Password type is [${typeof password}]`);
-        return res.status(400).send("Invalid Password!");
+        warningLogger.warn(`Invalid Password! Password type is [${typeof password}]`);
+
+        return res.status(400).json({
+            data: "", 
+            message: "Invalid Password!",
+            statusCode: 400,
+            success: false,
+        });
     }
     const passwordIsValid = bcrypt.compareSync(password, user.password);
     /** CHECK IF PASSWORD IS VALID */
     if (!passwordIsValid) {
-        console.log("Invalid Password!");
-        return res.status(401).send({
+        warningLogger.warn(`Invalid Password!`);
+        return res.status(401).json({
+            data: "",
             message: "Invalid Password!",
+            statusCode: 401,
+            success: false,
         });
     }
     /** CHECK IF USER IS APPROVED */
     if (user.userStatus !== userStatus.approved) {
-        console.log(
-            `Can't allow login as user is in "${user.userStatus}" status`
-        );
+        warningLogger.warn(`User NOT APPROVED, Contact \n ADMIN !`);
         return res.status(403).json({
-            data: '',
+            data: "",
             message: "User NOT APPROVED, Contact \n ADMIN !",
             statusCode: 403,
             success: false,
@@ -137,22 +154,20 @@ export const signin = async (req, res) => {
         secure: true,
     };
 
-    console.log(`[${loggedInUser.fullName}] signed in successfully!`);
+    infoLogger.info(`[${loggedInUser.fullName}] signed in successfully!`);
 
     return res
         .status(201)
         .cookie("accessToken", accessToken, cookieOptions)
         .cookie("refreshToken", refreshToken, cookieOptions)
         .set("Authorization", `Bearer ${accessToken}`)
-        .set("x-access-token", accessToken)
-        .set("x-refresh-token", refreshToken)
         .json({
             data: {
                 accessToken,
                 refreshToken,
                 user: loggedInUser,
             },
-            message: "User logged in successfully ✅",
+            message: "User Logged in successfully !",
             statusCode: 200,
             success: true,
         });
@@ -162,7 +177,7 @@ export const signin = async (req, res) => {
 export const getLoggedInUser = async (req, res) => {
     try {
         const user = await User.findById({ _id: req.decoded._id });
-        console.log("Current User: ", user);
+        infoLogger.info(`Current Logged in User: [${user.userId}]`);
 
         if (!user) {
             return res.status(404).json({
@@ -195,9 +210,9 @@ export const getLoggedInUser = async (req, res) => {
             success: true,
         });
     } catch (error) {
-        console.log(error);
+        errorLogger.error(error);
         res.status(500).json({
-            data: {},
+            data: '',
             message: "Internal server error",
             statusCode: 500,
             success: false,
@@ -222,12 +237,13 @@ export const refreshAccessToken = async (req, res) => {
         req.header("Authorization")?.replace("Bearer ", "");
 
     if (!incomingRefreshToken) {
+        warningLogger.warn("Unauthorized request!");
         return res.status(401).json({
             statusCode: 401,
-            data: null,
-            success: false,
-            errors: [],
+            data: '',
             message: "Unauthorized request!",
+            statusCode: 401,
+            success: false,
         });
     }
 
@@ -241,18 +257,19 @@ export const refreshAccessToken = async (req, res) => {
 
         if (!user) {
             return res.status(401).json({
-                data: null,
+                data: '',
                 message: "Invalid Refresh Token!",
                 statusCode: 401,
                 success: false,
             });
         }
 
-        console.log("user:", user.refreshToken);
+        // console.log("user:", user.refreshToken);
 
         if (incomingRefreshToken !== user?.refreshToken) {
+            warningLogger.warn("Invalid refresh token!");
             return res.status(401).json({
-                data: null,
+                data: '',
                 message: "Refresh token expired for user",
                 statusCode: 401,
                 success: false,
@@ -266,6 +283,8 @@ export const refreshAccessToken = async (req, res) => {
 
         const { accessToken, refreshToken: newRefreshToken } =
             await generateAccessAndRefreshToken(user._id);
+
+        infoLogger.info(`Access token refreshed successfully for user -> [${user.userId}]`);
 
         return res
             .status(200)
@@ -282,9 +301,12 @@ export const refreshAccessToken = async (req, res) => {
                 success: true,
             });
     } catch (error) {
-        console.log("Error while refreshing access token", error.message);
+        errorLogger.error("Error while refreshing access token ::",error);
         return res.status(401).json({
+            data: '',
             message: "Invalid Refresh Token!",
+            statusCode: 401,
+            success: false,
         });
     }
 };
@@ -310,7 +332,7 @@ export const logout = async (req, res) => {
         secure: true,
     };
 
-    console.log("User Logged Out Successfully !!");
+    infoLogger.info(`[${req.decoded.userId}] -> User Logged Out Successfully !!`);
 
     res.status(200)
         .clearCookie("refreshToken", cookieOptions)
@@ -318,7 +340,7 @@ export const logout = async (req, res) => {
         .set("Authorization", "")
         .json({
             data: "",
-            message: "User Logged Out Successfully !! ✅",
+            message: "User Logged Out Successfully !",
             statusCode: 200,
             success: true,
         });
