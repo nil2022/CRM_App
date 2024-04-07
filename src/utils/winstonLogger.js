@@ -37,6 +37,8 @@ export const infoLogger = winston.createLogger({
     ),
     defaultMeta: { service: "crm-service" },
     transports: [new winston.transports.Console()],
+    exceptionHandlers: [new winston.transports.Console()],
+    rejectionHandlers: [new winston.transports.Console()],
     exitOnError: true,
 });
 
@@ -63,6 +65,25 @@ export const warningLogger = winston.createLogger({
     format: combine(timestamp(), json(), colorize({ all: true })),
     defaultMeta: { service: "crm-service" },
     transports: [new winston.transports.Console()],
+    exitOnError: true,
+});
+
+/** SILLY(ALL INFO) LOGGER */
+export const sillyLogger = winston.createLogger({
+    level: "silly",
+    format: combine(
+        errors({ stack: true }),
+        timestamp(),
+        json(),
+        colorize({ all: true }),
+        printf((info) => {
+            return `[${info.timestamp}] :: ${info.level}: ${info.message}`;
+        })
+    ),
+    defaultMeta: { service: "crm-service" },
+    transports: [new winston.transports.Console()],
+    exceptionHandlers: [new winston.transports.Console()],
+    rejectionHandlers: [new winston.transports.Console()],
     exitOnError: true,
 });
 

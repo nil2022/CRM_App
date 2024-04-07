@@ -57,6 +57,7 @@ const userSchema = new Schema({
     userStatus: {
         type: String,
         required: true,
+        uppercase: true,
         default: "APPROVED",
     },
     refreshToken: {

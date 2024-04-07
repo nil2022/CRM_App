@@ -2,7 +2,11 @@ import { User } from "../models/user.model.js";
 import { userStatus, userTypes } from "../utils/constants.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { errorLogger, infoLogger, warningLogger } from "../utils/winstonLogger.js";
+import {
+    errorLogger,
+    infoLogger,
+    warningLogger,
+} from "../utils/winstonLogger.js";
 
 /* -------- GENERATE ACCESS AND REFRESH TOKEN ----------- */
 async function generateAccessAndRefreshToken(userId) {
@@ -87,7 +91,7 @@ export const signin = async (req, res) => {
     const { userId, password } = req.body;
 
     const user = await User.findOne({ userId: { $eq: userId.toLowerCase() } });
-    infoLogger.info("Signin Request for userId:", user.userId);
+    infoLogger.info(`Signin Request for userId -> [${user.userId}]`);
 
     if (!user) {
         return res.status(400).json({
@@ -99,10 +103,12 @@ export const signin = async (req, res) => {
     }
     /** CHECK IF PASSWORD IS IN STRING FORMAT */
     if (typeof password !== "string") {
-        warningLogger.warn(`Invalid Password! Password type is [${typeof password}]`);
+        warningLogger.warn(
+            `Invalid Password! Password type is [${typeof password}]`
+        );
 
         return res.status(400).json({
-            data: "", 
+            data: "",
             message: "Invalid Password!",
             statusCode: 400,
             success: false,
@@ -177,11 +183,11 @@ export const signin = async (req, res) => {
 export const getLoggedInUser = async (req, res) => {
     try {
         const user = await User.findById({ _id: req.decoded._id });
-        infoLogger.info(`Current Logged in User: [${user.userId}]`);
 
         if (!user) {
+            warningLogger.warn("User not found");
             return res.status(404).json({
-                data: {},
+                data: "",
                 message: "User not found",
                 statusCode: 404,
                 success: false,
@@ -203,6 +209,10 @@ export const getLoggedInUser = async (req, res) => {
             updatedAt: user.updatedAt,
         };
 
+        infoLogger.info(
+            `Current Logged in User (userId) -> [${user.userId}] fetched success`
+        );
+
         res.status(200).json({
             data: userData,
             message: "Current user fetched successfully",
@@ -212,7 +222,7 @@ export const getLoggedInUser = async (req, res) => {
     } catch (error) {
         errorLogger.error(error);
         res.status(500).json({
-            data: '',
+            data: "",
             message: "Internal server error",
             statusCode: 500,
             success: false,
@@ -239,8 +249,7 @@ export const refreshAccessToken = async (req, res) => {
     if (!incomingRefreshToken) {
         warningLogger.warn("Unauthorized request!");
         return res.status(401).json({
-            statusCode: 401,
-            data: '',
+            data: "",
             message: "Unauthorized request!",
             statusCode: 401,
             success: false,
@@ -256,20 +265,19 @@ export const refreshAccessToken = async (req, res) => {
         const user = await User.findById(decodedToken._id);
 
         if (!user) {
+            warningLogger.warn("Invalid refresh token!");
             return res.status(401).json({
-                data: '',
+                data: "",
                 message: "Invalid Refresh Token!",
                 statusCode: 401,
                 success: false,
             });
         }
 
-        // console.log("user:", user.refreshToken);
-
         if (incomingRefreshToken !== user?.refreshToken) {
             warningLogger.warn("Invalid refresh token!");
             return res.status(401).json({
-                data: '',
+                data: "",
                 message: "Refresh token expired for user",
                 statusCode: 401,
                 success: false,
@@ -284,7 +292,9 @@ export const refreshAccessToken = async (req, res) => {
         const { accessToken, refreshToken: newRefreshToken } =
             await generateAccessAndRefreshToken(user._id);
 
-        infoLogger.info(`Access token refreshed successfully for user -> [${user.userId}]`);
+        infoLogger.info(
+            `Access token refreshed successfully for userId -> [${user.userId}]`
+        );
 
         return res
             .status(200)
@@ -301,9 +311,9 @@ export const refreshAccessToken = async (req, res) => {
                 success: true,
             });
     } catch (error) {
-        errorLogger.error("Error while refreshing access token ::",error);
+        errorLogger.error("Error while refreshing access token ::", error);
         return res.status(401).json({
-            data: '',
+            data: "",
             message: "Invalid Refresh Token!",
             statusCode: 401,
             success: false,
@@ -315,33 +325,45 @@ export const refreshAccessToken = async (req, res) => {
 export const logout = async (req, res) => {
     // remove the refresh token field
     // clear the cookies
-    await User.findByIdAndUpdate(
-        req.decoded._id,
-        {
-            $unset: {
-                refreshToken: 1,
+    try {
+        await User.findByIdAndUpdate(
+            req.decoded._id,
+            {
+                $unset: {
+                    refreshToken: 1,
+                },
             },
-        },
-        {
-            new: true,
-        }
-    );
+            {
+                new: true,
+            }
+        );
 
-    const cookieOptions = {
-        http: true,
-        secure: true,
-    };
+        const cookieOptions = {
+            http: true,
+            secure: true,
+        };
 
-    infoLogger.info(`[${req.decoded.userId}] -> User Logged Out Successfully !!`);
+        infoLogger.info(
+            `userId -> [${req.decoded.userId}], Logged Out Successfully !!`
+        );
 
-    res.status(200)
-        .clearCookie("refreshToken", cookieOptions)
-        .clearCookie("accessToken", cookieOptions)
-        .set("Authorization", "")
-        .json({
+        res.status(200)
+            .clearCookie("refreshToken", cookieOptions)
+            .clearCookie("accessToken", cookieOptions)
+            .set("Authorization", "")
+            .json({
+                data: "",
+                message: "User Logged Out Successfully !",
+                statusCode: 200,
+                success: true,
+            });
+    } catch (error) {
+        errorLogger.error(error);
+        res.status(500).json({
             data: "",
-            message: "User Logged Out Successfully !",
-            statusCode: 200,
-            success: true,
+            message: "Internal server error",
+            statusCode: 500,
+            success: false,
         });
+    }
 };

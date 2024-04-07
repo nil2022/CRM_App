@@ -2,8 +2,11 @@ import { User } from "../models/user.model.js";
 import { Ticket } from "../models/ticket.model.js";
 import { userTypes, userStatus, ticketStatus } from "../utils/constants.js";
 import { notificationClient } from "../utils/NotificationClient.js";
+import { errorLogger, infoLogger, warningLogger } from "../utils/winstonLogger.js";
 
-/* -------- CREATE A TICKET API----------- */
+/**
+ * * This controller create a new Ticket requested by Customer
+ */
 export const createTicket = async (req, res) => {
     // create a ticket based on details provided by user (CUSTOMER OR ADMIN)
     // get the req.body object -> title, description, ticketPriority(if required by ADMIN)
@@ -17,7 +20,7 @@ export const createTicket = async (req, res) => {
     // return response to user(FRONTEND)
     const { title, description, ticketPriority } = req.body;
     if (!(title && description)) {
-        console.log("Ticket title or description not provided");
+        warningLogger.warn("Ticket title or description not provided");
         return res.status(400).json({
             data: "",
             message: "Ticket title or description not provided",
@@ -32,9 +35,7 @@ export const createTicket = async (req, res) => {
         reporter: req.decoded.userId, // this will be retrieved from the middleware
     };
     try {
-        /**
-         * Logic to find an Engineer in the Approved state
-         */
+        // ? Logic to find an Engineer in the Approved state
         const engineer = await User.findOne({
             userType: userTypes.engineer,
             userStatus: userStatus.approved,
@@ -43,10 +44,10 @@ export const createTicket = async (req, res) => {
             // availability: true // assign the ticket to the engineer
         });
         if (!engineer) {
-            console.log("No Engineers/Approved Engineers available");
+            warningLogger.warn("No Engineers/Approved Engineers available !");
             return res.status(500).json({
                 data: "",
-                message: "Some Internal error occured",
+                message: "Something went wrong !!",
                 statusCode: 500,
                 success: false,
             });
@@ -57,7 +58,7 @@ export const createTicket = async (req, res) => {
             _id: req.decoded._id,
         });
         if (!user) {
-            console.log("User not found in DB !!!");
+            warningLogger.warn("User not found, Unauthorized Access !");
             return res.status(400).json({
                 data: "",
                 message: "User not found, Unauthorized Access !",
@@ -76,7 +77,7 @@ export const createTicket = async (req, res) => {
             engineer.ticketsAssigned.push(ticket._id);
             await engineer.save({ validateBeforeSave: false });
 
-            // Send Notification to Notification Client to Send mail to Users, Engineers and Admin
+            // Send Notification to Notification Client to send email to Customers, Engineers and Admin
             notificationClient(
                 ticket._id,
                 `🎫Ticket with id : ${ticket._id} created, STATUS:${ticketStatus.open}`,
@@ -87,7 +88,9 @@ export const createTicket = async (req, res) => {
                     `${process.env.ADMIN_NAME} <${process.env.ADMIN_EMAIL}>`,
                 user.fullName,
                 engineer.fullName
-            );
+            )
+
+            infoLogger.info(`Ticket created successfully by userId -> [${user.userId}]`);
 
             return res.status(201).json({
                 data: ticket,
@@ -97,10 +100,10 @@ export const createTicket = async (req, res) => {
             });
         }
     } catch (err) {
-        console.log("Some error happened while creating ticket:", err);
+        errorLogger.error("Some error happened while creating ticket:", err);
         res.status(500).json({
             data: "",
-            message: "Some internal server error",
+            message: "Something went wrong !",
             statusCode: 500,
             success: false,
         });

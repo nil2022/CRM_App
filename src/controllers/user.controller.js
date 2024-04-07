@@ -4,131 +4,147 @@
  * defined in the User Controller
  */
 import { User } from "../models/user.model.js";
+import {
+    errorLogger,
+    infoLogger,
+    sillyLogger,
+    warningLogger,
+} from "../utils/winstonLogger.js";
 
-export const fetchAll = async (res) => {
-    let users;
+/**
+ * * This controller fetches all users in database
+ */
+const fetchAll = async () => {
     try {
-        users = await User.find().select(
-            "-password -createdAt -updatedAt -refreshToken -ticketsCreated -ticketsAssigned -__v"
-        );
+        const users = await User.find().select("-password -refreshToken -__v");
+        // users.length = 0;
+
+        infoLogger.info("fetched all users success");
+        return users;
     } catch (err) {
-        console.log("Error while fetching the users");
-        res.status(500).json({
-            data: {},
-            message: "Some internal error occured",
-            statusCode: 400,
-            success: false,
-        });
+        errorLogger.error(err);
+        throw err;
     }
-    return users;
 };
 
-export const fetchByName = async (userNameReq, res) => {
-    let users;
+/**
+ * * This controller fetch user by name
+ */
+const fetchByName = async (userNameReq) => {
     try {
-        users = await User.find({
-            name: { $regex: userNameReq.replace(/\n|\r/g, ""), $options: "i" }, // $regex operator to find all documents in a collection, $options parameter to specify case-insensitivity
-        });
+        const users = await User.find({
+            fullName: {
+                $regex: userNameReq.replace(/\n|\r/g, ""),
+                $options: "i",
+            }, // $regex operator to find all documents in a collection, $options parameter to specify case-insensitivity
+        }).select(" -password -refreshToken -__v ");
+        infoLogger.info("fetch by name success");
+        return users;
     } catch (err) {
-        console.log(
-            "Error while fetching the user for Name : ",
-            userNameReq.replace(/\n|\r/g, "")
+        errorLogger.error(
+            `Error while fetching the user for Name : ${userNameReq.replace(/\n|\r/g, "")}`,
+            err
         );
-        res.status(500).json({
-            data: {},
-            message: "Some internal error occured",
-            statusCode: 400,
-            success: false,
-        });
+        throw err;
     }
-    return users;
 };
 
-export const fetchByTypeAndStatus = async (userTypeReq, userStatusReq, res) => {
-    let users;
+/**
+ * * This controller fetch user by usertype and userstatus
+ */
+const fetchByTypeAndStatus = async (userTypeReq, userStatusReq) => {
     try {
-        users = await User.find({
+        const users = await User.find({
             userType: { $eq: userTypeReq },
             userStatus: { $eq: userStatusReq }, // $eq operator userStatusReq
-        });
+        }).select(" -password -refreshToken -__v ");
+
+        infoLogger.info("fetch by usertype and userstatus success");
+        return users;
     } catch (err) {
-        console.err(
-            `error while fetching the user for userType [${userTypeReq}] and userStatus [${userStatusReq}]`
+        errorLogger.error(
+            `Error while fetching users for userType [${userTypeReq}] and userStatus [${userStatusReq}]`,
+            err
         );
-        res.status(500).json({
-            data: {},
-            message: "Some internal error occured",
-            statusCode: 400,
-            success: false,
-        });
+        throw err;
     }
-    return users;
 };
 
-export const fetchByType = async (userTypeReq, res) => {
-    let users;
+/**
+ * * This controller fetch user by usertype
+ */
+const fetchByType = async (userTypeReq) => {
     try {
-        users = await User.find({
+        const users = await User.find({
             userType: { $eq: userTypeReq },
         });
+        infoLogger.info("fetch by usertype success");
+        return users;
     } catch (err) {
-        console.err(
-            `error while fetching the user for userType [${userTypeReq}] `
+        errorLogger.error(
+            `Error while fetching users for userType [${userTypeReq}] `,
+            err
         );
-        res.status(500).json({
-            data: {},
-            message: "Some internal error occured",
-            statusCode: 400,
-            success: false,
-        });
+        throw err;
     }
-    return users;
 };
 
-export const fetchByStatus = async (userStatusReq, res) => {
-    let users;
-    try {
-        users = await User.find({
-            userStatus: { $eq: userStatusReq },
-        });
-    } catch (err) {
-        console.err(
-            `error while fetching the user for userStatus [${userStatusReq}] `
-        );
-        res.status(500).json({
-            data: {},
-            message: "Some internal error occured",
-            statusCode: 400,
-            success: false,
-        });
-    }
-    return users;
-};
 /**
- * Fetch the list of all users
+ * * This controller fetch user by userstatus
+ */
+const fetchByStatus = async (userStatusReq) => {
+    try {
+        const users = await User.find({
+            userStatus: { $eq: userStatusReq },
+        }).select(" -password -refreshToken -__v ");
+        infoLogger.info("fetch by userstatus success");
+        return users;
+    } catch (err) {
+        errorLogger.error(
+            `Error while fetching users for userStatus [${userStatusReq}] `,
+            err
+        );
+        throw err;
+    }
+};
+
+/**
+ * * Fetch the list of all users by different query params
  */
 export const findAll = async (req, res) => {
     let users;
-    const userTypeReq = req.query.userType;
-    const userStatusReq = req.query.userStatus;
-    const userNameReq = req.query.name;
+    const userTypeReq = req.query.userType
+        ? req.query.userType.toUpperCase()
+        : "";
+    const userStatusReq = req.query.userStatus
+        ? req.query.userStatus.toUpperCase()
+        : "";
+    const userNameReq = req.query.fullName;
+    const userIdReq = req.query.userId;
+    // sillyLogger.debug(
+    //     `userTypeReq: ${userTypeReq} userStatusReq: ${userStatusReq} userNameReq: ${userNameReq} userIdReq: ${userIdReq} `
+    // );
     try {
         if (userNameReq) {
-            users = await fetchByName(userNameReq, res);
+            users = await fetchByName(userNameReq);
         } else if (userTypeReq && userStatusReq) {
-            users = await fetchByTypeAndStatus(userTypeReq, userStatusReq, res);
+            users = await fetchByTypeAndStatus(userTypeReq, userStatusReq);
         } else if (userTypeReq) {
-            users = await fetchByType(userTypeReq, res);
+            users = await fetchByType(userTypeReq);
         } else if (userStatusReq) {
-            users = await fetchByStatus(userStatusReq, res);
+            users = await fetchByStatus(userStatusReq);
         } else {
-            users = await fetchAll(res);
+            users = await fetchAll();
         }
+
         if (users.length === 0) {
-            console.log(
-                "users is null in 'exports.findAll' in 'user.controller.js', check if [name] is entered correctly"
-            );
-            throw new Error();
+            warningLogger.warn("No users found in database ! (findall)");
+            return res.status(200).json({
+                data: "",
+                message: "No users found in database !",
+                statusCode: 200,
+                success: true,
+            });
         }
         res.status(200).json({
             data: users,
@@ -137,96 +153,95 @@ export const findAll = async (req, res) => {
             success: true,
         });
     } catch (err) {
+        // errorLogger.error(err);
         res.status(500).json({
-            data: {},
-            message: "Some internal error occured",
-            statusCode: 400,
+            data: "",
+            message: "Some internal error occured (findall)",
+            statusCode: 500,
             success: false,
         });
     }
 };
 
-export const findById = async (req, res) => {
-    const userIdReq = req.query.userId;
+/**
+ * * This controller fetch user by userId
+ */
+export const findByUserId = async (req, res) => {
+    const userIdReq = req.query.userId.replace(/\s/g, "");
     try {
         const user = await User.findOne({
             userId: { $eq: userIdReq },
-        }).select(" -password -ticketsCreated -ticketsAssigned -refreshToken");
+        }).select(" -password -refreshToken -__v");
+
         if (user.length === 0) {
-            throw new Error();
+            warningLogger.warn(` userId -> [${userIdReq}] not found in server`);
+            return res.status(400).json({
+                data: "",
+                message: `User not found in server`,
+                statusCode: 400,
+                success: false,
+            });
         }
-        res.status(200).json({
+
+        infoLogger.info("fetch user by userId success");
+
+        return res.status(200).json({
             data: user,
             message: "User fetched successfully!",
             statusCode: 200,
             success: true,
         });
     } catch (err) {
-        console.error("userId not found by exports.findById method");
+        errorLogger.error(`Error fetching user data ::`, err);
         res.status(500).json({
-          data: {},
-          message: `User with this id [${userIdReq}] not found`,
-          statusCode: 400,
-          success: false,
-      });
+            data: "",
+            message: "Something went wrong",
+            failure: 500,
+            success: false,
+        });
     }
 };
 
-export const update = async (req, res) => {
-    const { name, email, userStatus, isEmailVerified } = req.body;
-    // if (
-    //     typeof name !== "string" ||
-    //     typeof email !== "string" ||
-    //     typeof userStatus !== "string"
-    // ) {
-    //     console.log(
-    //         "Invalid data type, check either name, email or userStatus is missing or not"
-    //     );
-    //     return res.status(400).send({
-    //         message:
-    //             "either [name], [email] or [userStatus] is missing",
-    //     });
-    // }
-    const userIdReq = req.query.userId;
+/**
+ * * This controller is to update userstatus
+ * * i.e. PENDING -> APPROVED
+ * * (This is to be updated only by MASTER(SYSTEM) ADMIN and other ADMINs)
+ */
+export const updateUserStatus = async (req, res) => {
+    const { userStatus } = req.body;
+    const userIdReq = req.query.userId.replace(/\s/g, "");
     try {
         const fetchedUser = await User.findOne({
             userId: { $eq: userIdReq },
-        }).select(" -ticketsCreated -ticketsAssigned -refreshToken ");
+        }).select(" -password -refreshToken ");
 
-        console.log("userstatus:", userStatus);
         const user = await User.findOneAndUpdate(
             {
                 userId: { $eq: userIdReq },
             },
             {
-                name: name !== "" ? name : fetchedUser.name,
-                email: email !== "" ? email : fetchedUser.email,
-                isEmailVerified:
-                    isEmailVerified !== ""
-                        ? isEmailVerified
-                        : fetchedUser.isEmailVerified,
                 updatedAt: Date.now(),
                 userStatus:
-                    userStatus !== ""
-                        ? userStatus.toUpperCase()
-                        : fetchedUser.userStatus,
+                    userStatus !== "" ? userStatus : fetchedUser.userStatus,
             },
             {
                 new: true,
             }
         ).select(
-            " -ticketsCreated -ticketsAssigned -password -__v -refreshToken"
+            " -password -__v -refreshToken"
         );
 
-        if (user === null) {
-            console.log("user is not in DB !!");
+        if (user.length === 0) {
+            warningLogger.warn('User is not in server !!');
             return res.status(400).json({
-                data: {},
+                data: '',
                 message: "User is not in server !!",
                 statusCode: 400,
                 success: false,
             });
         }
+        infoLogger.info(`userId -> [${userIdReq}] data has been updated `);
+
         return res.status(200).json({
             data: user,
             message: "User record has been updated successfully",
@@ -234,9 +249,9 @@ export const update = async (req, res) => {
             success: true,
         });
     } catch (err) {
-        console.log("Error while updating the record:", err.message);
+        errorLogger.error(`Error while updating the record: ${err.message}`, err);
         res.status(500).json({
-            data: {},
+            data: '',
             message: "Something went wrong !",
             statusCode: 500,
             success: false,
@@ -244,39 +259,45 @@ export const update = async (req, res) => {
     }
 };
 
-// Code added my me - START
+// ? Make controllers for all users having features
+// ? change password, email, avatar, etc. as per requirement
+
+
+// ! This controller is to delete a user [USE by CAUTION !!]
+/**
+ * * This controller is to delete a user
+ * * (This is to be DONE only by MASTER(SYSTEM) ADMIN and other ADMINs)
+ */
 export const deleteUser = async (req, res) => {
     const userIdReq = req.query.userId.replace(/\s/g, "");
     try {
-        const user = await User.findOneAndDelete({ userId: userIdReq }).select(
-            " -updatedAt -ticketsCreated -ticketsAssigned -password -__v"
-        );
-        if (user === null) {
-            console.log("user is not in DB !!");
+        const user = await User.findOneAndDelete({ userId: userIdReq })
+        .select(" -ticketsCreated -ticketsAssigned -password -__v");
+
+        if (!user || user.length === 0) {
+            warningLogger.warn(` userId -> [${userIdReq}] not found in server`);
             return res.status(400).json({
-                data: {},
-                message: "User is not in server !!",
+                data: "",
+                message: `User not found in server`,
                 statusCode: 400,
                 success: false,
             });
         }
-        console.log("Request received to delete user for", user);
+        infoLogger.info(`userId -> [${userIdReq}] data has been deleted !`);
+
         res.status(200).json({
             data: user,
-            message: "User record has been deleted successfully",
+            message: `User record has been deleted successfully`,
             statusCode: 200,
             success: true,
         });
     } catch (err) {
-        console.log(
-            `Error while deleting the record, User not Present ***${err}***`
-        );
+        errorLogger.error(`Error while deleting the record for userId -> ${userIdReq}`, err);
         res.status(500).json({
-            data: {},
+            data: '',
             message: "Something went wrong !",
             statusCode: 500,
             success: false,
         });
     }
 };
-// Code added my me - END
