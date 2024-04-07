@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { userTypes } from '../utils/constants.js'
+import { warningLogger } from '../utils/winstonLogger.js'
 
 /* -------- CHECK IF TOKEN IS PROVIDED & VERIFY TOKEN ----------- */
 const verifyToken = (req, res, next) => {
@@ -8,6 +9,7 @@ const verifyToken = (req, res, next) => {
   const token = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '') || req.headers['x-access-token']
 
   if (!token) {
+    warningLogger.warn('User not logged in or Token not provided, Please Login!')
     return res.status(403).json({
       data: '',
       message: 'User not logged in or Token not provided, Please Login!',
@@ -18,10 +20,10 @@ const verifyToken = (req, res, next) => {
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      console.log('Error with JWT -', err.message)
+      warningLogger.warn(`Session(JWT Token) Expired! Please Re-Login! -> [${err.message}]`)
       return res.status(401).json({
         data: '',
-        message: 'Session Expired! Please Re-Login!',
+        message: 'Session Expired, Please Re-Login!',
         statusCode: 401,
         success: false
       })
@@ -37,10 +39,11 @@ const isAdmin = async (req, res, next) => {
   if (req.decoded.userType === userTypes.admin) {
     next()
   } else {
-    return res.status(403).json({
+    warningLogger.warn('Access denied, Require Admin Role!')
+    return res.status(401).json({
       data: '',
-      message: 'Require Admin Role!',
-      statusCode: 403,
+      message: 'Access denied, Require Admin Role!',
+      statusCode: 401,
       success: false
     })
   }

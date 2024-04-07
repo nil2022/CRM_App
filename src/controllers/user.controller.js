@@ -114,13 +114,12 @@ const fetchByStatus = async (userStatusReq) => {
 export const findAll = async (req, res) => {
     let users;
     const userTypeReq = req.query.userType
-        ? req.query.userType.toUpperCase()
+        ? req.query.userType.toUpperCase().replace(/\n|\r/g, "")
         : "";
     const userStatusReq = req.query.userStatus
-        ? req.query.userStatus.toUpperCase()
+        ? req.query.userStatus.toUpperCase().replace(/\n|\r/g, "")
         : "";
     const userNameReq = req.query.fullName;
-    const userIdReq = req.query.userId;
     // sillyLogger.debug(
     //     `userTypeReq: ${userTypeReq} userStatusReq: ${userStatusReq} userNameReq: ${userNameReq} userIdReq: ${userIdReq} `
     // );

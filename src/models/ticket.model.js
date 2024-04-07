@@ -9,6 +9,7 @@ const ticketSchema = new Schema({
   ticketPriority: {
     type: String,
     default: ticketPriority.low,
+    uppercase: true,
     trim: true
   },
   description: {

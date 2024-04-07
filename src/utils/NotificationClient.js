@@ -1,8 +1,8 @@
 import axios from "axios";
-import { errorLogger, infoLogger, warningLogger } from "./winstonLogger.js";
+import { errorLogger, infoLogger} from "./winstonLogger.js";
 
 /**
- * * Send ticket email notification request to Notification Service
+ * * Send email notification request to Notification Service
  */
 export const notificationClient = async (
     ticketId,

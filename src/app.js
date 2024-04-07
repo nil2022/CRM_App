@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet"; // Add additional security headers to request
-import { infoLogger, morganMiddleware } from "./utils/winstonLogger.js";
+import { errorLogger, infoLogger, morganMiddleware, warningLogger } from "./utils/winstonLogger.js";
 import { limiter } from "./utils/api-rate-limit.js";
 import cookieParser from "cookie-parser";
 
@@ -39,5 +39,15 @@ import ticketRouter from "./routes/ticket.routes.js";
 app.use("/crm/api/v1/auth", authRouter);
 app.use("/crm/api/v1/users", userRouter);
 app.use("/crm/api/v1/tickets", ticketRouter);
+
+// Route not found middleware
+app.use("*", (req, res) => {
+    warningLogger.warn("Route not found !");
+    res.status(404).json({
+        message: "Route not found",
+        statusCode: 404,
+        success: false,
+    });
+});
 
 export { app };

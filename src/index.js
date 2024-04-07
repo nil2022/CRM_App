@@ -6,20 +6,22 @@ import { infoLogger, errorLogger } from "./utils/winstonLogger.js";
 
 /**
  * * Create Master Administrator User and Login to the System
- * @returns 
+ * @returns
  */
 async function initialize() {
-    const user = await User.findOne({
-        userId: { $eq: process.env.ADMIN_USERID },
-    });
-
-    if (user) {
-        infoLogger.info("Welcome System Administrator!");
-        return;
-    }
-
     try {
-        const user = await User.create({
+        let systemAdminUser;
+        
+        systemAdminUser = await User.findOne({
+            userId: { $eq: process.env.ADMIN_USERID },
+        });
+
+        if (systemAdminUser) {
+            infoLogger.info(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
+            return;
+        }
+
+        systemAdminUser = await User.create({
             fullName: process.env.ADMIN_NAME,
             userId: process.env.ADMIN_USERID,
             email: process.env.ADMIN_EMAIL,
@@ -29,9 +31,7 @@ async function initialize() {
             userStatus: userStatus.approved,
         });
 
-        console.log(user);
-
-        infoLogger.info("Welcome System Administrator!");
+        infoLogger.info(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
     } catch (err) {
         errorLogger.error(err, "Error creating user!", err.message);
     }
