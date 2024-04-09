@@ -1,29 +1,45 @@
-import axios from 'axios'
+import axios from "axios";
+import { errorLogger, infoLogger} from "./winstonLogger.js";
 
-export const notificationClient = async (ticketId, subject, content, requesterEmailIds, assignedToEmailIds, requester, assignedTo) => {
-  /** *************** POST REQ. USING 'AXIOS' ***********************/
-  await axios.post(process.env.NOTIFICATION_URL,
-    {
-      subject,
-      ticketId,
-      content,
-      requesterEmailIds,
-      assignedToEmailIds,
-      requester,
-      assignedTo
-    },
-    {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(function (response) {
-      console.log('Request sent:', {
-        status: [response.status, response.statusText],
-        response_data: response.data
-      })
-    })
-    .catch((error) => {
-      console.log('Error sending request to Notification Service:', `${error}`)
-    })
-}
+/**
+ * * Send email notification request to Notification Service
+ */
+export const notificationClient = async (
+    ticketId,
+    subject,
+    content,
+    requesterEmailIds,
+    assignedToEmailIds,
+    requester,
+    assignedTo
+) => {
+    try {
+        await axios({
+            url: process.env.NOTIFICATION_URL,
+            method: "POST",
+            data: {
+                subject,
+                ticketId,
+                content,
+                requesterEmailIds,
+                assignedToEmailIds,
+                requester,
+                assignedTo,
+            },
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }).then((response) => {
+            infoLogger.info(`Email Sent Successfully !`);
+            infoLogger.info(response.data)
+            return;
+        });
+    } catch (err) {
+        errorLogger.error("Error sending request to Notification Service:", {
+            message: err.message,
+            name: err.name,
+            stack: err.stack,
+        });
+        // throw err;
+    }
+};

@@ -9,17 +9,16 @@ const userStatus = {
     rejected: "REJECTED",
 };
 const ticketStatus = {
-    open: "OPEN",
-    inProgress: "IN_PROGRESS",
-    blocked: "BLOCKED",
-    closed: "CLOSED",
+    open: "OPEN", // 🟢
+    inProgress: "IN_PROGRESS", // 🔵
+    blocked: "BLOCKED", // ⚫
+    closed: "CLOSED", // 🔴
 };
 
 const ticketPriority = {
-    low: "LOW",
-    medium: "MEDIUM",
-    high: "HIGH",
-    critical: "CRITICAL",
+    low: "LOW", // 🟢
+    medium: "MEDIUM", // 🟡
+    high: "HIGH", // 🟠
 };
 
 export { userTypes, userStatus, ticketStatus, ticketPriority };

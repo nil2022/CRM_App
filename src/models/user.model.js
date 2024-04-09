@@ -57,6 +57,7 @@ const userSchema = new Schema({
     userStatus: {
         type: String,
         required: true,
+        uppercase: true,
         default: "APPROVED",
     },
     refreshToken: {
@@ -78,6 +79,10 @@ userSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
+
+userSchema.methods.isValidPassword = async function (password) {
+    return await bcrypt.compare(password, this.password);
+};
 
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
