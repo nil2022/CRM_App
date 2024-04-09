@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { signup, signin, logout, getLoggedInUser, refreshAccessToken } from "../controllers/auth.controller.js";
+import {
+    signup,
+    signin,
+    logout,
+    getLoggedInUser,
+    refreshAccessToken,
+    changeCurrentUserPassword,
+} from "../controllers/auth.controller.js";
 import {
     isEmailRegisteredOrProvided,
     isPasswordProvided,
@@ -25,10 +32,13 @@ router.post(
 router.post("/login", [isUserIdProvided, isPasswordProvided], signin);
 
 /* ------ GET LOGGED IN USER -------- */
-router.get('/current-user', [verifyToken], getLoggedInUser)
+router.get("/current-user", [verifyToken], getLoggedInUser);
+
+/* ------ CHNAGE USER PASSWORD -------- */
+router.patch("/change-password", [verifyToken], changeCurrentUserPassword);
 
 /* ------ REFRESH ACCESS TOKEN -------- */
-router.get('/refresh-token', refreshAccessToken)
+router.get("/refresh-token", refreshAccessToken);
 
 /* ------ USER LOGOUT -------- */
 router.get("/logout", [verifyToken], logout);

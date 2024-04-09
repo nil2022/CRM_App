@@ -8,7 +8,9 @@ import {
     warningLogger,
 } from "../utils/winstonLogger.js";
 
-/* -------- GENERATE ACCESS AND REFRESH TOKEN ----------- */
+/**
+ * * This controller Generates Access and Refresh Token
+ */
 async function generateAccessAndRefreshToken(userId) {
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
@@ -20,7 +22,9 @@ async function generateAccessAndRefreshToken(userId) {
     return { accessToken, refreshToken };
 }
 
-/* -------- SIGNUP API----------- */
+/**
+ * * This controller Registers User
+ */
 export const signup = async (req, res) => {
     let userStatusReq;
     const { fullName, userId, email, password, userType } = req.body;
@@ -86,7 +90,9 @@ export const signup = async (req, res) => {
     }
 };
 
-/* -------- SIGNIN API----------- */
+/**
+ * * This controller logs in User into the system
+ */
 export const signin = async (req, res) => {
     const { userId, password } = req.body;
 
@@ -179,7 +185,9 @@ export const signin = async (req, res) => {
         });
 };
 
-/* -------- GET LOGGED IN USER API----------- */
+/**
+ * This controller fethes current logged in user
+ */
 export const getLoggedInUser = async (req, res) => {
     try {
         const user = await User.findById({ _id: req.decoded._id });
@@ -239,7 +247,61 @@ export const getLoggedInUser = async (req, res) => {
  * update User coverimage (LATER)
  */
 
-/* -------- REFRESH ACCESS TOKEN API----------- */
+/**
+ * This controller changes current user password
+ */
+export const changeCurrentUserPassword = async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+
+    try {
+        if(newPassword === '' || newPassword === null || oldPassword === '' || oldPassword === null) {
+            warningLogger.warn("Passwords can't be empty!");
+            return res.status(400).json({
+                data: "",
+                message: "Passwords can't be empty!",
+                statusCode: 400,
+                success: false,
+            });
+        }
+
+        const user = await User.findById(req.decoded._id);
+        const isPasswordValid = await user.isValidPassword(oldPassword);
+
+        if (!isPasswordValid) {
+            warningLogger.warn("Invalid Old Password!");
+            return res.status(400).json({
+                data: "",
+                message: "Invalid Old Password!",
+                statusCode: 400,
+                success: false,
+            });
+        }
+
+        user.password = newPassword;
+        await user.save({ validateBeforeSave: false });
+
+        infoLogger.info(`Password changed successfully for userId -> [${user.userId}]`);
+
+        return res.status(200).json({
+            data: "",
+            message: "Password changed successfully!",
+            statusCode: 200,
+            success: true,
+        });
+    } catch (err) {
+        errorLogger.error(`Error occured in updating password`, err);
+        return res.status(500).json({
+            data: "",
+            message: "Internal server error",
+            statusCode: 500,
+            success: false,
+        });
+    }
+};
+
+/**
+ * This controller refreshes access token
+ */
 export const refreshAccessToken = async (req, res) => {
     const incomingRefreshToken =
         req.cookies.refreshToken ||
@@ -321,7 +383,9 @@ export const refreshAccessToken = async (req, res) => {
     }
 };
 
-/* -------- LOGOUT API----------- */
+/**
+ * This controller logs out the user
+ */
 export const logout = async (req, res) => {
     // remove the refresh token field
     // clear the cookies

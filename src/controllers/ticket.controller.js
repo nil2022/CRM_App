@@ -139,15 +139,15 @@ export const updateTicket = async (req, res) => {
      */
 
     const { ticketPriority, status, assignee } = req.body;
-    if (!status) {
-        warningLogger.warn("Ticket status or assignee not provided");
-        return res.status(400).json({
-            data: "",
-            message: "Some fields not provided",
-            statusCode: 400,
-            success: false,
-        });
-    }
+    // if (!status) {
+    //     warningLogger.warn("Ticket status or assignee not provided");
+    //     return res.status(400).json({
+    //         data: "",
+    //         message: "Some fields not provided",
+    //         statusCode: 400,
+    //         success: false,
+    //     });
+    // }
     try {
         /** get user information who is logged in now [ENGINEER OR CUSTOMER] */
         const savedUser = await User.findOne({
@@ -174,6 +174,7 @@ export const updateTicket = async (req, res) => {
                 success: false,
             });
         }
+
 
         if (canUpdate(savedUser, ticket)) {
             // ! ticket TITLE and DESCRIPTION are provided by Customer, hence DO NOT CHANGE ! 
