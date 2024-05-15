@@ -102,8 +102,7 @@ npm run dev or yarn dev
 
 ### Register User
 
-This endpoint makes a `POST` request which allows users to register for a new account.
-Endpoint :- `/crm/api/v1/auth/register`
+This endpoint makes a `POST` request which allows users to register for a new account. <br> Endpoint :- `/crm/api/v1/auth/register`
 
 #### Request Body
 
@@ -145,8 +144,7 @@ Endpoint :- `/crm/api/v1/auth/register`
 
 ### Login User
 
-This endpoint makes a `POST` request to authenticate and login the user.
-Endpoint:- `/crm/api/v1/auth/login`
+This endpoint makes a `POST` request to authenticate and login the user. <br> Endpoint:- `/crm/api/v1/auth/login`
 
 #### Request Body
 
