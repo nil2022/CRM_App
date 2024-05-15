@@ -6,7 +6,6 @@ import { infoLogger, errorLogger } from "./utils/winstonLogger.js";
 
 /**
  * * Create Master Administrator User and Login to the System
- * @returns
  */
 async function initialize() {
     try {

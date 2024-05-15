@@ -96,7 +96,7 @@ export const signup = async (req, res) => {
 export const signin = async (req, res) => {
     const { userId, password } = req.body;
 
-    const user = await User.findOne({ userId: { $eq: userId.toLowerCase() } });
+    const user = await User.findOne({ userId: { $eq: userId } });
     infoLogger.info(`Signin Request for userId -> [${user.userId}]`);
 
     if (!user) {
