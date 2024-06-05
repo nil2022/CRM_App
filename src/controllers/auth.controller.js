@@ -7,6 +7,8 @@ import {
     infoLogger,
     warningLogger,
 } from "../utils/winstonLogger.js";
+import { sendMail } from "../utils/mailSender.js";
+import { Otp } from "../models/otp.model.js";
 
 /**
  * * This controller Generates Access and Refresh Token
@@ -40,13 +42,13 @@ export const signup = async (req, res) => {
             fullName,
             userId,
             email,
+            loginType: "OTP",
             userType: userType ? userType.toUpperCase() : userTypes.customer,
             password,
             userStatus: userStatusReq,
         });
 
         const registeredUser = {
-            __v: user.__v,
             _id: user._id,
             fullName: user.fullName,
             userId: user.userId,
@@ -66,6 +68,13 @@ export const signup = async (req, res) => {
             message: "User Registered Successfully",
         });
 
+        // Send Email with OTP to verify User Email
+        const emailResponse = await sendMail(fullName, userId, "CRM App <john@example.com>", `${fullName} <${email}>`);
+
+        if (emailResponse.accepted) {
+            console.log('Email sent successfully');
+        }
+
         res.status(201).json({
             data: {
                 user: registeredUser,
@@ -83,12 +92,55 @@ export const signup = async (req, res) => {
         );
         res.status(500).json({
             data: "",
-            message: "Some internal error while inserting the element",
+            message: "Something went wrong!",
             statusCode: 500,
             success: false,
         });
     }
 };
+
+export const verifyUser = async (req, res) => {
+    const { userId, otp } = req.body;
+
+    console.log('otp', otp)
+
+    try {
+        const savedOtp = await Otp.findOne({ userId: { $eq: userId } });
+        console.log('savedOtp', savedOtp)
+
+        if(!savedOtp) throw new Error('OTP not found');
+
+        if (savedOtp.otp === otp) {
+            console.log('User verified');
+            await User.findOneAndUpdate({ userId: { $eq: userId } }, { isEmailVerified: true });
+            await Otp.deleteOne({ userId: { $eq: userId } });
+
+            return res.status(200).json({
+                data: "",
+                message: "User verified successfully!",
+                statusCode: 200,
+                success: true,
+            })
+        } else {
+            console.log('Invalid OTP');
+            return res.status(400).json({
+                data: "",
+                message: "Invalid OTP!",
+                statusCode: 400,
+                success: false,
+            })
+        }
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            data: "",
+            message: "Invalid OTP!",
+            statusCode: 500,
+            success: false,
+        })
+    }
+}
 
 /**
  * * This controller logs in User into the system

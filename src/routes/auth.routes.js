@@ -6,6 +6,7 @@ import {
     getLoggedInUser,
     refreshAccessToken,
     changeCurrentUserPassword,
+    verifyUser,
 } from "../controllers/auth.controller.js";
 import {
     isEmailRegisteredOrProvided,
@@ -27,6 +28,8 @@ router.post(
     ],
     signup
 );
+
+router.post("/verify-user", verifyUser)
 
 /* ------ USER SIGNIN -------- */
 router.post("/login", [isUserIdProvided, isPasswordProvided], signin);
