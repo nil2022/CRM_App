@@ -10,6 +10,8 @@ import {
 import { sendMail } from "../utils/mailSender.js";
 import { Otp } from "../models/otp.model.js";
 
+const senderAddress = process.env.MAIL_FROM_ADDRESS;
+
 /**
  * * This controller Generates Access and Refresh Token
  */
@@ -69,24 +71,21 @@ export const signup = async (req, res) => {
         });
 
         // Send Email with OTP to verify User Email
-        const emailResponse = await sendMail(fullName, userId, "CRM App <john@example.com>", `${fullName} <${email}>`);
+        const emailResponse = await sendMail(fullName, userId, senderAddress, `${fullName} <${email}>`);
 
-        if (emailResponse.accepted) {
-            console.log('Email sent successfully');
-        }
+        // res.send('OK')
 
         res.status(201).json({
             data: {
                 user: registeredUser,
             },
-            message:
-                "Users registered successfully and verification email has been sent on your email.",
+            message: "Users registered successfully and verification email has been sent on your email.",
             statusCode: 200,
             success: true,
         });
     } catch (err) {
         errorLogger.error(
-            "Something went wrong while saving to DB",
+            `${err.message}`,
             `${err.name}:${err.message}`,
             err
         );
@@ -99,19 +98,20 @@ export const signup = async (req, res) => {
     }
 };
 
+/** CONTROLLER TO VERIFY USER EMAIL ID USING OTP */
 export const verifyUser = async (req, res) => {
     const { userId, otp } = req.body;
 
-    console.log('otp', otp)
+    // console.log('otp', otp)
 
     try {
         const savedOtp = await Otp.findOne({ userId: { $eq: userId } });
-        console.log('savedOtp', savedOtp)
+        // console.log('savedOtp', savedOtp)
 
         if(!savedOtp) throw new Error('OTP not found');
 
         if (savedOtp.otp === otp) {
-            console.log('User verified');
+            console.log({message: 'User verified'});
             await User.findOneAndUpdate({ userId: { $eq: userId } }, { isEmailVerified: true });
             await Otp.deleteOne({ userId: { $eq: userId } });
 
@@ -155,6 +155,15 @@ export const signin = async (req, res) => {
         return res.status(400).json({
             data: "",
             message: "Failed! UserId doesn't exist!",
+            statusCode: 400,
+            success: false,
+        });
+    }
+
+    if(!user.isEmailVerified) {
+        return res.status(400).json({
+            data: "",
+            message: "Please verify your Email!",
             statusCode: 400,
             success: false,
         });
@@ -292,9 +301,7 @@ export const getLoggedInUser = async (req, res) => {
 
 // TODO: controllers to design
 /**
- * change password
- * refreshtoken
- * uppdate accountdetails
+ * update accountdetails
  * update Avatar (LATER)
  * update User coverimage (LATER)
  */
