@@ -7,6 +7,10 @@ import {
     infoLogger,
     warningLogger,
 } from "../utils/winstonLogger.js";
+import { sendMail } from "../utils/mailSender.js";
+import { Otp } from "../models/otp.model.js";
+
+const senderAddress = process.env.MAIL_FROM_ADDRESS;
 
 /**
  * * This controller Generates Access and Refresh Token
@@ -40,13 +44,13 @@ export const signup = async (req, res) => {
             fullName,
             userId,
             email,
+            loginType: "OTP",
             userType: userType ? userType.toUpperCase() : userTypes.customer,
             password,
             userStatus: userStatusReq,
         });
 
         const registeredUser = {
-            __v: user.__v,
             _id: user._id,
             fullName: user.fullName,
             userId: user.userId,
@@ -66,29 +70,77 @@ export const signup = async (req, res) => {
             message: "User Registered Successfully",
         });
 
+        // Send Email with OTP to verify User Email
+        const emailResponse = await sendMail(fullName, userId, senderAddress, `${fullName} <${email}>`);
+
+        // res.send('OK')
+
         res.status(201).json({
             data: {
                 user: registeredUser,
             },
-            message:
-                "Users registered successfully and verification email has been sent on your email.",
+            message: "Users registered successfully and verification email has been sent on your email.",
             statusCode: 200,
             success: true,
         });
     } catch (err) {
         errorLogger.error(
-            "Something went wrong while saving to DB",
+            `${err.message}`,
             `${err.name}:${err.message}`,
             err
         );
         res.status(500).json({
             data: "",
-            message: "Some internal error while inserting the element",
+            message: "Something went wrong!",
             statusCode: 500,
             success: false,
         });
     }
 };
+
+/** CONTROLLER TO VERIFY USER EMAIL ID USING OTP */
+export const verifyUser = async (req, res) => {
+    const { userId, otp } = req.body;
+
+    // console.log('otp', otp)
+
+    try {
+        const savedOtp = await Otp.findOne({ userId: { $eq: userId } });
+        // console.log('savedOtp', savedOtp)
+
+        if(!savedOtp) throw new Error('OTP not found');
+
+        if (savedOtp.otp === otp) {
+            console.log({message: 'User verified'});
+            await User.findOneAndUpdate({ userId: { $eq: userId } }, { isEmailVerified: true });
+            await Otp.deleteOne({ userId: { $eq: userId } });
+
+            return res.status(200).json({
+                data: "",
+                message: "User verified successfully!",
+                statusCode: 200,
+                success: true,
+            })
+        } else {
+            console.log('Invalid OTP');
+            return res.status(400).json({
+                data: "",
+                message: "Invalid OTP!",
+                statusCode: 400,
+                success: false,
+            })
+        }
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            data: "",
+            message: "Invalid OTP!",
+            statusCode: 500,
+            success: false,
+        })
+    }
+}
 
 /**
  * * This controller logs in User into the system
@@ -103,6 +155,15 @@ export const signin = async (req, res) => {
         return res.status(400).json({
             data: "",
             message: "Failed! UserId doesn't exist!",
+            statusCode: 400,
+            success: false,
+        });
+    }
+
+    if(!user.isEmailVerified) {
+        return res.status(400).json({
+            data: "",
+            message: "Please verify your Email!",
             statusCode: 400,
             success: false,
         });
@@ -240,9 +301,7 @@ export const getLoggedInUser = async (req, res) => {
 
 // TODO: controllers to design
 /**
- * change password
- * refreshtoken
- * uppdate accountdetails
+ * update accountdetails
  * update Avatar (LATER)
  * update User coverimage (LATER)
  */

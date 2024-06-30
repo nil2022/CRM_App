@@ -32,7 +32,7 @@ async function initialize() {
 
         infoLogger.info(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
     } catch (err) {
-        errorLogger.error(err, "Error creating user!", err.message);
+        errorLogger.error(err, "SYSTEM Initialization FAILED!!", err.message);
     }
 }
 

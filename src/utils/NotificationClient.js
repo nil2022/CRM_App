@@ -30,7 +30,7 @@ export const notificationClient = async (
                 "Content-Type": "application/json",
             },
         }).then((response) => {
-            infoLogger.info(`Email Sent Successfully !`);
+            infoLogger.info(`Request sent to Notification Service !`);
             infoLogger.info(response.data)
             return;
         });
