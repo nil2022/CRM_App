@@ -39,9 +39,9 @@ async function initialize() {
 connectDB()
     .then(() => {
         initialize();
-        app.listen(process.env.SERVER_PORT || 3000, () => {
+        app.listen(process.env.PORT || 3000, () => {
             infoLogger.info(
-                `⚙️ Listening all requests at http://localhost:${process.env.SERVER_PORT}`
+                `⚙️ Listening all requests at http://localhost:${process.env.PORT}`
             );
         });
     })

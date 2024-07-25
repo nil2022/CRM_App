@@ -167,7 +167,7 @@ export const updateTicket = async (req, res) => {
         const ticket = await Ticket.findOne({ _id: req.query.id });
         if (!ticket) {
             warningLogger.warn("Ticket not found in DB !!!");
-            return res.status(400).json({
+            return res.status(404).json({
                 data: "",
                 message: "Ticket not found !!!",
                 statusCode: 400,
@@ -335,7 +335,7 @@ export const getOneTicket = async (req, res) => {
             _id: req.query.id,
         });
         if (!ticket) {
-            warningLogger.warn("No tickets in server ", err.message);
+            warningLogger.warn("No tickets in server ");
             return res.status(400).json({
                 data: "",
                 message: "No tickets in DB",

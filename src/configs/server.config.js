@@ -1,4 +1,4 @@
-let PORT = 4500
+let PORT = 3000
 
 if (process.env.NODE_ENV !== 'development') {
   PORT = process.env.PORT

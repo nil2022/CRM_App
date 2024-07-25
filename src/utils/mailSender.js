@@ -35,6 +35,7 @@ export async function sendMail(fullName, userId, fromAddress, toAddress) {
             CRM Service Team 😊 | Happy to help !
             `;
 
+            
         const info = await transporter.sendMail({
             from: fromAddress,
             to: toAddress,
