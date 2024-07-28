@@ -108,7 +108,12 @@ export const verifyUser = async (req, res) => {
         const savedOtp = await Otp.findOne({ userId: { $eq: userId } });
         // console.log('savedOtp', savedOtp)
 
-        if(!savedOtp) throw new Error('OTP not found');
+        if(!savedOtp) return res.status(404).json({
+            data: "",
+            message: "OTP not found!",
+            statusCode: 404,
+            success: false,
+        })
 
         if (savedOtp.otp === otp) {
             console.log({message: 'User verified'});
@@ -135,7 +140,7 @@ export const verifyUser = async (req, res) => {
         console.log(error);
         return res.status(500).json({
             data: "",
-            message: "Invalid OTP!",
+            message: error.message,
             statusCode: 500,
             success: false,
         })
@@ -223,7 +228,7 @@ export const signin = async (req, res) => {
     };
 
     const cookieOptions = {
-        http: true,
+        httpOnly: true,
         secure: true,
     };
 
@@ -406,7 +411,7 @@ export const refreshAccessToken = async (req, res) => {
         }
 
         const cookieOptions = {
-            http: true,
+            httpOnly: true,
             secure: true,
         };
 
@@ -462,7 +467,7 @@ export const logout = async (req, res) => {
         );
 
         const cookieOptions = {
-            http: true,
+            httpOnly: true,
             secure: true,
         };
 

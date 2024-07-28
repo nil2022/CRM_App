@@ -4,14 +4,17 @@ import helmet from "helmet"; // Add additional security headers to request
 import { errorLogger, infoLogger, morganMiddleware, warningLogger } from "./utils/winstonLogger.js";
 import { limiter } from "./utils/api-rate-limit.js";
 import cookieParser from "cookie-parser";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocs from "../swaggerConfig.js";
 
 const app = express();
 
 app.use(
     cors({
         origin: process.env.CORS_ORIGIN,
+        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         allowedHeaders: process.env.CORS_ALLOWED_HEADERS,
-        credentials: true,
+        // credentials: true,
     })
 );
 
@@ -36,12 +39,16 @@ app.get("/health", (_, res) => {
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
 import ticketRouter from "./routes/ticket.routes.js";
+import errorHandler from "./utils/errorHandler.js";
+
 app.use("/crm/api/v1/auth", authRouter);
 app.use("/crm/api/v1/users", userRouter);
 app.use("/crm/api/v1/tickets", ticketRouter);
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
+
 // Route not found middleware
-app.use("*", (req, res) => {
+app.use("*", (_, res) => {
     warningLogger.warn("Route not found !");
     res.status(404).json({
         message: "Route not found",
@@ -49,5 +56,7 @@ app.use("*", (req, res) => {
         success: false,
     });
 });
+
+app.use(errorHandler);
 
 export { app };
