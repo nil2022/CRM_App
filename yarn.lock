@@ -624,10 +624,10 @@
   resolved "https://registry.npmjs.org/@logtail/types/-/types-0.4.20.tgz"
   integrity sha512-nYsum10eJMTo+ySBlYXvSrvgD1NDCVUeOlxLBbelq3XUmHu9L48VNR3P0BOmhLamYCTEgjatTj0PyPLfjL1W9g==
 
-"@logtail/winston@^0.4.21":
-  version "0.4.21"
-  resolved "https://registry.npmjs.org/@logtail/winston/-/winston-0.4.21.tgz"
-  integrity sha512-+aX8VgUJr+YJyHXEPBJR7iv6v3p7YzZgVMicFBiHKf49o9RWgA+QjU5KbyCKTAhHjNm9uYtZhA7vjdg5oO3fQg==
+"@logtail/winston@^0.4.23":
+  version "0.4.23"
+  resolved "https://registry.yarnpkg.com/@logtail/winston/-/winston-0.4.23.tgz#d862dc1951426689553403113e0c224c5d5da7db"
+  integrity sha512-ZAxD0sw+JgjRPuy/G+8tgbjW0X/56pAWEqNlItJUOEQdl5iNmCLLBpml3Nf8zh+41tFhIRKGwaKa2Jb/XwnClg==
   dependencies:
     "@logtail/node" "^0.4.21"
     "@logtail/types" "^0.4.20"
@@ -2862,6 +2862,7 @@ mongoose@^8.5.2:
   version "8.5.2"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-8.5.2.tgz#73b40ce778f3fc66407aba3c3157795cdd278543"
   integrity sha512-GZB4rHMdYfGatV+23IpCrqFbyCOjCNOHXgWbirr92KRwTEncBrtW3kgU9vmpKjsGf7nMmnAy06SwWUv1vhDkSg==
+
   dependencies:
     bson "^6.7.0"
     kareem "2.6.3"
