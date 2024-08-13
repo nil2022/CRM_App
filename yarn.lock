@@ -598,6 +598,15 @@
     "@logtail/types" "^0.4.20"
     serialize-error "^8.1.0"
 
+"@logtail/core@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@logtail/core/-/core-0.5.0.tgz#9f21ce8c9293e7e6ccbee3520ab16dcf24d996d9"
+  integrity sha512-zHl1wx5fqqICVOjM+IVzJ6vqlDobcQu0AK2TL7yPTxCNa8C3gTCtOKsc5sX/yMnSFqCK4KcYpY7DPUAYYGzezg==
+  dependencies:
+    "@logtail/tools" "^0.5.0"
+    "@logtail/types" "^0.5.0"
+    serialize-error "8.1.0"
+
 "@logtail/node@^0.4.21":
   version "0.4.21"
   resolved "https://registry.npmjs.org/@logtail/node/-/node-0.4.21.tgz"
@@ -612,6 +621,20 @@
     serialize-error "^8.1.0"
     stack-trace "^0.0.10"
 
+"@logtail/node@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@logtail/node/-/node-0.5.0.tgz#e4af731fd82822ab424f71206f1a65ebf8b5a44e"
+  integrity sha512-nTyEpdei/qaXJT55OXkiUE6RuMgmRfQ5eMkExHCQe4MB/SAbMbXd+1ULv6cHLAj+S5xMvPGdpMyaydfHtPAkXA==
+  dependencies:
+    "@logtail/core" "^0.5.0"
+    "@logtail/types" "^0.5.0"
+    "@msgpack/msgpack" "^2.5.1"
+    "@types/stack-trace" "^0.0.33"
+    cross-fetch "^4.0.0"
+    minimatch "^9.0.5"
+    serialize-error "8.1.0"
+    stack-trace "0.0.10"
+
 "@logtail/tools@^0.4.21":
   version "0.4.21"
   resolved "https://registry.npmjs.org/@logtail/tools/-/tools-0.4.21.tgz"
@@ -619,18 +642,31 @@
   dependencies:
     "@logtail/types" "^0.4.20"
 
+"@logtail/tools@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@logtail/tools/-/tools-0.5.0.tgz#054252f7d6ab0d30c6bea6496ca859fed6a64b8b"
+  integrity sha512-xCN7Cvq9DJ8loJkaPdihQImsLPAUVYlDK3qJiMneuIgIBJm5awVJ6BUZhycLmtz5NlLG1M2SJbuxEYU7WU3sDg==
+  dependencies:
+    "@logtail/types" "^0.5.0"
+    cross-fetch "^4.0.0"
+
 "@logtail/types@^0.4.20":
   version "0.4.20"
   resolved "https://registry.npmjs.org/@logtail/types/-/types-0.4.20.tgz"
   integrity sha512-nYsum10eJMTo+ySBlYXvSrvgD1NDCVUeOlxLBbelq3XUmHu9L48VNR3P0BOmhLamYCTEgjatTj0PyPLfjL1W9g==
 
-"@logtail/winston@^0.4.23":
-  version "0.4.23"
-  resolved "https://registry.yarnpkg.com/@logtail/winston/-/winston-0.4.23.tgz#d862dc1951426689553403113e0c224c5d5da7db"
-  integrity sha512-ZAxD0sw+JgjRPuy/G+8tgbjW0X/56pAWEqNlItJUOEQdl5iNmCLLBpml3Nf8zh+41tFhIRKGwaKa2Jb/XwnClg==
+"@logtail/types@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@logtail/types/-/types-0.5.0.tgz#8fc3bf82a1408b8d979c98ef5db25f42f5a21d5a"
+  integrity sha512-wO+uw142K5WFS1lD3bmx2u8U3bMRVtaW48j6AlkMfq+yJfQlNzLL4EP5wR2b3QmcFN6LC240dJ3Aq7phR250Ig==
+
+"@logtail/winston@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@logtail/winston/-/winston-0.5.0.tgz#364b2ddf5f83c31de6bc0fff4e8b9121a5206704"
+  integrity sha512-jnH42Oa1/jYa4fDXt59Bd5NwmvRIxCu5gUHUq73C4nI2Gc84axfgSee1i9qFfuDh/b71u7hY67wNG7BJHZYmnA==
   dependencies:
-    "@logtail/node" "^0.4.21"
-    "@logtail/types" "^0.4.20"
+    "@logtail/node" "^0.5.0"
+    "@logtail/types" "^0.5.0"
     winston-transport "^4.3.0"
 
 "@mapbox/node-pre-gyp@^1.0.11":
@@ -754,6 +790,11 @@
   version "0.0.29"
   resolved "https://registry.npmjs.org/@types/stack-trace/-/stack-trace-0.0.29.tgz"
   integrity sha512-TgfOX+mGY/NyNxJLIbDWrO9DjGoVSW9+aB8H2yy1fy32jsvxijhmyJI9fDFgvz3YP4lvJaq9DzdR/M1bOgVc9g==
+
+"@types/stack-trace@^0.0.33":
+  version "0.0.33"
+  resolved "https://registry.yarnpkg.com/@types/stack-trace/-/stack-trace-0.0.33.tgz#979a3fde9e721e78603b781e468ef30f0df0f049"
+  integrity sha512-O7in6531Bbvlb2KEsJ0dq0CHZvc3iWSR5ZYMtvGgnHA56VgriAN/AU2LorfmcvAl2xc9N5fbCTRyMRRl8nd74g==
 
 "@types/stack-utils@^2.0.0":
   version "2.0.3"
@@ -1041,6 +1082,13 @@ brace-expansion@^1.1.7:
   dependencies:
     balanced-match "^1.0.0"
     concat-map "0.0.1"
+
+brace-expansion@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-2.0.1.tgz#1edc459e0f0c548486ecf9fc99f2221364b9a0ae"
+  integrity sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==
+  dependencies:
+    balanced-match "^1.0.0"
 
 braces@^3.0.2, braces@~3.0.2:
   version "3.0.3"
@@ -1381,6 +1429,13 @@ cross-fetch@^3.0.4:
   version "3.1.8"
   resolved "https://registry.npmjs.org/cross-fetch/-/cross-fetch-3.1.8.tgz"
   integrity sha512-cvA+JwZoU0Xq+h6WkMvAUqPEYy92Obet6UdKLfW60qn99ftItKjB5T+BkyWOFWe2pUyfQ+IJHmpOTznqk1M6Kg==
+  dependencies:
+    node-fetch "^2.6.12"
+
+cross-fetch@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-4.0.0.tgz#f037aef1580bb3a1a35164ea2a848ba81b445983"
+  integrity sha512-e4a5N8lVvuLgAWgnCrLr2PP0YyDOTHa9H/Rj54dirp61qXnNq46m82bRhNqIA5VccJtWBvPTFRV3TtvHUKPB1g==
   dependencies:
     node-fetch "^2.6.12"
 
@@ -2776,6 +2831,13 @@ minimatch@^3.0.4, minimatch@^3.1.1, minimatch@^3.1.2:
   dependencies:
     brace-expansion "^1.1.7"
 
+minimatch@^9.0.5:
+  version "9.0.5"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-9.0.5.tgz#d74f9dd6b57d83d8e98cfb82133b03978bc929e5"
+  integrity sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==
+  dependencies:
+    brace-expansion "^2.0.1"
+
 minipass@^3.0.0:
   version "3.3.6"
   resolved "https://registry.npmjs.org/minipass/-/minipass-3.3.6.tgz"
@@ -3397,7 +3459,7 @@ send@0.18.0:
     range-parser "~1.2.1"
     statuses "2.0.1"
 
-serialize-error@^8.1.0:
+serialize-error@8.1.0, serialize-error@^8.1.0:
   version "8.1.0"
   resolved "https://registry.npmjs.org/serialize-error/-/serialize-error-8.1.0.tgz"
   integrity sha512-3NnuWfM6vBYoy5gZFvHiYsVbafvI9vZv/+jlIigFn4oP4zjNPK3LhcY0xSCgeb1a5L8jO71Mit9LlNoi2UfDDQ==
@@ -3517,7 +3579,7 @@ sprintf-js@~1.0.2:
   resolved "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
 
-stack-trace@0.0.x, stack-trace@^0.0.10:
+stack-trace@0.0.10, stack-trace@0.0.x, stack-trace@^0.0.10:
   version "0.0.10"
   resolved "https://registry.npmjs.org/stack-trace/-/stack-trace-0.0.10.tgz"
   integrity sha512-KGzahc7puUKkzyMt+IqAep+TVNbKP+k2Lmwhub39m1AsTSkaDutx56aDCo+HLDzf/D26BIHTJWNiTG1KAJiQCg==
