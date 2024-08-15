@@ -25,7 +25,7 @@
   "author": "Nilanjan Haldar",
   "license": "ISC",
   "dependencies": {
-    "@logtail/node": "^0.4.21",
+    "@logtail/node": "^0.5.0",
     "axios": "^1.7.3",
     "@logtail/winston": "^0.5.0",
     "bcrypt": "^5.1.1",
