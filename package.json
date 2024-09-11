@@ -42,7 +42,7 @@
     "mongoose": "^8.6.1",
     "mongodb-memory-server": "^10.0.0",
     "morgan": "^1.10.0",
-    "nodemailer": "^6.9.14",
+    "nodemailer": "^6.9.15",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "swagger-jsdoc": "^6.2.8",
