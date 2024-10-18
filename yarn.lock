@@ -589,22 +589,22 @@
   resolved "https://registry.npmjs.org/@jsdevtools/ono/-/ono-7.1.3.tgz"
   integrity sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==
 
-"@logtail/core@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@logtail/core/-/core-0.5.0.tgz#9f21ce8c9293e7e6ccbee3520ab16dcf24d996d9"
-  integrity sha512-zHl1wx5fqqICVOjM+IVzJ6vqlDobcQu0AK2TL7yPTxCNa8C3gTCtOKsc5sX/yMnSFqCK4KcYpY7DPUAYYGzezg==
+"@logtail/core@^0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@logtail/core/-/core-0.5.2.tgz#a5fb36731848fbb47a3b1176c643a405e40d674d"
+  integrity sha512-mkQqGFwtZ06x2xsj6kOiEZeLSlPeTDArNOEeB9Q1VHxduRHJFInG7soix8+P8xeaoJx+7itvbUySB0XBlnmLSA==
   dependencies:
-    "@logtail/tools" "^0.5.0"
-    "@logtail/types" "^0.5.0"
+    "@logtail/tools" "^0.5.2"
+    "@logtail/types" "^0.5.2"
     serialize-error "8.1.0"
 
-"@logtail/node@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@logtail/node/-/node-0.5.0.tgz#e4af731fd82822ab424f71206f1a65ebf8b5a44e"
-  integrity sha512-nTyEpdei/qaXJT55OXkiUE6RuMgmRfQ5eMkExHCQe4MB/SAbMbXd+1ULv6cHLAj+S5xMvPGdpMyaydfHtPAkXA==
+"@logtail/node@^0.5.0", "@logtail/node@^0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@logtail/node/-/node-0.5.2.tgz#f0d2462b6c43f6d7334858cb8769bf23162fe2e9"
+  integrity sha512-pSleAsbq61WdaMzYkmW+kdCfptIWmjhSvNoyAtFFuaIGNXFS2UEmnHPrvzrPxsFgBswePSGl/m1teHTeBxA+qg==
   dependencies:
-    "@logtail/core" "^0.5.0"
-    "@logtail/types" "^0.5.0"
+    "@logtail/core" "^0.5.2"
+    "@logtail/types" "^0.5.2"
     "@msgpack/msgpack" "^2.5.1"
     "@types/stack-trace" "^0.0.33"
     cross-fetch "^4.0.0"
@@ -612,26 +612,26 @@
     serialize-error "8.1.0"
     stack-trace "0.0.10"
 
-"@logtail/tools@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@logtail/tools/-/tools-0.5.0.tgz#054252f7d6ab0d30c6bea6496ca859fed6a64b8b"
-  integrity sha512-xCN7Cvq9DJ8loJkaPdihQImsLPAUVYlDK3qJiMneuIgIBJm5awVJ6BUZhycLmtz5NlLG1M2SJbuxEYU7WU3sDg==
+"@logtail/tools@^0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@logtail/tools/-/tools-0.5.2.tgz#b24f96f2bc65f86a928f915aa841f1ec15da2ff9"
+  integrity sha512-1Vg0rznoDYXWYDkz8orjKNTjK5f2eUubHN6tfJ2hHKCRRHy7y+TJpIlCQg3BilVcOvMIfiy4RbrcaFTHvDQWTQ==
   dependencies:
-    "@logtail/types" "^0.5.0"
+    "@logtail/types" "^0.5.2"
     cross-fetch "^4.0.0"
 
-"@logtail/types@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@logtail/types/-/types-0.5.0.tgz#8fc3bf82a1408b8d979c98ef5db25f42f5a21d5a"
-  integrity sha512-wO+uw142K5WFS1lD3bmx2u8U3bMRVtaW48j6AlkMfq+yJfQlNzLL4EP5wR2b3QmcFN6LC240dJ3Aq7phR250Ig==
+"@logtail/types@^0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@logtail/types/-/types-0.5.2.tgz#f5a53963df56a0dbed3e665f39ac1c2a092071d3"
+  integrity sha512-G3C3XjJPW/LJS0+sanzsNLLqXHAJkhdBR8h4zFUylOtUOevtlneenGNZFjEil+h/GOb3tUySvBuP2wl51gvf0A==
 
-"@logtail/winston@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@logtail/winston/-/winston-0.5.0.tgz#364b2ddf5f83c31de6bc0fff4e8b9121a5206704"
-  integrity sha512-jnH42Oa1/jYa4fDXt59Bd5NwmvRIxCu5gUHUq73C4nI2Gc84axfgSee1i9qFfuDh/b71u7hY67wNG7BJHZYmnA==
+"@logtail/winston@^0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@logtail/winston/-/winston-0.5.2.tgz#d667fc4303732ecc4baf3b40f0daa486877c7e66"
+  integrity sha512-eKbtw0RB1d0Cxs9qLxQskmcDjlyUolKJJluia0uNXK190SDavIY6VW/193BLSy5S7gn32V6T4kQ9yC0W6g9C9A==
   dependencies:
-    "@logtail/node" "^0.5.0"
-    "@logtail/types" "^0.5.0"
+    "@logtail/node" "^0.5.2"
+    "@logtail/types" "^0.5.2"
     winston-transport "^4.3.0"
 
 "@mapbox/node-pre-gyp@^1.0.11":
