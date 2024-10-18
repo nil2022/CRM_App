@@ -1350,10 +1350,10 @@ cookie@0.4.1:
   resolved "https://registry.npmjs.org/cookie/-/cookie-0.4.1.tgz"
   integrity sha512-ZwrFkGJxUR3EIoXtO+yVE69Eb7KlixbaeAWfBQB9vVsNn/o+Yw69gBWSSDK825hQNdN+wF8zELf3dFNl/kxkUA==
 
-cookie@0.6.0:
-  version "0.6.0"
-  resolved "https://registry.npmjs.org/cookie/-/cookie-0.6.0.tgz"
-  integrity sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==
+cookie@0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.7.1.tgz#2f73c42142d5d5cf71310a74fc4ae61670e5dbc9"
+  integrity sha512-6DnInpx7SJ2AK3+CTUE/ZM0vWTUboZCegxhC2xiIydHR9jNuTAASBrfEpHhiGOZw/nX51bHt6YQl8jsGo4y/0w==
 
 cookie@0.7.2:
   version "0.7.2"
@@ -1431,19 +1431,19 @@ debug@3.2.7:
   dependencies:
     ms "^2.1.1"
 
-debug@4, debug@4.3.6, debug@4.x, debug@^4, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.4, debug@^4.3.5:
-  version "4.3.6"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.6.tgz#2ab2c38fbaffebf8aa95fdfe6d88438c7a13c52b"
-  integrity sha512-O/09Bd4Z1fBrU4VzkhFqVgpPzaGbw6Sm9FEkBT1A/YBXQFGuuSxa1dN2nxgxS34JmKXqYx8CZAwEVoJFImUXIg==
-  dependencies:
-    ms "2.1.2"
-
-debug@^4.3.7:
+debug@4, debug@4.x, debug@^4, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.4, debug@^4.3.5, debug@^4.3.7:
   version "4.3.7"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.7.tgz#87945b4151a011d76d95a198d7111c865c360a52"
   integrity sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==
   dependencies:
     ms "^2.1.3"
+
+debug@4.3.6:
+  version "4.3.6"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.6.tgz#2ab2c38fbaffebf8aa95fdfe6d88438c7a13c52b"
+  integrity sha512-O/09Bd4Z1fBrU4VzkhFqVgpPzaGbw6Sm9FEkBT1A/YBXQFGuuSxa1dN2nxgxS34JmKXqYx8CZAwEVoJFImUXIg==
+  dependencies:
+    ms "2.1.2"
 
 dedent@^1.0.0:
   version "1.5.1"
@@ -1673,16 +1673,16 @@ express-winston@^4.2.0:
     chalk "^2.4.2"
     lodash "^4.17.21"
 
-express@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/express/-/express-5.0.0.tgz#744f9ec86025a01aeca99e4300aa4fc050d493c7"
-  integrity sha512-V4UkHQc+B7ldh1YC84HCXHwf60M4BOMvp9rkvTUWCK5apqDC1Esnbid4wm6nFyVuDy8XMfETsJw5lsIGBWyo0A==
+express@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/express/-/express-5.0.1.tgz#5d359a2550655be33124ecbc7400cd38436457e9"
+  integrity sha512-ORF7g6qGnD+YtUG9yx4DFoqCShNMmUKiXuT5oWMHiOvt/4WFbHC6yCwQMTSBMno7AqntNCAzzcnnjowRkTL9eQ==
   dependencies:
     accepts "^2.0.0"
     body-parser "^2.0.1"
     content-disposition "^1.0.0"
     content-type "~1.0.4"
-    cookie "0.6.0"
+    cookie "0.7.1"
     cookie-signature "^1.2.1"
     debug "4.3.6"
     depd "2.0.0"
