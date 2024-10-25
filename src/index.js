@@ -2,7 +2,6 @@ import connectDB from "./configs/db.config.js";
 import { app } from "./app.js";
 import { User } from "./models/user.model.js";
 import { userStatus, userTypes } from "./utils/constants.js";
-import { infoLogger, errorLogger } from "./utils/winstonLogger.js";
 
 /**
  * * Create Master Administrator User and Login to the System
@@ -16,7 +15,7 @@ async function initialize() {
         });
 
         if (systemAdminUser) {
-            infoLogger.info(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
+            console.log(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
             return;
         }
 
@@ -30,9 +29,9 @@ async function initialize() {
             userStatus: userStatus.approved,
         });
 
-        infoLogger.info(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
+        console.log(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
     } catch (err) {
-        errorLogger.error(err, "SYSTEM Initialization FAILED!!", err.message);
+        console.log("SYSTEM Initialization FAILED!!", err.message);
     }
 }
 
@@ -40,11 +39,9 @@ connectDB()
     .then(() => {
         initialize();
         app.listen(process.env.PORT || 3000, () => {
-            infoLogger.info(
-                `⚙️ Listening all requests at http://localhost:${process.env.PORT}`
-            );
+            console.log(`⚙️ Listening all requests at http://localhost:${process.env.PORT}`);
         });
     })
     .catch((error) => {
-        errorLogger.error("MongoDB Connection FAILED !!! : ", error);
+        console.log("MongoDB Connection FAILED !!! : ", error);
     });

@@ -8,7 +8,7 @@ import { verifyToken } from '../middlewares/auth.jwt.js'
  *   name: Ticket
  *   description: Ticket routes for CRM App
  */
-const router = Router();
+const ticketRouter = Router();
 
   /**
    * @swagger
@@ -65,7 +65,7 @@ const router = Router();
    *               statusCode: 200
    *               success: true
    */
-  router.post('/create-ticket', [verifyToken], createTicket)
+  ticketRouter.post('/create-ticket', [verifyToken], createTicket)
 
   /**
    * @swagger
@@ -154,7 +154,7 @@ const router = Router();
    *               statusCode: 500
    *               success: false
    */
-  router.patch('/update-ticket', [verifyToken], updateTicket)
+  ticketRouter.patch('/update-ticket', [verifyToken], updateTicket)
 
   /**
    * @swagger
@@ -201,7 +201,7 @@ const router = Router();
    *               statusCode: 500
    *               success: false
    */
-  router.get('/', [verifyToken], getAllTickets)
+  ticketRouter.get('/get-all-tickets', [verifyToken], getAllTickets)
 
   /**
    * @swagger
@@ -263,6 +263,6 @@ const router = Router();
    *               statusCode: 500
    *               success: false
    */
-  router.get('/get-ticket', [verifyToken], getOneTicket)
+  ticketRouter.get('/get-ticket', [verifyToken], getOneTicket)
 
-  export default router;
+  export default ticketRouter;

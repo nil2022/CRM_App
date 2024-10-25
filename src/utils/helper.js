@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -19,9 +19,11 @@ export const storeError = async (error) => {
         timeZone: "Asia/Kolkata",
     });
     const errorMessage = `${currentTime} - Error: ${error.stack}\n`;
-    fs.appendFile("error.log", errorMessage, (err) => {
-        if (err) console.error("Error writing to error log:", err);
-    });
+    try {
+        await fs.appendFile("public/logs/error.log", errorMessage);
+    } catch (err) {
+        console.error("Error writing to error log:", err);
+    }
 };
 
 /**
@@ -59,7 +61,6 @@ export const sendErrorResponse = (res, statusCode, message) => {
         message: message,
     });
 };
-
 
 /**
  *
@@ -102,7 +103,6 @@ export const deleteFile = async (fileName) => {
     }
 };
 
-
 /**
  * @param {object} payload :- payload
  *# Generate Jwt Token */
@@ -118,7 +118,6 @@ export const generateJwtToken = (payload) => {
     }
 };
 
-
 /**
  *
  * @param {*} password :- password
@@ -130,7 +129,6 @@ export const encryptPassword = (password) => {
     const salt = bcrypt.genSaltSync(10);
     return bcrypt.hashSync(password, salt);
 };
-
 
 /**
  *

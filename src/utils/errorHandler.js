@@ -8,9 +8,10 @@ import { storeError } from "./helper.js";
  * @param {*} next :- next function
  * ## Error Handler
  */
-const errorHandler = (err, req, res, next) => {
+const errorHandler = async (err, req, res, next) => {
     // Store the error in a separate file
-    storeError(err);
+    await storeError(err);
+
 
     const statusCode = err.statusCode ? err.statusCode : 500;
     res.status(statusCode);

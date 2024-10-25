@@ -23,7 +23,7 @@ import { verifyToken } from "../middlewares/auth.jwt.js";
  *   description: Authorization routes for CRM App
  */
 
-const router = Router();
+const authRouter = Router();
 
 /**
  * @swagger
@@ -70,7 +70,7 @@ const router = Router();
  *       500:
  *         description: Internal server error
  */
-router.post("/register", [isUserIdRegisteredOrProvided, isEmailRegisteredOrProvided, isPasswordProvided], signup);
+authRouter.post("/register", [isUserIdRegisteredOrProvided, isEmailRegisteredOrProvided, isPasswordProvided], signup);
 
 /**
  * @swagger
@@ -104,7 +104,7 @@ router.post("/register", [isUserIdRegisteredOrProvided, isEmailRegisteredOrProvi
  *       500:
  *         description: Internal server error
  */
-router.post("/verify-user", verifyUser);
+authRouter.post("/verify-user", verifyUser);
 
 /**
  * @swagger
@@ -130,7 +130,7 @@ router.post("/verify-user", verifyUser);
  *       500:
  *         description: Internal server error
  */
-router.post("/login", [isUserIdProvided, isPasswordProvided], signin);
+authRouter.post("/login", [isUserIdProvided, isPasswordProvided], signin);
 
 /**
  * @swagger
@@ -149,7 +149,7 @@ router.post("/login", [isUserIdProvided, isPasswordProvided], signin);
  *       500:
  *         description: Internal server error
  */
-router.get("/current-user", [verifyToken], getLoggedInUser);
+authRouter.get("/current-user", [verifyToken], getLoggedInUser);
 
 /**
  * @swagger
@@ -177,7 +177,7 @@ router.get("/current-user", [verifyToken], getLoggedInUser);
  *       500:
  *         description: Internal server error
  */
-router.patch("/change-password", [verifyToken], changeCurrentUserPassword);
+authRouter.patch("/change-password", [verifyToken], changeCurrentUserPassword);
 
 /**
  * @swagger
@@ -196,7 +196,7 @@ router.patch("/change-password", [verifyToken], changeCurrentUserPassword);
  *       500:
  *         description: Internal server error
  */
-router.get("/refresh-token", refreshAccessToken);
+authRouter.get("/refresh-token", refreshAccessToken);
 
 /**
  * @swagger
@@ -215,6 +215,6 @@ router.get("/refresh-token", refreshAccessToken);
  *       500:
  *         description: Internal server error
  */
-router.get("/logout", [verifyToken], logout);
+authRouter.get("/logout", [verifyToken], logout);
 
-export default router;
+export default authRouter;

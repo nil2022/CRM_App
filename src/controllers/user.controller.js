@@ -4,12 +4,6 @@
  * defined in the User Controller
  */
 import { User } from "../models/user.model.js";
-import {
-    errorLogger,
-    infoLogger,
-    sillyLogger,
-    warningLogger,
-} from "../utils/winstonLogger.js";
 
 /**
  * * This controller fetches all users in database
@@ -19,10 +13,10 @@ const fetchAll = async () => {
         const users = await User.find().select("-password -refreshToken -__v");
         // users.length = 0;
 
-        infoLogger.info("fetched all users success");
+        // console.log("fetched all users success");
         return users;
     } catch (err) {
-        errorLogger.error(err);
+        console.log(err);
         throw err;
     }
 };
@@ -38,10 +32,10 @@ const fetchByName = async (userNameReq) => {
                 $options: "i",
             }, // $regex operator to find all documents in a collection, $options parameter to specify case-insensitivity
         }).select(" -password -refreshToken -__v ");
-        infoLogger.info("fetch by name success");
+        // console.log("fetch by name success");
         return users;
     } catch (err) {
-        errorLogger.error(
+        console.log(
             `Error while fetching the user for Name : ${userNameReq.replace(/\n|\r/g, "")}`,
             err
         );
@@ -59,10 +53,10 @@ const fetchByTypeAndStatus = async (userTypeReq, userStatusReq) => {
             userStatus: { $eq: userStatusReq }, // $eq operator userStatusReq
         }).select(" -password -refreshToken -__v ");
 
-        infoLogger.info("fetch by usertype and userstatus success");
+        // console.log("fetch by usertype and userstatus success");
         return users;
     } catch (err) {
-        errorLogger.error(
+        console.log(
             `Error while fetching users for userType [${userTypeReq}] and userStatus [${userStatusReq}]`,
             err
         );
@@ -78,10 +72,10 @@ const fetchByType = async (userTypeReq) => {
         const users = await User.find({
             userType: { $eq: userTypeReq },
         });
-        infoLogger.info("fetch by usertype success");
+        // console.log("fetch by usertype success");
         return users;
     } catch (err) {
-        errorLogger.error(
+        console.log(
             `Error while fetching users for userType [${userTypeReq}] `,
             err
         );
@@ -97,10 +91,10 @@ const fetchByStatus = async (userStatusReq) => {
         const users = await User.find({
             userStatus: { $eq: userStatusReq },
         }).select(" -password -refreshToken -__v ");
-        infoLogger.info("fetch by userstatus success");
+        // console.log("fetch by userstatus success");
         return users;
     } catch (err) {
-        errorLogger.error(
+        console.log(
             `Error while fetching users for userStatus [${userStatusReq}] `,
             err
         );
@@ -137,7 +131,7 @@ export const findAll = async (req, res) => {
         }
 
         if (users.length === 0) {
-            warningLogger.warn("No users found in database ! (findall)");
+            // console.log("No users found in database ! (findall)");
             return res.status(200).json({
                 data: "",
                 message: "No users found in database !",
@@ -152,7 +146,7 @@ export const findAll = async (req, res) => {
             success: true,
         });
     } catch (err) {
-        // errorLogger.error(err);
+        // console.log(err);
         res.status(500).json({
             data: "",
             message: "Some internal error occured (findall)",
@@ -173,7 +167,7 @@ export const findByUserId = async (req, res) => {
         }).select(" -password -refreshToken -__v");
 
         if (user.length === 0) {
-            warningLogger.warn(` userId -> [${userIdReq}] not found in server`);
+            console.log(` userId -> [${userIdReq}] not found in server`);
             return res.status(400).json({
                 data: "",
                 message: `User not found in server`,
@@ -182,7 +176,7 @@ export const findByUserId = async (req, res) => {
             });
         }
 
-        infoLogger.info("fetch user by userId success");
+        console.log("fetch user by userId success");
 
         return res.status(200).json({
             data: user,
@@ -191,7 +185,7 @@ export const findByUserId = async (req, res) => {
             success: true,
         });
     } catch (err) {
-        errorLogger.error(`Error fetching user data ::`, err);
+        console.log(`Error fetching user data ::`, err);
         res.status(500).json({
             data: "",
             message: "Something went wrong",
@@ -231,7 +225,7 @@ export const updateUserStatus = async (req, res) => {
         );
 
         if (user.length === 0) {
-            warningLogger.warn('User is not in server !!');
+            // console.log('User is not in server !!');
             return res.status(400).json({
                 data: '',
                 message: "User is not in server !!",
@@ -239,7 +233,7 @@ export const updateUserStatus = async (req, res) => {
                 success: false,
             });
         }
-        infoLogger.info(`userId -> [${userIdReq}] data has been updated `);
+        // console.log(`userId -> [${userIdReq}] data has been updated `);
 
         return res.status(200).json({
             data: user,
@@ -248,7 +242,7 @@ export const updateUserStatus = async (req, res) => {
             success: true,
         });
     } catch (err) {
-        errorLogger.error(`Error while updating the record: ${err.message}`, err);
+        // console.log(`Error while updating the record: ${err.message}`, err);
         res.status(500).json({
             data: '',
             message: "Something went wrong !",
@@ -274,7 +268,7 @@ export const deleteUser = async (req, res) => {
         .select(" -ticketsCreated -ticketsAssigned -password -__v");
 
         if (!user || user.length === 0) {
-            warningLogger.warn(` userId -> [${userIdReq}] not found in server`);
+            // console.log(` userId -> [${userIdReq}] not found in server`);
             return res.status(400).json({
                 data: "",
                 message: `User not found in server`,
@@ -282,7 +276,7 @@ export const deleteUser = async (req, res) => {
                 success: false,
             });
         }
-        infoLogger.info(`userId -> [${userIdReq}] data has been deleted !`);
+        // console.log(`userId -> [${userIdReq}] data has been deleted !`);
 
         res.status(200).json({
             data: user,
@@ -291,7 +285,7 @@ export const deleteUser = async (req, res) => {
             success: true,
         });
     } catch (err) {
-        errorLogger.error(`Error while deleting the record for userId -> ${userIdReq}`, err);
+        // console.log(`Error while deleting the record for userId -> ${userIdReq}`, err);
         res.status(500).json({
             data: '',
             message: "Something went wrong !",

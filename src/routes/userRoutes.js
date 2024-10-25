@@ -13,7 +13,7 @@ import { Router } from "express";
  *   name: User
  *   description: User routes for CRM App
  */
-const router = Router();
+const userRouter = Router();
 
 /**
  * @swagger
@@ -32,7 +32,7 @@ const router = Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/", [verifyToken, isAdmin], findAll);
+userRouter.get("/get-all-users", [verifyToken, isAdmin], findAll);
 
 /**
  * @swagger
@@ -51,7 +51,7 @@ router.get("/", [verifyToken, isAdmin], findAll);
  *       500:
  *         description: Internal server error
  */
-router.get("/get-user", [verifyToken, isAdmin], findByUserId);
+userRouter.get("/get-user", [verifyToken, isAdmin], findByUserId);
 
 /**
  * @swagger
@@ -78,7 +78,7 @@ router.get("/get-user", [verifyToken, isAdmin], findByUserId);
  *       200:
  *         description: User updated successfully
  */
-router.patch("/update-user", [verifyToken, isAdmin], updateUserStatus);
+userRouter.patch("/update-user", [verifyToken, isAdmin], updateUserStatus);
 
 /**
  * @swagger
@@ -93,6 +93,6 @@ router.patch("/update-user", [verifyToken, isAdmin], updateUserStatus);
  *       200:
  *         description: User deleted successfully
  */
-router.delete("/deleteUser", [verifyToken, isAdmin], deleteUser);
+userRouter.delete("/deleteUser", [verifyToken, isAdmin], deleteUser);
 
-export default router;
+export default userRouter;

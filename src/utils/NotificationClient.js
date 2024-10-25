@@ -1,5 +1,4 @@
 import axios from "axios";
-import { errorLogger, infoLogger} from "./winstonLogger.js";
 
 /**
  * * Send email notification request to Notification Service
@@ -30,12 +29,12 @@ export const notificationClient = async (
                 "Content-Type": "application/json",
             },
         }).then((response) => {
-            infoLogger.info(`Request sent to Notification Service !`);
-            infoLogger.info(response.data)
+            console.log(`Request sent to Notification Service !`);
+            console.log(response.data)
             return;
         });
     } catch (err) {
-        errorLogger.error("Error sending request to Notification Service:", {
+        console.log("Error sending request to Notification Service:", {
             message: err.message,
             name: err.name,
             stack: err.stack,

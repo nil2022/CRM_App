@@ -2,7 +2,6 @@ import { User } from "../models/user.model.js";
 import { Ticket } from "../models/ticket.model.js";
 import { userTypes, userStatus, ticketStatus } from "../utils/constants.js";
 import { notificationClient } from "../utils/NotificationClient.js";
-import { errorLogger, infoLogger, warningLogger } from "../utils/winstonLogger.js";
 
 /**
  * * This controller create a new Ticket requested by Customer
@@ -20,7 +19,7 @@ export const createTicket = async (req, res) => {
     // return response to user(FRONTEND)
     const { title, description, ticketPriority } = req.body;
     if (!(title && description)) {
-        warningLogger.warn("Ticket title or description not provided");
+        console.log("Ticket title or description not provided");
         return res.status(400).json({
             data: "",
             message: "Ticket title or description not provided",
@@ -44,7 +43,7 @@ export const createTicket = async (req, res) => {
             // availability: true // assign the ticket to the engineer
         });
         if (!engineer) {
-            warningLogger.warn("No Engineers/Approved Engineers available !");
+            console.log("No Engineers/Approved Engineers available !");
             return res.status(500).json({
                 data: "",
                 message: "Something went wrong !!",
@@ -58,7 +57,7 @@ export const createTicket = async (req, res) => {
             _id: req.decoded._id,
         });
         if (!user) {
-            warningLogger.warn("User not found, Unauthorized Access !");
+            console.log("User not found, Unauthorized Access !");
             return res.status(400).json({
                 data: "",
                 message: "User not found, Unauthorized Access !",
@@ -90,7 +89,7 @@ export const createTicket = async (req, res) => {
                 engineer.fullName
             )
 
-            infoLogger.info(`Ticket created successfully by userId -> [${user.userId}]`);
+            console.log(`Ticket created successfully by userId -> [${user.userId}]`);
 
             return res.status(201).json({
                 data: ticket,
@@ -100,7 +99,7 @@ export const createTicket = async (req, res) => {
             });
         }
     } catch (err) {
-        errorLogger.error("Some error happened while creating ticket:", err);
+        console.log("Some error happened while creating ticket:", err);
         res.status(500).json({
             data: "",
             message: "Something went wrong !",
@@ -140,7 +139,7 @@ export const updateTicket = async (req, res) => {
 
     const { ticketPriority, status, assignee } = req.body;
     // if (!status) {
-    //     warningLogger.warn("Ticket status or assignee not provided");
+    //     console.log("Ticket status or assignee not provided");
     //     return res.status(400).json({
     //         data: "",
     //         message: "Some fields not provided",
@@ -155,7 +154,7 @@ export const updateTicket = async (req, res) => {
         });
 
         if (savedUser.userType === userTypes.customer) {
-            warningLogger.warn('Unauthorized Access, requires ADMIN or ENGINEER');
+            console.log('Unauthorized Access, requires ADMIN or ENGINEER');
             return res.status(400).json({
                 data: "",
                 message: "Unauthorized Access !",
@@ -166,7 +165,7 @@ export const updateTicket = async (req, res) => {
 
         const ticket = await Ticket.findOne({ _id: req.query.id });
         if (!ticket) {
-            warningLogger.warn("Ticket not found in DB !!!");
+            console.log("Ticket not found in DB !!!");
             return res.status(404).json({
                 data: "",
                 message: "Ticket not found !!!",
@@ -190,7 +189,7 @@ export const updateTicket = async (req, res) => {
             ticket.assignee = assignee !== "" ? assignee : ticket.assignee;
             await ticket.save({ validateBeforeSave: false });
 
-            infoLogger.info(`Ticket updated successfully by userId -> [${savedUser.userId}]`);
+            console.log(`Ticket updated successfully by userId -> [${savedUser.userId}]`);
 
             const engineer = await User.findOne({
                 userId: { $eq: ticket.assignee },
@@ -220,7 +219,7 @@ export const updateTicket = async (req, res) => {
             });
 
         } else {
-            warningLogger.warn(`Unauthorized access by userId -> [${savedUser.userId}]`);
+            console.log(`Unauthorized access by userId -> [${savedUser.userId}]`);
             return res.status(401).json({
                 data: "",
                 message: "Ticket can be updated only by ADMIN or ENGINEER",
@@ -229,7 +228,7 @@ export const updateTicket = async (req, res) => {
             });
         }
     } catch (error) {
-        errorLogger.error('Error occured while updating ticket !', error);
+        console.log('Error occured while updating ticket !', error);
         return res.status(500).json({
             data: '',
             message: "Something went wrong",
@@ -264,7 +263,7 @@ export const getAllTickets = async (req, res) => {
         });
 
         if (!loggedInUser) {
-            warningLogger.warn("No user in DB !!!");
+            console.log("No user in DB !!!");
             return res.status(403).json({
                 data: "",
                 message: "No user in DB !!!",
@@ -298,16 +297,16 @@ export const getAllTickets = async (req, res) => {
         const tickets = await Ticket.find(queryObj);
 
         if (tickets.length === 0) {
-            warningLogger.warn(`There is NO tickets`);
-            return res.status(403).json({
+            console.log(`There is NO tickets`);
+            return res.status(200).json({
                 data: "",
                 message: `There is NO tickets `,
-                statusCode: 403,
+                statusCode: 200,
                 success: false,
             });
         }
 
-        infoLogger.info(`Tickets fetched successfully`);
+        // console.log(`Tickets fetched successfully`);
         
         return res.status(200).json({
             data: tickets,
@@ -316,7 +315,7 @@ export const getAllTickets = async (req, res) => {
             success: true,
         });
     } catch (error) {
-        errorLogger.error('Error occured while fetching tickets !', error);
+        console.log('Error occured while fetching tickets !', error);
         return res.status(500).json({
             data: "",
             message: "Something went wrong",
@@ -335,7 +334,7 @@ export const getOneTicket = async (req, res) => {
             _id: req.query.id,
         });
         if (!ticket) {
-            warningLogger.warn("No tickets in server ");
+            console.log("No tickets in server ");
             return res.status(400).json({
                 data: "",
                 message: "No tickets in DB",
@@ -344,7 +343,7 @@ export const getOneTicket = async (req, res) => {
             });
         }
         
-        infoLogger.info(`Ticket fetched successfully`);
+        console.log(`Ticket fetched successfully`);
 
         res.status(200).json({
             data: ticket,
@@ -353,7 +352,7 @@ export const getOneTicket = async (req, res) => {
             success: true,
         });
     } catch (err) {
-        errorLogger.error("Error fetching ticket :", err);
+        console.log("Error fetching ticket :", err);
         res.status(500).json({
             data: "",
             message: "Something went wrong",

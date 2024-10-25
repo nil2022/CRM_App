@@ -2,11 +2,6 @@ import { User } from "../models/user.model.js";
 import { userStatus, userTypes } from "../utils/constants.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import {
-    errorLogger,
-    infoLogger,
-    warningLogger,
-} from "../utils/winstonLogger.js";
 import { sendMail } from "../utils/mailSender.js";
 import { Otp } from "../models/otp.model.js";
 
@@ -63,12 +58,13 @@ export const signup = async (req, res) => {
             createdAt: user.createdAt,
         };
 
-        infoLogger.info({
-            data: {
-                email: registeredUser.email,
-            },
-            message: "User Registered Successfully",
-        });
+        // console.log({
+        //     data: {
+        //         email: registeredUser.email,
+        //     },
+        //     message: "User Registered Successfully",
+        // });
+        console.log("User Registered Successfully");
 
         // Send Email with OTP to verify User Email
         const emailResponse = await sendMail(fullName, userId, senderAddress, `${fullName} <${email}>`);
@@ -84,11 +80,7 @@ export const signup = async (req, res) => {
             success: true,
         });
     } catch (err) {
-        errorLogger.error(
-            `${err.message}`,
-            `${err.name}:${err.message}`,
-            err
-        );
+        console.log(`${err.message}`, `${err.name}:${err.message}`, err);
         res.status(500).json({
             data: "",
             message: "Something went wrong!",
@@ -108,15 +100,16 @@ export const verifyUser = async (req, res) => {
         const savedOtp = await Otp.findOne({ userId: { $eq: userId } });
         // console.log('savedOtp', savedOtp)
 
-        if(!savedOtp) return res.status(404).json({
-            data: "",
-            message: "OTP not found!",
-            statusCode: 404,
-            success: false,
-        })
+        if (!savedOtp)
+            return res.status(404).json({
+                data: "",
+                message: "OTP not found!",
+                statusCode: 404,
+                success: false,
+            });
 
         if (savedOtp.otp === otp) {
-            console.log({message: 'User verified'});
+            console.log({ message: "User verified" });
             await User.findOneAndUpdate({ userId: { $eq: userId } }, { isEmailVerified: true });
             await Otp.deleteOne({ userId: { $eq: userId } });
 
@@ -125,17 +118,16 @@ export const verifyUser = async (req, res) => {
                 message: "User verified successfully!",
                 statusCode: 200,
                 success: true,
-            })
+            });
         } else {
-            console.log('Invalid OTP');
+            console.log("Invalid OTP");
             return res.status(400).json({
                 data: "",
                 message: "Invalid OTP!",
                 statusCode: 400,
                 success: false,
-            })
+            });
         }
-
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -143,9 +135,9 @@ export const verifyUser = async (req, res) => {
             message: error.message,
             statusCode: 500,
             success: false,
-        })
+        });
     }
-}
+};
 
 /**
  * * This controller logs in User into the system
@@ -154,7 +146,7 @@ export const signin = async (req, res) => {
     const { userId, password } = req.body;
 
     const user = await User.findOne({ userId: { $eq: userId } });
-    infoLogger.info(`Signin Request for userId -> [${user.userId}]`);
+    console.log(`Signin Request for userId -> [${user.userId}]`);
 
     if (!user) {
         return res.status(400).json({
@@ -165,7 +157,7 @@ export const signin = async (req, res) => {
         });
     }
 
-    if(!user.isEmailVerified) {
+    if (!user.isEmailVerified) {
         return res.status(400).json({
             data: "",
             message: "Please verify your Email!",
@@ -175,9 +167,7 @@ export const signin = async (req, res) => {
     }
     /** CHECK IF PASSWORD IS IN STRING FORMAT */
     if (typeof password !== "string") {
-        warningLogger.warn(
-            `Invalid Password! Password type is [${typeof password}]`
-        );
+        console.log(`Invalid Password! Password type is [${typeof password}]`);
 
         return res.status(400).json({
             data: "",
@@ -189,7 +179,7 @@ export const signin = async (req, res) => {
     const passwordIsValid = bcrypt.compareSync(password, user.password);
     /** CHECK IF PASSWORD IS VALID */
     if (!passwordIsValid) {
-        warningLogger.warn(`Invalid Password!`);
+        console.log(`Invalid Password!`);
         return res.status(401).json({
             data: "",
             message: "Invalid Password!",
@@ -199,7 +189,7 @@ export const signin = async (req, res) => {
     }
     /** CHECK IF USER IS APPROVED */
     if (user.userStatus !== userStatus.approved) {
-        warningLogger.warn(`User NOT APPROVED, Contact \n ADMIN !`);
+        console.log(`User NOT APPROVED, Contact \n ADMIN !`);
         return res.status(403).json({
             data: "",
             message: "User NOT APPROVED, Contact \n ADMIN !",
@@ -208,9 +198,7 @@ export const signin = async (req, res) => {
         });
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
-        user._id
-    );
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
     const loggedInUser = {
         __v: user.__v,
@@ -232,7 +220,7 @@ export const signin = async (req, res) => {
         secure: true,
     };
 
-    infoLogger.info(`[${loggedInUser.fullName}] signed in successfully!`);
+    console.log(`[${loggedInUser.fullName}] signed in successfully!`);
 
     return res
         .status(201)
@@ -259,7 +247,7 @@ export const getLoggedInUser = async (req, res) => {
         const user = await User.findById({ _id: req.decoded._id });
 
         if (!user) {
-            warningLogger.warn("User not found");
+            console.log("User not found");
             return res.status(404).json({
                 data: "",
                 message: "User not found",
@@ -283,9 +271,7 @@ export const getLoggedInUser = async (req, res) => {
             updatedAt: user.updatedAt,
         };
 
-        infoLogger.info(
-            `Current Logged in User (userId) -> [${user.userId}] fetched success`
-        );
+        // console.log(`Current Logged in User (userId) -> [${user.userId}] fetched success`);
 
         res.status(200).json({
             data: userData,
@@ -294,7 +280,7 @@ export const getLoggedInUser = async (req, res) => {
             success: true,
         });
     } catch (error) {
-        errorLogger.error(error);
+        console.log(error);
         res.status(500).json({
             data: "",
             message: "Internal server error",
@@ -318,8 +304,8 @@ export const changeCurrentUserPassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
 
     try {
-        if(newPassword === '' || newPassword === null || oldPassword === '' || oldPassword === null) {
-            warningLogger.warn("Passwords can't be empty!");
+        if (newPassword === "" || newPassword === null || oldPassword === "" || oldPassword === null) {
+            console.log("Passwords can't be empty!");
             return res.status(400).json({
                 data: "",
                 message: "Passwords can't be empty!",
@@ -332,7 +318,7 @@ export const changeCurrentUserPassword = async (req, res) => {
         const isPasswordValid = await user.isValidPassword(oldPassword);
 
         if (!isPasswordValid) {
-            warningLogger.warn("Invalid Old Password!");
+            console.log("Invalid Old Password!");
             return res.status(400).json({
                 data: "",
                 message: "Invalid Old Password!",
@@ -344,7 +330,7 @@ export const changeCurrentUserPassword = async (req, res) => {
         user.password = newPassword;
         await user.save({ validateBeforeSave: false });
 
-        infoLogger.info(`Password changed successfully for userId -> [${user.userId}]`);
+        console.log(`Password changed successfully for userId -> [${user.userId}]`);
 
         return res.status(200).json({
             data: "",
@@ -353,7 +339,7 @@ export const changeCurrentUserPassword = async (req, res) => {
             success: true,
         });
     } catch (err) {
-        errorLogger.error(`Error occured in updating password`, err);
+        console.log(`Error occured in updating password`, err);
         return res.status(500).json({
             data: "",
             message: "Internal server error",
@@ -368,12 +354,10 @@ export const changeCurrentUserPassword = async (req, res) => {
  */
 export const refreshAccessToken = async (req, res) => {
     const incomingRefreshToken =
-        req.cookies.refreshToken ||
-        req.body.refreshToken ||
-        req.header("Authorization")?.replace("Bearer ", "");
+        req.cookies.refreshToken || req.body.refreshToken || req.header("Authorization")?.replace("Bearer ", "");
 
     if (!incomingRefreshToken) {
-        warningLogger.warn("Unauthorized request!");
+        console.log("Unauthorized request!");
         return res.status(401).json({
             data: "",
             message: "Unauthorized request!",
@@ -383,15 +367,12 @@ export const refreshAccessToken = async (req, res) => {
     }
 
     try {
-        const decodedToken = jwt.verify(
-            incomingRefreshToken,
-            process.env.REFRESH_TOKEN_SECRET
-        );
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
 
         const user = await User.findById(decodedToken._id);
 
         if (!user) {
-            warningLogger.warn("Invalid refresh token!");
+            console.log("Invalid refresh token!");
             return res.status(401).json({
                 data: "",
                 message: "Invalid Refresh Token!",
@@ -401,7 +382,7 @@ export const refreshAccessToken = async (req, res) => {
         }
 
         if (incomingRefreshToken !== user?.refreshToken) {
-            warningLogger.warn("Invalid refresh token!");
+            console.log("Invalid refresh token!");
             return res.status(401).json({
                 data: "",
                 message: "Refresh token expired for user",
@@ -415,12 +396,9 @@ export const refreshAccessToken = async (req, res) => {
             secure: true,
         };
 
-        const { accessToken, refreshToken: newRefreshToken } =
-            await generateAccessAndRefreshToken(user._id);
+        const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshToken(user._id);
 
-        infoLogger.info(
-            `Access token refreshed successfully for userId -> [${user.userId}]`
-        );
+        console.log(`Access token refreshed successfully for userId -> [${user.userId}]`);
 
         return res
             .status(200)
@@ -437,7 +415,7 @@ export const refreshAccessToken = async (req, res) => {
                 success: true,
             });
     } catch (error) {
-        errorLogger.error("Error while refreshing access token ::", error);
+        console.log("Error while refreshing access token ::", error);
         return res.status(401).json({
             data: "",
             message: "Invalid Refresh Token!",
@@ -471,9 +449,7 @@ export const logout = async (req, res) => {
             secure: true,
         };
 
-        infoLogger.info(
-            `userId -> [${req.decoded.userId}], Logged Out Successfully !!`
-        );
+        console.log(`userId -> [${req.decoded.userId}], Logged Out Successfully !!`);
 
         res.status(200)
             .clearCookie("refreshToken", cookieOptions)
@@ -486,7 +462,7 @@ export const logout = async (req, res) => {
                 success: true,
             });
     } catch (error) {
-        errorLogger.error(error);
+        console.log(error);
         res.status(500).json({
             data: "",
             message: "Internal server error",

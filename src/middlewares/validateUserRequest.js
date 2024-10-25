@@ -1,6 +1,5 @@
 import { User } from '../models/user.model.js'
 import validator from 'validator'
-import { warningLogger } from '../utils/winstonLogger.js'
 
 /* -------- CHECK WHETHER PASSWORD IS PROVIDED OR NOT (FOR BOTH SIGNUP & SIGNIN) ----------- */
 const isPasswordProvided = async (req, res, next) => {
@@ -70,7 +69,7 @@ const isUserIdRegisteredOrProvided = async (req, res, next) => {
   const user = await User.findOne({ userId: { $eq: req.body.userId } })
   if (user) {
     // console.log(`'${user.userId}' user already present in DB`)
-    warningLogger.warn(`'${user.userId}' user already present in DB`)
+    console.log(`'${user.userId}' user already present in DB`)
     return res.status(403).send({
       message: `'${user.userId}' user already present`
     })
@@ -88,9 +87,9 @@ const isUserIdProvided = async (req, res, next) => {
   }
   // userId check in DB
   const user = await User.findOne({ userId: { $eq: userIdReq } })
-  console.log('user', user)
+  // console.log('user', user)
   if (!user) {
-    warningLogger.warn('User not present in DB, please Register/Signup')
+    console.log('User not present in DB, please Register/Signup')
     return res.status(403).send({
       message: 'User not found, please Register!'
     })
