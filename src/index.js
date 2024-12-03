@@ -40,7 +40,7 @@ connectDB()
     .then(() => {
         initialize();
         app.listen(PORT, () => {
-            console.log(`⚙️ Listening all requests at http://localhost:${PORT}`);
+            console.log(`⚙️  Listening all requests at http://localhost:${PORT}`);
         });
     })
     .catch((error) => {
