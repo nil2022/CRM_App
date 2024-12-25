@@ -2,6 +2,7 @@ import connectDB from "./configs/db.config.js";
 import { app } from "./app.js";
 import { User } from "./models/user.model.js";
 import { userStatus, userTypes } from "./utils/constants.js";
+const PORT = process.env.PORT || 3000
 
 /**
  * * Create Master Administrator User and Login to the System
@@ -38,8 +39,8 @@ async function initialize() {
 connectDB()
     .then(() => {
         initialize();
-        app.listen(process.env.PORT || 3000, () => {
-            console.log(`⚙️ Listening all requests at http://localhost:${process.env.PORT}`);
+        app.listen(PORT, () => {
+            console.log(`⚙️ Listening all requests at http://localhost:${PORT}`);
         });
     })
     .catch((error) => {
