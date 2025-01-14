@@ -20,6 +20,9 @@ export const storeError = async (error) => {
     });
     const errorMessage = `${currentTime} - Error: ${error.stack}\n`;
     try {
+        if(!fs.existsSync("public/logs")) {
+            await fs.mkdir("public/logs");
+        }
         await fs.appendFile("public/logs/error.log", errorMessage);
     } catch (err) {
         console.error("Error writing to error log:", err);
