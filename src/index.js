@@ -36,16 +36,13 @@ async function initialize() {
 }
 
 try {
-    // connectDB()
-    //     .then(() => {
-    //         initialize();
-    //         app.listen(process.env.PORT || 3000, () => {
-    //             console.log(`⚙️ Listening all requests at http://localhost:${process.env.PORT}`);
-    //         });
-    //     })
-        app.listen(process.env.PORT || 3000, () => {
-            console.log(`⚙️ Listening all requests at http://localhost:${process.env.PORT}`);
-        });
+    connectDB()
+        .then(() => {
+            initialize();
+            // app.listen(process.env.PORT || 3000, () => {
+            //     console.log(`⚙️ Listening all requests at http://localhost:${process.env.PORT}`);
+            // });
+        })
         // .catch((error) => {
         //     console.log("MongoDB Connection FAILED !!! : ", error);
         //     throw new Error("MongoDB Connection FAILED !!! : ");
@@ -53,3 +50,7 @@ try {
 } catch (error) {
     throw new Error("Server Connection FAILED !!! : ", error);
 }
+
+app.listen(process.env.PORT || 3000, () => {
+    console.log(`⚙️ Listening all requests at http://localhost:${process.env.PORT}`);
+});
