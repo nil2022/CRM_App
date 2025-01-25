@@ -45,12 +45,12 @@ To install the necessary dependencies, run the following command:
 npm install or yarn
 ```
 
-Copy and rename `.env.sample` to `.env` and provide neccesary environmental variables for the application to run.
+Copy and rename `.env.sample` to `.env` and provide necessary environmental variables for the application to run.
 
 ```bash
 # SERVER PORT (MANDATORY)
 SERVER_PORT=#port on which CRM app will run
-# NODDE Environment (OPTIONAL)
+# NODE Environment (OPTIONAL)
 NODE_ENV=#development
 
 # JWT SECRETS AND EXPIRY TIME (MANDATORY)
@@ -222,8 +222,3 @@ Endpoint:- `/crm/api/v1/auth/change-password`
 
 ## Bugs/Issues
 Report any bugs or issues [here](https://github.com/nil2022/CRM_App/issues).
-
-
-
-
-
