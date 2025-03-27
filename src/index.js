@@ -6,34 +6,84 @@ import { userStatus, userTypes } from "./utils/constants.js";
 /**
  * * Create Master Administrator User and Login to the System
  */
+// async function initialize() {
+//     try {
+//         let systemAdminUser;
+        
+//         systemAdminUser = await User.findOne({
+//             userId: { $eq: process.env.ADMIN_USERID },
+//         });
+
+//         if (systemAdminUser) {
+//             console.log(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
+//             return;
+//         }
+
+//         systemAdminUser = await User.create({
+//             fullName: process.env.ADMIN_NAME,
+//             userId: process.env.ADMIN_USERID,
+//             email: process.env.ADMIN_EMAIL,
+//             userType: userTypes.admin,
+//             password: process.env.ADMIN_PASSWORD,
+//             isEmailVerified: true,
+//             userStatus: userStatus.approved,
+//         });
+
+//         console.log(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
+//     } catch (err) {
+//         console.log("SYSTEM Initialization FAILED!!", err.message);
+//     }
+// }
+
 async function initialize() {
     try {
         let systemAdminUser;
-        
-        systemAdminUser = await User.findOne({
-            userId: { $eq: process.env.ADMIN_USERID },
-        });
 
-        if (systemAdminUser) {
-            console.log(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
-            return;
+        // Log the start of the initialization process
+        console.log("Initializing SYSTEM ADMINISTRATOR...");
+        
+        // Try to find existing user
+        try {
+            systemAdminUser = await User.findOne({
+                userId: { $eq: process.env.ADMIN_USERID },
+            });
+            
+            if (systemAdminUser) {
+                console.log(`SYSTEM ADMINISTRATOR found: ${systemAdminUser.fullName}`);
+                return;
+            }
+        } catch (err) {
+            console.error("Error finding SYSTEM ADMINISTRATOR:", err);
+            throw new Error(`Failed to find SYSTEM ADMINISTRATOR: ${err.message}`);
         }
 
-        systemAdminUser = await User.create({
-            fullName: process.env.ADMIN_NAME,
-            userId: process.env.ADMIN_USERID,
-            email: process.env.ADMIN_EMAIL,
-            userType: userTypes.admin,
-            password: process.env.ADMIN_PASSWORD,
-            isEmailVerified: true,
-            userStatus: userStatus.approved,
-        });
+        // If user not found, create a new one
+        try {
+            systemAdminUser = await User.create({
+                fullName: process.env.ADMIN_NAME,
+                userId: process.env.ADMIN_USERID,
+                email: process.env.ADMIN_EMAIL,
+                userType: userTypes.admin,
+                password: process.env.ADMIN_PASSWORD,
+                isEmailVerified: true,
+                userStatus: userStatus.approved,
+            });
 
-        console.log(`Welcome SYSTEM ADMINISTRATOR, [${systemAdminUser.fullName}] !`);
+            console.log(`Created new SYSTEM ADMINISTRATOR: ${systemAdminUser.fullName}`);
+        } catch (err) {
+            console.error("Error creating SYSTEM ADMINISTRATOR:", err);
+            throw new Error(`Failed to create SYSTEM ADMINISTRATOR: ${err.message}`);
+        }
+
+        // Log the completion of the initialization process
+        console.log("SYSTEM ADMINISTRATOR initialized successfully");
     } catch (err) {
-        console.log("SYSTEM Initialization FAILED!!", err.message);
+        console.error("Initialization failed:", err);
+        // Optionally, log additional error details or handle the failure
+        throw new Error(`SYSTEM Initialization FAILED: ${err.message}`);
     }
 }
+
 
 try {
     connectDB()
