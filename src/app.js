@@ -6,23 +6,29 @@ import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocs from "../swaggerConfig.js";
 import fileUpload from "express-fileupload";
+import session from "express-session";
+import passport from "passport";
 
 const app = express();
+app.use(express.urlencoded({ extended: true })); // parse URL-encoded data & add it to the req.body object
+app.use(express.json()); // parse JSON data & add it to the req.body object
+app.use(cors());
+app.use(cookieParser());
+
 
 app.use(
-    cors({
-        origin: process.env.CORS_ORIGIN,
-        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-        allowedHeaders: process.env.CORS_ALLOWED_HEADERS,
-        credentials: true,
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
     })
 );
 
-app.use(express.urlencoded({ extended: true, limit: "5mb" })); // parse URL-encoded data & add it to the req.body object
-app.use(express.json({ limit: "5mb" })); // parse JSON data & add it to the req.body object
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(express.static("public"));
 app.use(helmet()); // helmet middleware for additional security
-app.use(cookieParser());
 app.use(limiter);
 app.use(fileUpload());
 
@@ -37,11 +43,14 @@ app.get("/health", (_, res) => {
 });
 
 import errorHandler from "./utils/errorHandler.js";
+// import router from "./routes/githubRoutes.js";
 import router from "./routes/index.js";
 
-app.use("/api/v1", router);
+import "./utils/GitHub-login.js";
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
+app.use('/api/v1',router);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Route not found middleware
 app.use((req, res) => {
