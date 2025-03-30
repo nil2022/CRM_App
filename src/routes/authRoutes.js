@@ -6,6 +6,7 @@ import {
     getLoggedInUser,
     refreshAccessToken,
     changeCurrentUserPassword,
+    handleSocialAuth,
     verifyUser,
 } from "../controllers/auth.controller.js";
 import {
@@ -24,6 +25,36 @@ import { verifyToken } from "../middlewares/auth.jwt.js";
  */
 
 const authRouter = Router();
+import passport from 'passport';
+
+
+// GitHub authentication route
+authRouter.get(
+    "/github",
+    passport.authenticate("github", { scope: ["user", "email"], }), // Request email scope
+    (req, res) => {
+        res.send("Redirecting to GitHub...");
+    }
+);
+
+// GitHub callback route
+authRouter.get(
+    "/github/callback",
+    passport.authenticate("github", {
+        failureRedirect: "/api/v1/auth/login", // Redirect if authentication fails
+        successRedirect: "/api/v1/auth/sso/success", // Redirect if authentication succeeds
+    })
+);
+
+// Route for successful login
+authRouter.get("/sso/success", handleSocialAuth)
+
+authRouter.get("/success",
+        (req, res) => {
+    console.log("Authentication successful:", req.user);
+    res.status(200).json({ message: "Login success", user: req.query });
+});
+
 
 /**
  * @swagger

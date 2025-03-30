@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendMail } from "../utils/mailSender.js";
 import { Otp } from "../models/otp.model.js";
-
+import { Octokit } from "octokit";
 const senderAddress = process.env.MAIL_FROM_ADDRESS;
 
 /**
@@ -470,4 +470,57 @@ export const logout = async (req, res) => {
             success: false,
         });
     }
+};
+
+/* Change logic as per requirement*/
+export const handleSocialAuth = async (req, res) => {
+
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+    };
+    console.log('====================================');
+    console.log(req.user);
+    console.log('====================================');
+    const octokit = new Octokit({
+        auth: req.user.accessToken,
+    });
+    const { data } = await octokit.request("GET /user/emails", {
+        headers: {
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    });
+
+    let user = await User.findOne({ email: data[0].email });
+
+    console.log('================= git hub user email =================');
+    console.log( data[0].email);
+    console.log('======================================================');
+    // if (!user) {
+    // create new user  and generate tokens and redirect
+    // user = await User.create({
+    //     fullName:req.user.username,
+    //     userId: req.user.githubId,
+    //     email: data[0].email,
+    //     loginType: "GITHUB",
+    //     avatar: req.user.avatar_url,
+    //     userType:  userTypes.customer,
+        // password,
+        // userStatus: userStatusReq,
+    // });
+    // }
+    // if user exists, just generate tokens and redirect
+    // const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken("67398a5004e171d92456b1fa");
+
+
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options) // set the access token in the cookie
+        .cookie("refreshToken", refreshToken, options) // set the refresh token in the cookie
+        .redirect(
+            // redirect user to the frontend with access and refresh token in case user is not using cookies
+            `http://localhost:3000/api/v1/auth/success?accessToken=${accessToken}&refreshToken=${refreshToken}`
+        );
 };
