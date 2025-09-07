@@ -146,7 +146,7 @@ export const signin = async (req, res) => {
     const { userId, password } = req.body;
 
     const user = await User.findOne({ userId: { $eq: userId } });
-    console.log(`Signin Request for userId -> [${user.userId}]`);
+    console.info(`Signin Request for userId -> [${user.userId}]`);
 
     if (!user) {
         return res.status(400).json({

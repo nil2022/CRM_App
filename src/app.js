@@ -10,11 +10,13 @@ import session from "express-session";
 import passport from "passport";
 
 const app = express();
-app.use(express.urlencoded({ extended: true })); // parse URL-encoded data & add it to the req.body object
-app.use(express.json()); // parse JSON data & add it to the req.body object
-app.use(cors());
+app.use(express.urlencoded({ extended: true, limit: "50mb" })); // parse URL-encoded data & add it to the req.body object
+app.use(express.json({ limit: "50mb" })); // parse JSON data & add it to the req.body object
+app.use(cors({
+    origin: '*',
+    credentials: true, // Allow cookies to be sent
+}));
 app.use(cookieParser());
-
 
 app.use(
     session({
@@ -33,9 +35,7 @@ app.use(limiter);
 app.use(fileUpload());
 
 /* ---------HOME PAGE ROUTE-------- */
-app.get("/health", (_, res) => {
-    // console.log("CRM app is up and running !");
-
+app.get("/", (req, res) => {
     return res.status(200).json({
         message: "CRM App is up and running 🚀",
         success: true,
@@ -48,7 +48,7 @@ import router from "./routes/index.js";
 
 import "./utils/GitHub-login.js";
 
-app.use('/api/v1',router);
+app.use("/api/v1", router);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
