@@ -50,7 +50,7 @@
     "passport-github2": "^0.1.12",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "validator": "^13.15.0",
+    "validator": "^13.15.20",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
