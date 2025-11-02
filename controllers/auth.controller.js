@@ -72,7 +72,6 @@ export const signup = async (req, res) => {
 
         // Send Email with OTP to verify User Email
         const emailResponse = await sendMail(fullName, userId, senderAddress, `${fullName} <${email}>`);
-        console.log('emailResponse: ', emailResponse);
 
         // res.send('OK')
 

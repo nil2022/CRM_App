@@ -9,14 +9,30 @@ import session from "express-session";
 import passport from "passport";
 import swaggerDocs from "#root/swaggerConfig";
 import { limiter } from "#utils/rateLimit";
+import errorHandler from "#utils/errorHandler";
+import router from "#root/routes/index";
+
+import "#utils/gitHubLogin";
+import env from "#configs/env";
+
+let PORT = 3000;
+
+if (env.NODE_ENV !== "development") {
+    PORT = env.PORT;
+}
 
 const app = express();
 app.use(express.urlencoded({ extended: true, limit: "50mb" })); // parse URL-encoded data & add it to the req.body object
 app.use(express.json({ limit: "50mb" })); // parse JSON data & add it to the req.body object
-app.use(cors({
-    origin: '*',
-    credentials: true, // Allow cookies to be sent
-}));
+
+const corsOptions = {
+    origin: "*", // allow requests from any origin
+    methods: ["GET", "POST", "PUT", "DELETE"], // allow these HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // allow these headers
+    credentials: true, // allow cookies to be sent
+    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
 app.use(
@@ -31,35 +47,31 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(express.static("public"));
-app.use(helmet()); // helmet middleware for additional security
+
+const helmetOptions = {
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"], // Allow scripts from self and inline scripts
+            connectSrc: ["'self'", `http://localhost:${PORT}`], // Allow connections to self and your API
+            // Add other directives if needed for images, styles, etc.
+            // imgSrc: ["'self'", "data:"],
+            // styleSrc: ["'self'", "'unsafe-inline'"],
+        },
+    },
+};
+app.use(helmet(helmetOptions)); // helmet middleware for additional security
 app.use(limiter);
 app.use(fileUpload());
 
-/* ---------HOME PAGE ROUTE-------- */
-app.get("/", (req, res) => {
+app.use("/crm/api/v1", router);  // serve all routes here
+
+app.use("/crm/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs)); // serve swagger docs for all routes here
+
+app.get("/crm", (req, res) => {
     return res.status(200).json({
         message: "CRM App is up and running 🚀",
         success: true,
-    });
-});
-
-import errorHandler from "../utils/errorHandler.util.js";
-// import router from "./routes/githubRoutes.js";
-import router from "../routes/index.js";
-
-import "../utils/gitHubLogin.util.js";
-
-app.use("/api/v1", router);
-
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-// Route not found middleware
-app.use((req, res) => {
-    // console.log("Route not found!");
-    return res.status(404).json({
-        message: "Route not found",
-        statusCode: 404,
-        success: false,
     });
 });
 

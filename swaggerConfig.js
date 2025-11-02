@@ -1,10 +1,11 @@
 // swaggerConfig.js
+import env from "#configs/env";
 import swaggerJSDoc from "swagger-jsdoc";
 
 let PORT = 3000;
 
-if (process.env.NODE_ENV !== "development") {
-    PORT = process.env.PORT;
+if (env.NODE_ENV !== "development") {
+    PORT = env.PORT;
 }
 
 const swaggerOptions = {
@@ -17,12 +18,12 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: `http://localhost:${PORT}/crm/api/v1`,
+                url: `http://localhost:${PORT}/api/v1`,
                 description: "Development server"
             },
         ],
     },
-    apis: ["./src/routes/*.js"], // Specify the path to your API routes files
+    apis: ["./routes/*.js"], // Specify the path to your API routes files
 };
 
 const swaggerDocs = swaggerJSDoc(swaggerOptions);

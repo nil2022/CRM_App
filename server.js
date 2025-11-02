@@ -1,27 +1,32 @@
 import connectDB from "#configs/db";
 import app from "#configs/app";
 import User from "#models/user";
+import env from "#configs/env";
 
-async function verifySystemAdmin() {
-    try {
-        const systemAdminUser = await User.findOne({
-            userId: process.env.ADMIN_USERID,
-        });
+let PORT = 3000;
 
-        if (systemAdminUser) {
-            console.log(`✅ SYSTEM ADMINISTRATOR verified: ${systemAdminUser.fullName}`);
-        } else {
-            console.warn("⚠️  No SYSTEM ADMINISTRATOR found! Run seed script to create one.");
-        }
-    } catch (err) {
-        console.error("Error verifying SYSTEM ADMINISTRATOR:", err);
-    }
+if (env.NODE_ENV !== "development") {
+    PORT = env.PORT;
 }
 
 connectDB().then(async () => {
-    await verifySystemAdmin();
+    (async function verifySystemAdmin() {
+        try {
+            const systemAdminUser = await User.findOne({
+                userId: env.ADMIN_USERID,
+            });
 
-    app.listen(process.env.PORT || 3000, () => {
-        console.log(`🚀 Server running at http://localhost:${process.env.PORT}`);
+            if (systemAdminUser) {
+                console.log(`✅ SYSTEM ADMINISTRATOR verified: ${systemAdminUser.fullName}`);
+            } else {
+                console.warn("⚠️  No SYSTEM ADMINISTRATOR found! Run seed script to create one.");
+            }
+        } catch (err) {
+            console.error("Error verifying SYSTEM ADMINISTRATOR:", err);
+        }
+    })();
+
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
 });

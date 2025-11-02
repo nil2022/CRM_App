@@ -1,7 +1,7 @@
 {
   "name": "crm-api",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "It is an app developed for resolving customer queries using backend libraries viz. express, bcrypt, jsonwebtoken, dotenv, mongoose, etc.",
   "type": "module",
   "main": "index.js",
