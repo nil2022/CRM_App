@@ -371,7 +371,7 @@ export const refreshAccessToken = async (req, res) => {
     }
 
     try {
-        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const decodedToken = jwt.verify(incomingRefreshToken, env.REFRESH_TOKEN_SECRET);
 
         const user = await User.findById(decodedToken._id);
 
@@ -481,7 +481,7 @@ export const handleSocialAuth = async (req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: env.NODE_ENV === "production",
     };
     console.log('====================================');
     console.log(req.user);

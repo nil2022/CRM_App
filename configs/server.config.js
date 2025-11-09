@@ -1,8 +1,10 @@
+import env from "#configs/env";
+
 // configs/server.config.js
 let PORT = 3000
 
-if (process.env.NODE_ENV !== 'development') {
-  PORT = process.env.PORT
+if (env.NODE_ENV !== 'development') {
+  PORT = env.PORT
 }
 
 export default PORT;

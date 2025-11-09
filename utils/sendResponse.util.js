@@ -1,4 +1,7 @@
 // utils/sendResponse.util.js
+
+import env from "#configs/env";
+
 /**
  * ### Global response handler
  *
@@ -162,7 +165,7 @@ export const sendResponse = (res, statusCode = 200, data = null, message = null,
 
             case "verbose":
                 // Include additional debugging info in development
-                if (process.env.NODE_ENV === "development") {
+                if (env.NODE_ENV === "development") {
                     finalResponse.debug = {
                         originalStatusCode: statusCode,
                         dataType: typeof data,
@@ -183,7 +186,7 @@ export const sendResponse = (res, statusCode = 200, data = null, message = null,
         }
 
         // Log response in development (customize as needed)
-        if (process.env.NODE_ENV === "development" && process.env.LOG_RESPONSES === "true") {
+        if (env.NODE_ENV === "development" && env.LOG_RESPONSES === "true") {
             console.log(`API Response [${statusCode}]:`, JSON.stringify(finalResponse, null, 2));
         }
 
@@ -198,7 +201,7 @@ export const sendResponse = (res, statusCode = 200, data = null, message = null,
             success: false,
             status: 500,
             message: "Internal server error",
-            ...(process.env.NODE_ENV === "development" && {
+            ...(env.NODE_ENV === "development" && {
                 error: error.message,
             }),
         };
@@ -251,7 +254,7 @@ export const sendValidationError = (res, errors, message = "Validation failed") 
 
 export const sendServerError = (res, message = "Internal server error", error = null) => {
     const options = {};
-    if (process.env.NODE_ENV === "development" && error) {
+    if (env.NODE_ENV === "development" && error) {
         options.errors = [error.message || error];
     }
     return sendResponse(res, 500, null, message, options);
@@ -282,7 +285,7 @@ export const sendMicroserviceResponse = (res, statusCode, data, message, service
         ...options,
         meta: {
             service: serviceName,
-            version: process.env.SERVICE_VERSION,
+            version: env.SERVICE_VERSION,
             timestamp: new Date().toISOString(),
             ...options.meta
         }

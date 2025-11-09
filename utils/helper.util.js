@@ -1,34 +1,43 @@
 // utils/helper.js
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { fileURLToPath } from "url";
+import env from "#configs/env";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * @param {object} error :- error object
- *# Function to store error in error log file
+ * Stores an error log entry with timestamp into /public/logs/error.log
+ * @param {Error} error - Error object to log
  * @example
  * storeError(error)
  */
 export const storeError = async (error) => {
     console.log(error);
+
     const currentTime = new Date().toLocaleString("en-US", {
         timeZone: "Asia/Kolkata",
     });
-    const errorMessage = `${currentTime} - Error: ${error.stack}\n`;
-    const errorLogPath = path.join(__dirname, "../public/logs/error.log");
-    console.log('errorLogPath: ', errorLogPath);
+
+    const errorMessage = `${currentTime} - Error: ${error.stack || error.message || error}\n`;
+
+    // Use absolute, OS-safe path
+    const logDir = path.join(__dirname, "../public/logs");
+    const logFile = path.join(logDir, "error.log");
+
     try {
-        if(!fs.existsSync("public/logs")) {
-            await fs.mkdir("public/logs");
-        }
-        await fs.appendFile("public/logs/error.log", errorMessage);
+        // Ensure log directory exists
+        await fs.mkdir(logDir, { recursive: true });
+
+        // Append the error message with a newline
+        await fs.appendFile(logFile, errorMessage, "utf8");
+
+        console.log(`✅ Error logged to: ${logFile}`);
     } catch (err) {
-        console.error("Error writing to error log:", err);
+        console.error("❌ Failed to write error log:", err);
     }
 };
 
@@ -114,8 +123,8 @@ export const deleteFile = async (fileName) => {
  *# Generate Jwt Token */
 export const generateJwtToken = (payload) => {
     try {
-        const secretKey = process.env.ACCESS_TOKEN_SECRET;
-        const expiryTime = process.env.ACCESS_TOKEN_EXPIRY || "1d";
+        const secretKey = env.ACCESS_TOKEN_SECRET;
+        const expiryTime = env.ACCESS_TOKEN_EXPIRY || "1d";
         const token = jwt.sign(payload, secretKey, { expiresIn: expiryTime });
         return token;
     } catch (error) {

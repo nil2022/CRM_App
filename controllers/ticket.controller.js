@@ -3,6 +3,7 @@ import User from "#models/user";
 import Ticket from "#models/ticket";
 import { userTypes, userStatus, ticketStatus } from "#utils/constants";
 import { notificationClient } from "#utils/notificationClient";
+import env from "#configs/env";
 
 /**
  * * This controller create a new Ticket requested by Customer
@@ -85,7 +86,7 @@ export const createTicket = async (req, res) => {
                 `${user.fullName} <${user.email}>`,
                 `${engineer.fullName} <${engineer.email}>` +
                     "," +
-                    `${process.env.ADMIN_NAME} <${process.env.ADMIN_EMAIL}>`,
+                    `${env.ADMIN_NAME} <${env.ADMIN_EMAIL}>`,
                 user.fullName,
                 engineer.fullName
             )
@@ -207,7 +208,7 @@ export const updateTicket = async (req, res) => {
                 `${reporter.fullName} <${reporter.email}>`,
                 `${engineer.fullName} <${engineer.email}>` +
                     "," +
-                    `${process.env.ADMIN_NAME} <${process.env.ADMIN_EMAIL}>`,
+                    `${env.ADMIN_NAME} <${env.ADMIN_EMAIL}>`,
                 reporter.fullName,
                 engineer.fullName
             );

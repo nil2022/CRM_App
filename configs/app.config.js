@@ -14,6 +14,7 @@ import router from "#root/routes/index";
 
 import "#utils/gitHubLogin";
 import env from "#configs/env";
+import chalk from "chalk";
 
 let PORT = 3000;
 
@@ -25,19 +26,31 @@ const app = express();
 app.use(express.urlencoded({ extended: true, limit: "50mb" })); // parse URL-encoded data & add it to the req.body object
 app.use(express.json({ limit: "50mb" })); // parse JSON data & add it to the req.body object
 
+// const corsOptions = {
+//     origin: env.CORS_ORIGIN,
+//     methods: ["GET", "POST", "PUT", "DELETE"], // allow these HTTP methods
+//     allowedHeaders: ["Content-Type", "Authorization"], // allow these headers
+//     credentials: true, // allow cookies to be sent
+//     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+// };
+
+const whitelist = [env.CORS_ORIGIN];
 const corsOptions = {
-    origin: "*", // allow requests from any origin
-    methods: ["GET", "POST", "PUT", "DELETE"], // allow these HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // allow these headers
-    credentials: true, // allow cookies to be sent
-    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log(chalk.yellowBright(`CORS Blocked :${origin}`));
+            callback(null, false);
+        }
+    },
 };
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
 app.use(
     session({
-        secret: process.env.SESSION_SECRET,
+        secret: env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
     })
@@ -64,7 +77,7 @@ app.use(helmet(helmetOptions)); // helmet middleware for additional security
 app.use(limiter);
 app.use(fileUpload());
 
-app.use("/crm/api/v1", router);  // serve all routes here
+app.use("/crm/api/v1", router); // serve all routes here
 
 app.use("/crm/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs)); // serve swagger docs for all routes here
 

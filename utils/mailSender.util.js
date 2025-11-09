@@ -2,6 +2,7 @@
 import nodemailer from "nodemailer";
 import generateRandomString from "#utils/randomString";
 import Otp from "#models/otp";
+import env from "#configs/env";
 
 // const currentTime = new Date(Date.now());
 // console.log(currentTime)
@@ -18,12 +19,12 @@ export async function sendMail(fullName, userId, fromAddress, toAddress) {
         await Otp.create({ otp: OTP, userId}) // expire after 2 hours
         await Otp.createIndexes({ "expireAt": 1 }, { expireAfterSeconds: 0 })
         const transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST,
-            port: parseInt(process.env.MAIL_PORT),
-            secure: false,
+            host: env.MAIL_HOST,
+            port: env.MAIL_PORT,
+            secure: env.MAIL_AUTH_SECURE,
             auth: {
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASS,
+                user: env.MAIL_USER,
+                pass: env.MAIL_PASS,
             },
         });
 

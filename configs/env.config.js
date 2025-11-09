@@ -18,6 +18,8 @@ const env = cleanEnv(envVariables, {
     NODE_ENV: str({ choices: ["development", "production"], default: "development" }),
     MONGODB_URI: str(),
 
+    NOTIFICATION_URL: str(),
+
     // JWT Config
     ACCESS_TOKEN_SECRET: str(),
     ACCESS_TOKEN_EXPIRY: str(),
@@ -44,6 +46,7 @@ const env = cleanEnv(envVariables, {
     // Email Config
     MAIL_HOST: str(),
     MAIL_PORT: num(),
+    MAIL_AUTH_SECURE: bool(), // true for 465, false for other ports
     MAIL_USER: str(),
     MAIL_PASS: str(),
     MAIL_FROM_ADDRESS: str(),
@@ -51,6 +54,8 @@ const env = cleanEnv(envVariables, {
     // Rate Limit Config
     RATE_LIMIT_TIME: num({ default: 15 * 60 * 1000 }), // 15 minutes
     MAX_REQUESTS: num({ default: 100 }), // limit each IP to 100 requests per windowMs
+
+    LOG_RESPONSES: bool(),
 });
 
 export default env;

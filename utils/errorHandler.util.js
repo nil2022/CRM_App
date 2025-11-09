@@ -1,4 +1,5 @@
 // utils/errorHandler.js
+import env from "#configs/env";
 import { storeError } from "#utils/helper";
 
 /**
@@ -22,7 +23,7 @@ const errorHandler = async (err, req, res, next) => {
         status: false,
         statusCode: statusCode,
         message: err.message,
-        stack: process.env.NODE_ENV === "production" ? null : err.stack,
+        stack: env.NODE_ENV === "production" ? null : err.stack,
     });
 }
 

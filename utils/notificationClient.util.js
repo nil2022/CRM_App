@@ -1,4 +1,5 @@
 // utils/notificationClient.util.js
+import env from "#configs/env";
 import axios from "axios";
 
 /**
@@ -15,7 +16,7 @@ export const notificationClient = async (
 ) => {
     try {
         await axios({
-            url: process.env.NOTIFICATION_URL,
+            url: env.NOTIFICATION_URL,
             method: "POST",
             data: {
                 subject,

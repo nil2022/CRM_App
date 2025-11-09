@@ -1,6 +1,7 @@
 // middlewares/auth.middleware.js
 import jwt from 'jsonwebtoken'
 import { userTypes } from '#utils/constants'
+import env from '#configs/env'
 
 /* -------- CHECK IF TOKEN IS PROVIDED & VERIFY TOKEN ----------- */
 const verifyToken = (req, res, next) => {
@@ -18,7 +19,7 @@ const verifyToken = (req, res, next) => {
     })
   }
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+  jwt.verify(token, env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       console.log(`Session(JWT Token) Expired! Please Re-Login! -> [${err.message}]`)
       return res.status(401).json({
