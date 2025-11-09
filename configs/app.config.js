@@ -26,25 +26,33 @@ const app = express();
 app.use(express.urlencoded({ extended: true, limit: "50mb" })); // parse URL-encoded data & add it to the req.body object
 app.use(express.json({ limit: "50mb" })); // parse JSON data & add it to the req.body object
 
-// const corsOptions = {
-//     origin: env.CORS_ORIGIN,
-//     methods: ["GET", "POST", "PUT", "DELETE"], // allow these HTTP methods
-//     allowedHeaders: ["Content-Type", "Authorization"], // allow these headers
-//     credentials: true, // allow cookies to be sent
-//     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-// };
+// Convert comma-separated env variable into array
+const whitelist = env.CORS_ORIGIN ? env.CORS_ORIGIN.split(",").map((origin) => origin.trim()) : [];
 
-const whitelist = [env.CORS_ORIGIN];
+// Log whitelist at startup for clarity
+console.log(chalk.cyanBright(`✅ CORS Whitelist: [${whitelist.join(", ")}]`));
+
 const corsOptions = {
     origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1) {
+        // Allow requests with no origin (like mobile apps, Postman, or server-to-server calls)
+        if (!origin) return callback(null, true);
+
+        if (whitelist.includes(origin)) {
             callback(null, true);
         } else {
-            console.log(chalk.yellowBright(`CORS Blocked :${origin}`));
+            console.log(chalk.yellowBright(`🚫 CORS Blocked: ${origin}`));
             callback(null, false);
         }
     },
+
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // include PATCH + OPTIONS for safety
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+    exposedHeaders: ["Content-Length", "X-Kuma-Revision"], // optional, expose any custom headers
+    credentials: true, // allow cookies / Authorization headers
+    optionsSuccessStatus: 200, // compatibility for old browsers (IE, SmartTVs)
+    preflightContinue: false, // let CORS handle OPTIONS automatically
 };
+
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
