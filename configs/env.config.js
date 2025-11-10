@@ -36,12 +36,12 @@ const env = cleanEnv(envVariables, {
 
     // CORS Config
     CORS_ORIGIN: str(),
-    CORS_ALLOWED_HEADERS: str(),
 
     // ADMIN User Config
     ADMIN_NAME: str(),
     ADMIN_USERID: str(),
     ADMIN_EMAIL: str(),
+    ADMIN_PASSWORD: str(),
 
     // Email Config
     MAIL_HOST: str(),

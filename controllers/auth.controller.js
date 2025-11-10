@@ -40,7 +40,7 @@ export const signup = async (req, res) => {
 
     try {
         const user = await User.create({
-            fullName,
+            fullName, 
             userId,
             email,
             loginType: "OTP",
@@ -61,19 +61,10 @@ export const signup = async (req, res) => {
             userStatus: user.userStatus,
             createdAt: user.createdAt,
         };
-
-        // console.log({
-        //     data: {
-        //         email: registeredUser.email,
-        //     },
-        //     message: "User Registered Successfully",
-        // });
         console.log("User Registered Successfully");
 
         // Send Email with OTP to verify User Email
         const emailResponse = await sendMail(fullName, userId, senderAddress, `${fullName} <${email}>`);
-
-        // res.send('OK')
 
         res.status(201).json({
             data: {
@@ -97,8 +88,6 @@ export const signup = async (req, res) => {
 /** CONTROLLER TO VERIFY USER EMAIL ID USING OTP */
 export const verifyUser = async (req, res) => {
     const { userId, otp } = req.body;
-
-    // console.log('otp', otp)
 
     try {
         const savedOtp = await Otp.findOne({ userId: { $eq: userId } });
@@ -161,45 +150,22 @@ export const signin = async (req, res) => {
     }
 
     if (!user.isEmailVerified) {
-        return res.status(400).json({
-            data: "",
-            message: "Please verify your Email!",
-            statusCode: 400,
-            success: false,
-        });
+        return sendResponse(res, 400, null, "Please verify your Email!");
     }
     /** CHECK IF PASSWORD IS IN STRING FORMAT */
     if (typeof password !== "string") {
         console.log(`Invalid Password! Password type is [${typeof password}]`);
-
         return sendResponse(res, 400, null, "Invalid Password! Password must be a string", {});
-        // return res.status(400).json({
-        //     data: "",
-        //     message: "Invalid Password!",
-        //     statusCode: 400,
-        //     success: false,
-        // });
     }
     const passwordIsValid = bcrypt.compareSync(password, user.password);
     /** CHECK IF PASSWORD IS VALID */
     if (!passwordIsValid) {
         return sendResponse(res, 401, null, "Invalid Password!");
-        // return res.status(401).json({
-        //     data: "",
-        //     message: "Invalid Password!",
-        //     statusCode: 401,
-        //     success: false,
-        // });
     }
     /** CHECK IF USER IS APPROVED */
     if (user.userStatus !== userStatus.approved) {
-        console.log(`User NOT APPROVED, Contact \n ADMIN !`);
-        return res.status(403).json({
-            data: "",
-            message: "User NOT APPROVED, Contact \n ADMIN !",
-            statusCode: 403,
-            success: false,
-        });
+        console.log(`User NOT APPROVED, Contact ADMIN !`);
+        return sendResponse(res, 403, null, "User NOT APPROVED, Contact ADMIN !");
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
@@ -478,14 +444,13 @@ export const logout = async (req, res) => {
 
 /* Change logic as per requirement*/
 export const handleSocialAuth = async (req, res) => {
-
     const options = {
         httpOnly: true,
         secure: env.NODE_ENV === "production",
     };
-    console.log('====================================');
+    console.log("====================================");
     console.log(req.user);
-    console.log('====================================');
+    console.log("====================================");
     const octokit = new Octokit({
         auth: req.user.accessToken,
     });
@@ -497,9 +462,9 @@ export const handleSocialAuth = async (req, res) => {
 
     let user = await User.findOne({ email: data[0].email });
 
-    console.log('================= git hub user email =================');
-    console.log( data[0].email);
-    console.log('======================================================');
+    console.log("================= git hub user email =================");
+    console.log(data[0].email);
+    console.log("======================================================");
     // if (!user) {
     // create new user  and generate tokens and redirect
     // user = await User.create({
@@ -509,15 +474,13 @@ export const handleSocialAuth = async (req, res) => {
     //     loginType: "GITHUB",
     //     avatar: req.user.avatar_url,
     //     userType:  userTypes.customer,
-        // password,
-        // userStatus: userStatusReq,
+    // password,
+    // userStatus: userStatusReq,
     // });
     // }
     // if user exists, just generate tokens and redirect
     // const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken("67398a5004e171d92456b1fa");
-
-
 
     return res
         .status(200)

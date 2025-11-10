@@ -2,13 +2,13 @@
   "name": "crm-api",
   "private": true,
   "version": "1.0.5",
-  "description": "It is an app developed for resolving customer queries using backend libraries viz. express, bcrypt, jsonwebtoken, dotenv, mongoose, etc.",
+  "description": "It is backend software built to provide support for resolving customer queries",
   "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "seed": "node seeds/seedAdmin.js",
+    "seed": "node seeds/seedAdmin.seed.js",
     "test": "jest --detectOpenHandles --forceExit"
   },
   "keywords": [

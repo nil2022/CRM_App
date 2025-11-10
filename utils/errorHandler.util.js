@@ -11,7 +11,6 @@ import { storeError } from "#utils/helper";
  * ## Error Handler
  */
 const errorHandler = async (err, req, res, next) => {
-    console.log('err, req, res, next: ', err, req, res, next);
     console.log(`Error ::`, err);
     // Store the error in a separate file
     await storeError(err);

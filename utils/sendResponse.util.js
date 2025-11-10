@@ -1,5 +1,4 @@
 // utils/sendResponse.util.js
-
 import env from "#configs/env";
 
 /**
@@ -190,7 +189,11 @@ export const sendResponse = (res, statusCode = 200, data = null, message = null,
             console.log(`API Response [${statusCode}]:`, JSON.stringify(finalResponse, null, 2));
         }
 
-        console.log('finalResponse: ', finalResponse);
+        const formattedFinalResponse = {
+            status: finalResponse.status,
+            message: finalResponse.message,
+        };
+        console.log("Final Response: ", formattedFinalResponse);
         return res.status(statusCode).json(finalResponse);
     } catch (error) {
         // Fallback error handling

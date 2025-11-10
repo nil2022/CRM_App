@@ -17,6 +17,7 @@ import {
     isUserIdRegisteredOrProvided,
 } from "#middlewares/validateUserRequest";
 import { verifyToken } from "#middlewares/auth";
+import passport from 'passport';
 
 /**
  * @swagger
@@ -26,8 +27,6 @@ import { verifyToken } from "#middlewares/auth";
  */
 
 const authRouter = Router();
-import passport from 'passport';
-
 
 // GitHub authentication route
 authRouter.get(
