@@ -33,3 +33,5 @@ jspm_packages/
 .pnp.*
 
 .idea
+
+*.txt

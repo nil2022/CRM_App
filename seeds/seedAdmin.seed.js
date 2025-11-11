@@ -1,33 +1,33 @@
 // seeds/seedAdmin.js
 import connectDB from "#configs/db";
 import env from "#configs/env";
-import User from "#models/user";
-import { userStatus, userTypes } from "#utils/constants";
+import Admin from "#models/admin";
 
 async function seedAdmin() {
     try {
         await connectDB();
 
-        let systemAdminUser = await User.findOne({
-            userId: env.ADMIN_USERID,
+        // Check for the admin using the email, which is a unique identifier
+        let systemAdmin = await Admin.findOne({
+            email: env.ADMIN_EMAIL,
         });
 
-        if (systemAdminUser) {
-            console.log(`✅ SYSTEM ADMINISTRATOR already exists: ${systemAdminUser.fullName}`);
+        if (systemAdmin) {
+            console.log(`✅ SYSTEM ADMINISTRATOR already exists: ${systemAdmin.fullName}`);
             process.exit(0);
         }
 
-        systemAdminUser = await User.create({
+        // Create the admin with fields matching the new Admin schema
+        systemAdmin = await Admin.create({
             fullName: env.ADMIN_NAME,
-            userId: env.ADMIN_USERID,
             email: env.ADMIN_EMAIL,
-            userType: userTypes.admin,
             password: env.ADMIN_PASSWORD,
+            role: "SUPER_ADMIN", // Set the role to SUPER_ADMIN
+            status: "ACTIVE", // Set the status to ACTIVE
             isEmailVerified: true,
-            userStatus: userStatus.approved,
         });
 
-        console.log(`🎉 Created SYSTEM ADMINISTRATOR: ${systemAdminUser.fullName}`);
+        console.log(`🎉 Created SYSTEM ADMINISTRATOR: ${systemAdmin.fullName}`);
         process.exit(0);
     } catch (err) {
         console.error("❌ Failed to seed SYSTEM ADMINISTRATOR:", err);

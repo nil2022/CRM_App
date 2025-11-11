@@ -39,7 +39,6 @@ const env = cleanEnv(envVariables, {
 
     // ADMIN User Config
     ADMIN_NAME: str(),
-    ADMIN_USERID: str(),
     ADMIN_EMAIL: str(),
     ADMIN_PASSWORD: str(),
 

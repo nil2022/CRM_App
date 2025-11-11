@@ -16,7 +16,6 @@ const __dirname = path.dirname(__filename);
  * storeError(error)
  */
 export const storeError = async (error) => {
-    console.log(error);
 
     const currentTime = new Date().toLocaleString("en-US", {
         timeZone: "Asia/Kolkata",
@@ -34,8 +33,6 @@ export const storeError = async (error) => {
 
         // Append the error message with a newline
         await fs.appendFile(logFile, errorMessage, "utf8");
-
-        console.log(`✅ Error logged to: ${logFile}`);
     } catch (err) {
         console.error("❌ Failed to write error log:", err);
     }
