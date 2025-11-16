@@ -19,8 +19,8 @@ import PORT from "#configs/server";
 import { sendResponse } from "#utils/sendResponse";
 
 const app = express();
-app.use(express.urlencoded({ extended: true, limit: "50mb" })); // parse URL-encoded data & add it to the req.body object
-app.use(express.json({ limit: "50mb" })); // parse JSON data & add it to the req.body object
+app.use(express.urlencoded({ extended: true, limit: "16kb" })); // parse URL-encoded data & add it to the req.body object
+app.use(express.json({ limit: "16kb" })); // parse JSON data & add it to the req.body object
 app.use(express.static("public"));
 app.use(fileUpload());
 

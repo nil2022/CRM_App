@@ -10,28 +10,18 @@ import {
     handleSocialAuth,
     verifyUser,
 } from "#controllers/auth";
-import {
-    isEmailRegisteredOrProvided,
-    isPasswordProvided,
-    isUserIdProvided,
-    isUserIdRegisteredOrProvided,
-} from "#middlewares/validateUserRequest";
 import { verifyToken } from "#middlewares/auth";
-import passport from 'passport';
-
-/**
- * @swagger
- * tags:
- *   name: Authorization
- *   description: Authorization routes for CRM App
- */
+import passport from "passport";
+import { sendResponse } from "#utils/sendResponse";
+import { changePasswordSchema, loginSchema, userSignupSchema, verifyEmailOtpSchema } from "#validations/user";
+import httpStatus from "http-status";
 
 const authRouter = Router();
 
 // GitHub authentication route
 authRouter.get(
     "/github",
-    passport.authenticate("github", { scope: ["user", "email"], }), // Request email scope
+    passport.authenticate("github", { scope: ["user", "email"] }), // Request email scope
     (req, res) => {
         res.send("Redirecting to GitHub...");
     }
@@ -47,205 +37,116 @@ authRouter.get(
 );
 
 // Route for successful login
-authRouter.get("/sso/success", handleSocialAuth)
+authRouter.get("/sso/success", handleSocialAuth);
 
-authRouter.get("/success",
-        (req, res) => {
+authRouter.get("/success", (req, res) => {
     console.log("Authentication successful:", req.user);
     res.status(200).json({ message: "Login success", user: req.query });
 });
 
-
-/**
- * @swagger
- * /auth/register:
- *   post:
- *     summary: Create a new user
- *     description: Create a new user using fullName, userId, email and password provided.
- *     tags: [Authorization]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           example:
- *             fullName: John Doe
- *             userId: john123
- *             email: john@email.com
- *             password: john123
- *             userType: CUSTOMER
- *     responses:
- *       201:
- *         description: User created
- *         content:
- *           application/json:
- *             example:
- *               data:
- *                 user:
- *                   _id: 66a137196dc8047f160cbed0
- *                   fullName: John Doe
- *                   userId: john123
- *                   email: john@email.com
- *                   avatar: ""
- *                   loginType: OTP
- *                   isEmailVerified: false
- *                   userType: CUSTOMER
- *                   userStatus: APPROVED
- *                   createdAt: 2022-09-27T06:32:33.000Z
- *               message: User registered successfully and verification email has been sent on your email.
- *               statusCode: 201
- *               success: true
- *       400:
- *         description: Bad request
- *       409:
- *         description: User already exists
- *       500:
- *         description: Internal server error
- */
-authRouter.post("/register", [isUserIdRegisteredOrProvided, isEmailRegisteredOrProvided, isPasswordProvided], signup);
-
-/**
- * @swagger
- * /auth/verify-user:
- *   post:
- *     summary: Verify user
- *     tags: [Authorization]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           example:
- *             userId: john123
- *             otp: 123456
- *     responses:
- *       200:
- *         description: User verified
- *         content:
- *           application/json:
- *             example:
- *               data: ""
- *               message: User verified successfully
- *               statusCode: 200
- *               success: true
- *       400:
- *         description: Bad request
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Not found
- *       500:
- *         description: Internal server error
- */
-authRouter.post("/verify-user", verifyUser);
-
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Login a user
- *     description: Login a user with userId and password provided
- *     tags: [Authorization]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           example:
- *             userId: john123
- *             password: john123
- *     responses:
- *       200:
- *         description: User logged in
- *       400:
- *         description: Bad request
- *       404:
- *         description: User not found
- *       500:
- *         description: Internal server error
- */
-authRouter.post("/login", [isUserIdProvided, isPasswordProvided], signin);
-
-/**
- * @swagger
- * /auth/current-user:
- *   get:
- *     summary: Get current user
- *     description: Get current user details based on access token provided
- *     tags: [Authorization]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: User found
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
-authRouter.get("/current-user", [verifyToken], getLoggedInUser);
-
-/**
- * @swagger
- * /auth/change-password:
- *   patch:
- *     summary: Change current user password
- *     description: Change current user password
- *     tags: [Authorization]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           example:
- *             oldPassword: john123
- *             newPassword: john123
- *     responses:
- *       200:
- *         description: Password changed
- *       400:
- *         description: Bad request
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
-authRouter.patch("/change-password", [verifyToken], changeCurrentUserPassword);
-
-/**
- * @swagger
- * /auth/refresh-token:
- *   get:
- *     summary: Refresh access token
- *     description: Refresh access token
- *     tags: [Authorization]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Access token refreshed
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
-authRouter.get("/refresh-token", refreshAccessToken);
-
-/**
- * @swagger
- * /auth/logout:
- *   get:
- *     summary: Logout a user
- *     description: Logout a user
- *     tags: [Authorization]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: User logged out
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
+authRouter.post("/register", registerUser);
+authRouter.post("/verify-user", verifyUserEmail);
+authRouter.post("/login", loginUser);
+authRouter.get("/current-user", [verifyToken], getUserProfile);
+authRouter.patch("/change-password", [verifyToken], changePassword);
+authRouter.get("/refresh-token", refreshUserAccessToken);
 authRouter.get("/logout", [verifyToken], logout);
+
+async function registerUser(req, res, next) {
+    try {
+        const payload = req.body;
+        const { error } = userSignupSchema.validate(payload);
+        if (error) {
+            return sendResponse(res, httpStatus.BAD_REQUEST, null, error.message);
+        }
+        const result = await signup(payload);
+        return sendResponse(res, 201, null, result?.message || `User Registered Successfully`);
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function verifyUserEmail(req, res, next) {
+    try {
+        const { error, value: validatedPayload } = verifyEmailOtpSchema.validate(req.body);
+        if (error) {
+            return sendResponse(res, httpStatus.BAD_REQUEST, null, error.message);
+        }
+        const result = await verifyUser(validatedPayload);
+        return sendResponse(res, httpStatus.OK, null, result?.message || `OTP Verified Successfully`);
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function loginUser(req, res, next) {
+    try {
+        const { error, value: validatedPayload } = loginSchema.validate(req.body);
+        if (error) {
+            return sendResponse(res, httpStatus.BAD_REQUEST, null, error.message);
+        }
+        const { accessToken, refreshToken, message } = await signin(validatedPayload);
+        return res.status(200).json({
+            status: true,
+            message,
+            accessToken,
+            refreshToken,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function getUserProfile(req, res, next) {
+    try {
+        const loggedInUser = req.decoded;
+        const user = await getLoggedInUser(loggedInUser);
+        return sendResponse(res, httpStatus.OK, user, user?.message || "Data fetched successfully");
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function changePassword(req, res, next) {
+    try {
+        const loggedInUser = req.decoded;
+        const { error, value } = changePasswordSchema.validate(req.body);
+        if (error) {
+            return sendResponse(res, httpStatus.BAD_REQUEST, null, error.message);
+        }
+        await changeCurrentUserPassword(value, loggedInUser);
+        return sendResponse(res, httpStatus.OK, null, "Password changed successfully");
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function refreshUserAccessToken(req, res, next) {
+    try {
+        const header = req.header("Authorization") || "";
+        const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+        const userAgent = req.headers["user-agent"];
+        const opts = { ip, userAgent };
+        const incomingRefreshToken = header.startsWith("Bearer ")
+            ? header.replace("Bearer ", "")
+            : req.body?.refreshToken || undefined;
+
+        if (!incomingRefreshToken) {
+            throw {
+                status: httpStatus.UNAUTHORIZED,
+                message: "Refresh token required",
+            };
+        }
+        const { accessToken, refreshToken, message } = await refreshAccessToken(incomingRefreshToken, opts);
+        return res.status(200).json({
+            status: true,
+            message,
+            accessToken,
+            refreshToken,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
 
 export default authRouter;

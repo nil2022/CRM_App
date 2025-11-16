@@ -12,9 +12,9 @@ const errorHandler = async (err, req, res, next) => {
     res.status(statusCode);
     return res.json({
         status: false,
-        statusCode: statusCode,
+        // statusCode: statusCode,
         message: err.message,
-        stack: env.NODE_ENV === "production" ? null : err.stack,
+        // stack: env.NODE_ENV === "production" ? null : err.stack,
     });
 }
 

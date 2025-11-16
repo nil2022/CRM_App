@@ -4,10 +4,7 @@ import { userTypes } from "#utils/constants";
 import env from "#configs/env";
 import { sendResponse } from "#utils/sendResponse";
 
-/* -------- CHECK IF TOKEN IS PROVIDED & VERIFY TOKEN ----------- */
-const verifyToken = (req, res, next) => {
-    // get accessToken from cookies
-
+export const verifyToken = (req, res, next) => {
     const token =
         req.cookies?.accessToken ||
         req.header("Authorization")?.replace("Bearer ", "") ||
@@ -39,7 +36,7 @@ const verifyToken = (req, res, next) => {
 };
 
 /* -------- CHECK WHETHER USER IS ADMIN OR NOT ----------- */
-const isAdmin = async (req, res, next) => {
+export const isAdmin = async (req, res, next) => {
     if (req.decoded.userType === userTypes.admin) {
         next();
     } else {
@@ -47,5 +44,3 @@ const isAdmin = async (req, res, next) => {
         return sendResponse(res, 401, null, "Access denied, Require Admin Role!", false);
     }
 };
-
-export { verifyToken, isAdmin };

@@ -16,9 +16,11 @@ connectDB().then(async () => {
                 console.log(`✅ SYSTEM ADMINISTRATOR verified: ${systemAdmin.fullName}`);
             } else {
                 console.warn("⚠️  No SYSTEM ADMINISTRATOR found! Run admin seed script to create one.");
+                process.exit(1);
             }
         } catch (err) {
             console.error("Error verifying SYSTEM ADMINISTRATOR:", err);
+            process.exit(1);
         }
     })();
 

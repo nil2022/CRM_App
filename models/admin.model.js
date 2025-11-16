@@ -3,6 +3,7 @@ import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import env from "#configs/env";
+import { adminTypes, userAndAdminStatus } from "#utils/constants";
 
 const adminSchema = new Schema(
     {
@@ -38,13 +39,13 @@ const adminSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ["SUPER_ADMIN", "SUB_ADMIN"],
+            enum: Object.values(adminTypes),
             required: true,
         },
         status: {
             type: String,
-            enum: ["ACTIVE", "INACTIVE", "SUSPENDED"],
-            default: "INACTIVE", // keep sub-admins inactive by default
+            enum: Object.values(userAndAdminStatus),
+            default: userAndAdminStatus.inactive, // keep sub-admins inactive by default
         },
         // adds a permissions array which can hold various permissions for sub-admins
         permissions: {
@@ -81,6 +82,7 @@ adminSchema.methods.generateAuthToken = function () {
             _id: this._id,
             email: this.email,
             isEmailVerified: this.isEmailVerified,
+            role: this.role,
             lastLogin: this.lastLogin,
             status: this.status,
         },

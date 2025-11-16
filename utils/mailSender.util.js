@@ -1,23 +1,28 @@
 // utils/mailSender.util.js
 import nodemailer from "nodemailer";
-import generateRandomString from "#utils/randomString";
 import Otp from "#models/otp";
 import env from "#configs/env";
+import chalk from "chalk";
+import { generateOtp } from "#utils/general";
+import httpStatus from "http-status";
 
 // const currentTime = new Date(Date.now());
 // console.log(currentTime)
 
-export async function sendMail(fullName, userId, fromAddress, toAddress) {
+export async function sendMail(fullName, ownerId, ownerModel, toAddress) {
 
     try {
-        const existingOtp = await Otp.findOne({ userId: { $eq: userId } })
+        const existingOtp = await Otp.findById(ownerId);
         if (existingOtp) {
-            throw new Error(`OTP already sent to user with 'userId' => [${userId}]`)
+            throw {
+                status: httpStatus.BAD_REQUEST,
+                message: `OTP already sent to user '${fullName} => [${toAddress}]`,
+            }
         }
         // generate new OTP
-        const OTP = generateRandomString(6);
-        await Otp.create({ otp: OTP, userId}) // expire after 2 hours
-        await Otp.createIndexes({ "expireAt": 1 }, { expireAfterSeconds: 0 })
+        const OTP = generateOtp(6);
+        console.log(chalk.green(`OTP ===>> ${OTP}`))
+        await Otp.create({ otp: OTP, ownerId, ownerModel}) // expire after 10 minutes
         const transporter = nodemailer.createTransport({
             host: env.MAIL_HOST,
             port: env.MAIL_PORT,
@@ -31,7 +36,7 @@ export async function sendMail(fullName, userId, fromAddress, toAddress) {
         const mailBody = `
             <h3>Hello ${fullName} !</h3>
             <p>Enter the following <strong>OTP</strong> when prompted to verify your email.</p>
-            <p>This code will expire in 2 hours.</p>
+            <p>This code will expire in 10 minutes.</p>
             <h1>${OTP}</h1>
             <hr/>
             CRM Service Team 😊 | Happy to help !
@@ -39,9 +44,9 @@ export async function sendMail(fullName, userId, fromAddress, toAddress) {
 
             
         const info = await transporter.sendMail({
-            from: fromAddress,
+            from: env.MAIL_FROM_ADDRESS,
             to: toAddress,
-            subject: 'OTP confirmation alert for CRM Service',
+            subject: 'Verify your email to activate your account ✅',
             html: mailBody,
         });
 
@@ -51,7 +56,6 @@ export async function sendMail(fullName, userId, fromAddress, toAddress) {
         return info;
 
     } catch (error) {
-        console.log("mailSender :: error ::", error);
-        throw error;
+        console.log(chalk.red("sendMail :: Error ::", error.message));
     }
 }

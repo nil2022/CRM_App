@@ -1,6 +1,6 @@
 // controllers/admins.controller.js
-
 import Admin from "#models/admin";
+import { loginSchema } from "#validations/user";
 
 export const createSubAdmin = async (payload) => {
     return await Admin.create(payload);
@@ -19,9 +19,16 @@ export const deleteSubAdmin = async (subAdminId) => {
 };
 
 export const adminLogin = async (payload) => {
-    const { email, password } = payload;
+    const { error, value } = loginSchema.validate(payload);
+    if (error) {
+        throw {
+            statusCode: 400,
+            message: error.details[0].message,
+        };
+    }
 
-    const fetchAdmin = await Admin.findOne({ email }).select("password email isEmailVerified lastLogin status");
+    const { email, password } = value;
+    const fetchAdmin = await Admin.findOne({ email }).select("password email isEmailVerified lastLogin status role");
     if (!fetchAdmin) {
         throw {
             statusCode: 401,

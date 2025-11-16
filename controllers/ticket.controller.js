@@ -1,7 +1,7 @@
 // controllers/ticket.controller.js
 import User from "#models/user";
 import Ticket from "#models/ticket";
-import { userTypes, userStatus, ticketStatus } from "#utils/constants";
+import { userTypes, ticketStatus } from "#utils/constants";
 import { notificationClient } from "#utils/notificationClient";
 import env from "#configs/env";
 
@@ -39,7 +39,7 @@ export const createTicket = async (req, res) => {
         // ? Logic to find an Engineer in the Approved state
         const engineer = await User.findOne({
             userType: userTypes.engineer,
-            userStatus: userStatus.approved,
+            // userStatus: userStatus.approved,
             // add a availability to engineers so that they can be assigned
             // if engineer is assigned set true else false
             // availability: true // assign the ticket to the engineer

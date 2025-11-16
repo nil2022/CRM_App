@@ -1,263 +1,208 @@
 // controllers/auth.controller.js
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Otp from "#models/otp";
 import User from "#models/user";
 import { Octokit } from "octokit";
-import { userStatus, userTypes } from "#utils/constants";
+import { loginType, userAndAdminStatus } from "#utils/constants";
 import { sendMail } from "#utils/mailSender";
-import { sendResponse } from "#utils/sendResponse";
 import env from "#configs/env";
-
-const senderAddress = env.MAIL_FROM_ADDRESS;
-
-/**
- * * This controller Generates Access and Refresh Token
- */
-async function generateAccessAndRefreshToken(userId) {
-    const user = await User.findById(userId);
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-
-    user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
-
-    return { accessToken, refreshToken };
-}
+import httpStatus from "http-status";
+import chalk from "chalk";
+import crypto from "crypto";
+import { generateAccessAndRefreshToken, hashToken } from "#utils/general";
 
 /**
  * * This controller Registers User
  */
-export const signup = async (req, res) => {
-    let userStatusReq;
-    const { fullName, userId, email, password, userType } = req.body;
-
-    if (userType === userTypes.engineer || userType === userTypes.admin) {
-        userStatusReq = userStatus.pending;
-    } else {
-        userStatusReq = userStatus.approved;
-    }
-
-    try {
-        const user = await User.create({
-            fullName, 
-            userId,
-            email,
-            loginType: "OTP",
-            userType: userType ? userType.toUpperCase() : userTypes.customer,
-            password,
-            userStatus: userStatusReq,
-        });
-
-        const registeredUser = {
-            _id: user._id,
-            fullName: user.fullName,
-            userId: user.userId,
-            email: user.email,
-            avatar: user.avatar,
-            loginType: user.loginType,
-            isEmailVerified: user.isEmailVerified,
-            userType: user.userType,
-            userStatus: user.userStatus,
-            createdAt: user.createdAt,
+export const signup = async (payload) => {
+    // check existing user by email
+    const { email, fullName } = payload;
+    const existingUser = await User.findOne({ email: { $eq: email } });
+    if (existingUser) {
+        throw {
+            status: httpStatus.BAD_REQUEST,
+            message: "Email already registered!",
         };
-        console.log("User Registered Successfully");
-
-        // Send Email with OTP to verify User Email
-        const emailResponse = await sendMail(fullName, userId, senderAddress, `${fullName} <${email}>`);
-
-        res.status(201).json({
-            data: {
-                user: registeredUser,
-            },
-            message: "Users registered successfully and verification email has been sent on your email.",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (err) {
-        console.log(`${err.message}`, `${err.name}:${err.message}`, err);
-        res.status(500).json({
-            data: "",
-            message: "Something went wrong!",
-            statusCode: 500,
-            success: false,
-        });
     }
+    const user = await User.create(payload);
+
+    // Send OTP to user email
+    await sendMail(fullName, user._id, "User", user.email);
+
+    return {
+        message: "OTP has been sent to your email, please verify to activate your account.",
+    };
 };
 
 /** CONTROLLER TO VERIFY USER EMAIL ID USING OTP */
-export const verifyUser = async (req, res) => {
-    const { userId, otp } = req.body;
+export const verifyUser = async (payload) => {
+    const { email, otp } = payload;
+    const savedOtp = await Otp.findOne({ email: { $eq: email } });
+    if (!savedOtp) {
+        throw {
+            status: httpStatus.BAD_REQUEST,
+            message: "OTP not found",
+        };
+    }
 
-    try {
-        const savedOtp = await Otp.findOne({ userId: { $eq: userId } });
-        // console.log('savedOtp', savedOtp)
+    if (savedOtp.otp === otp) {
+        console.log(chalk.green("User verified successfully"));
+        await User.findOneAndUpdate(
+            { email: { $eq: email } },
+            { isEmailVerified: true, status: userAndAdminStatus.active },
+            { new: true }
+        );
+        // Update Otp as used
+        savedOtp.isUsed = true;
+        await savedOtp.save();
 
-        if (!savedOtp)
-            return res.status(404).json({
-                data: "",
-                message: "OTP not found!",
-                statusCode: 404,
-                success: false,
-            });
-
-        if (savedOtp.otp === otp) {
-            console.log({ message: "User verified" });
-            await User.findOneAndUpdate({ userId: { $eq: userId } }, { isEmailVerified: true });
-            await Otp.deleteOne({ userId: { $eq: userId } });
-
-            return res.status(200).json({
-                data: "",
-                message: "User verified successfully!",
-                statusCode: 200,
-                success: true,
-            });
-        } else {
-            console.log("Invalid OTP");
-            return res.status(400).json({
-                data: "",
-                message: "Invalid OTP!",
-                statusCode: 400,
-                success: false,
-            });
-        }
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            data: "",
-            message: error.message,
-            statusCode: 500,
-            success: false,
-        });
+        return {
+            message: "Email verified successfully",
+        };
+    } else {
+        console.log("Invalid OTP");
+        throw {
+            status: httpStatus.BAD_REQUEST,
+            message: "Invalid OTP",
+        };
     }
 };
 
 /**
  * * This controller logs in User into the system
  */
-export const signin = async (req, res) => {
-    const { userId, password } = req.body;
+// export const signin = async (payload) => {
+//     const { email, password } = payload;
+//     const user = await User.findOne({ email: { $eq: email } }).select(
+//         "fullName password isEmailVerified status role loginType lastLogin"
+//     );
+//     if (!user) {
+//         throw {
+//             status: httpStatus.BAD_REQUEST,
+//             message: "Failed! UserId doesn't exist!",
+//         };
+//     }
 
-    const user = await User.findOne({ userId: { $eq: userId } });
+//     if (!user.isEmailVerified) {
+//         throw {
+//             status: httpStatus.BAD_REQUEST,
+//             message: "Please verify your Email!",
+//         };
+//     }
+//     const passwordIsValid = await user.isValidPassword(password);
+//     if (!passwordIsValid) {
+//         throw {
+//             status: httpStatus.BAD_REQUEST,
+//             message: "Invalid Password!",
+//         };
+//     }
+//     /** CHECK IF USER IS APPROVED */
+//     if (user.status !== userAndAdminStatus.active) {
+//         console.log(chalk.yellow(`User not approved, Contact ADMIN !`));
+//         throw {
+//             status: httpStatus.BAD_REQUEST,
+//             message: "Access Denied, Verification Pending!",
+//         };
+//     }
+//     const { accessToken, refreshToken, tokenId } = await generateAccessAndRefreshToken(user._id);
+//     user.refreshToken = refreshToken;
+//     user.loginType = loginType.password;
+//     user.lastLogin = Date.now();
+//     await user.save({ validateBeforeSave: false });
+//     console.log(
+//         chalk.grey(`[${user.lastLogin}] User:-> [${user.fullName}], Role:-> [${user.role}]  signed in successfully!`)
+//     );
+
+//     return {
+//         message: "User Logged in successfully !",
+//         accessToken,
+//     };
+// };
+
+export const signin = async (payload, opts = {}) => {
+    const { email, password } = payload;
+
+    // find user (including password for verification)
+    const user = await User.findOne({ email: { $eq: email } }).select(
+        "fullName password isEmailVerified status role loginType lastLogin"
+    );
 
     if (!user) {
-        return res.status(400).json({
-            data: "",
+        throw {
+            status: httpStatus.BAD_REQUEST,
             message: "Failed! UserId doesn't exist!",
-            statusCode: 400,
-            success: false,
-        });
+        };
     }
 
     if (!user.isEmailVerified) {
-        return sendResponse(res, 400, null, "Please verify your Email!");
+        throw {
+            status: httpStatus.BAD_REQUEST,
+            message: "Please verify your Email!",
+        };
     }
-    /** CHECK IF PASSWORD IS IN STRING FORMAT */
-    if (typeof password !== "string") {
-        console.log(`Invalid Password! Password type is [${typeof password}]`);
-        return sendResponse(res, 400, null, "Invalid Password! Password must be a string", {});
-    }
-    const passwordIsValid = bcrypt.compareSync(password, user.password);
-    /** CHECK IF PASSWORD IS VALID */
+
+    const passwordIsValid = await user.isValidPassword(password);
     if (!passwordIsValid) {
-        return sendResponse(res, 401, null, "Invalid Password!");
+        throw {
+            status: httpStatus.BAD_REQUEST,
+            message: "Invalid Password!",
+        };
     }
+
     /** CHECK IF USER IS APPROVED */
-    if (user.userStatus !== userStatus.approved) {
-        console.log(`User NOT APPROVED, Contact ADMIN !`);
-        return sendResponse(res, 403, null, "User NOT APPROVED, Contact ADMIN !");
+    if (user.status !== userAndAdminStatus.active) {
+        console.log(chalk.yellow(`User not approved, Contact ADMIN !`));
+        throw {
+            status: httpStatus.BAD_REQUEST,
+            message: "Access Denied, Verification Pending!",
+        };
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+    // generate tokens (this function should handle storing the hashed refresh token + jti in user's refreshSessions)
+    // opts can include ip, userAgent etc: { ip: req.ip, userAgent: req.get('User-Agent') }
+    const { accessToken, refreshToken, tokenId } = await generateAccessAndRefreshToken(user._id, {
+        ip: opts.ip,
+        userAgent: opts.userAgent,
+    });
 
-    const loggedInUser = {
-        __v: user.__v,
-        _id: user._id,
-        fullName: user.fullName,
-        userId: user.userId,
-        email: user.email,
-        avatar: user.avatar,
-        loginType: user.loginType,
-        isEmailVerified: user.isEmailVerified,
-        userType: user.userType,
-        userStatus: user.userStatus,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-    };
-
-    const cookieOptions = {
-        httpOnly: true,
-        secure: true,
-    };
-
-    console.log(`[${loggedInUser.fullName}], Role:-> [${loggedInUser.userType}]  signed in successfully!`);
-
-    return res
-        .status(201)
-        .cookie("accessToken", accessToken, cookieOptions)
-        .cookie("refreshToken", refreshToken, cookieOptions)
-        .set("Authorization", `Bearer ${accessToken}`)
-        .json({
-            data: {
-                accessToken,
-                refreshToken,
-                user: loggedInUser,
+    // update loginType and lastLogin WITHOUT overwriting refreshSessions (atomic update)
+    await User.updateOne(
+        { _id: user._id },
+        {
+            $set: {
+                loginType: loginType.password,
+                lastLogin: Date.now(),
             },
-            message: "User Logged in successfully !",
-            statusCode: 200,
-            success: true,
-        });
+        }
+    );
+
+    console.log(
+        chalk.grey(
+            `[${new Date().toISOString()}] User:-> [${user.fullName}], Role:-> [${user.role}] signed in successfully!`
+        )
+    );
+
+    // return both tokens so frontend can store refreshToken and attach to header on refresh calls
+    return {
+        message: "User Logged in successfully !",
+        accessToken,
+        refreshToken,
+    };
 };
 
 /**
  * This controller fethes current logged in user
  */
-export const getLoggedInUser = async (req, res) => {
-    try {
-        const user = await User.findById({ _id: req.decoded._id });
-
-        if (!user) {
-            console.log("User not found");
-            return res.status(404).json({
-                data: "",
-                message: "User not found",
-                statusCode: 404,
-                success: false,
-            });
-        }
-
-        const userData = {
-            __v: user.__v,
-            _id: user._id,
-            fullName: user.fullName,
-            userId: user.userId,
-            email: user.email,
-            avatar: user.avatar,
-            loginType: user.loginType,
-            isEmailVerified: user.isEmailVerified,
-            userType: user.userType,
-            userStatus: user.userStatus,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
+export const getLoggedInUser = async (loggedInUser) => {
+    const { _id } = loggedInUser;
+    const user = await User.findById(_id).select("-password -__v -refreshToken");
+    if (!user) {
+        throw {
+            status: httpStatus.BAD_REQUEST,
+            message: "User not found",
         };
-
-        // console.log(`Current Logged in User (userId) -> [${user.userId}] fetched success`);
-
-        res.status(200).json({
-            data: userData,
-            message: "Current user fetched successfully",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            data: "",
-            message: "Internal server error",
-            statusCode: 500,
-            success: false,
-        });
     }
+    return user;
 };
 
 // TODO: controllers to design
@@ -270,129 +215,120 @@ export const getLoggedInUser = async (req, res) => {
 /**
  * This controller changes current user password
  */
-export const changeCurrentUserPassword = async (req, res) => {
-    const { oldPassword, newPassword } = req.body;
+export const changeCurrentUserPassword = async (payload, loggedInUser) => {
+    const { oldPassword, newPassword } = payload;
+    const user = await User.findById(loggedInUser._id).select("fullName password");
+    const isPasswordValid = await user.isValidPassword(oldPassword);
 
-    try {
-        if (newPassword === "" || newPassword === null || oldPassword === "" || oldPassword === null) {
-            console.log("Passwords can't be empty!");
-            return res.status(400).json({
-                data: "",
-                message: "Passwords can't be empty!",
-                statusCode: 400,
-                success: false,
-            });
-        }
-
-        const user = await User.findById(req.decoded._id);
-        const isPasswordValid = await user.isValidPassword(oldPassword);
-
-        if (!isPasswordValid) {
-            console.log("Invalid Old Password!");
-            return res.status(400).json({
-                data: "",
-                message: "Invalid Old Password!",
-                statusCode: 400,
-                success: false,
-            });
-        }
-
-        user.password = newPassword;
-        await user.save({ validateBeforeSave: false });
-
-        console.log(`Password changed successfully for userId -> [${user.userId}]`);
-
-        return res.status(200).json({
-            data: "",
-            message: "Password changed successfully!",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (err) {
-        console.log(`Error occured in updating password`, err);
-        return res.status(500).json({
-            data: "",
-            message: "Internal server error",
-            statusCode: 500,
-            success: false,
-        });
+    if (!isPasswordValid) {
+        throw {
+            status: httpStatus.BAD_REQUEST,
+            message: "Invalid Old Password!",
+        };
     }
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false });
+    return {
+        message: "Password changed successfully !",
+    };
+};
+
+const timingSafeCompare = (a, b) => {
+    const aBuf = Buffer.from(a);
+    const bBuf = Buffer.from(b);
+    if (aBuf.length !== bBuf.length) return false;
+    return crypto.timingSafeEqual(aBuf, bBuf);
 };
 
 /**
  * This controller refreshes access token
  */
-export const refreshAccessToken = async (req, res) => {
-    const incomingRefreshToken =
-        req.cookies.refreshToken || req.body.refreshToken || req.header("Authorization")?.replace("Bearer ", "");
-
-    if (!incomingRefreshToken) {
-        console.log("Unauthorized request!");
-        return res.status(401).json({
-            data: "",
-            message: "Unauthorized request!",
-            statusCode: 401,
-            success: false,
-        });
-    }
-
+export const refreshAccessToken = async (incomingRefreshToken, opts = {}) => {
+    let decoded;
     try {
-        const decodedToken = jwt.verify(incomingRefreshToken, env.REFRESH_TOKEN_SECRET);
-
-        const user = await User.findById(decodedToken._id);
-
-        if (!user) {
-            console.log("Invalid refresh token!");
-            return res.status(401).json({
-                data: "",
-                message: "Invalid Refresh Token!",
-                statusCode: 401,
-                success: false,
-            });
-        }
-
-        if (incomingRefreshToken !== user?.refreshToken) {
-            console.log("Invalid refresh token!");
-            return res.status(401).json({
-                data: "",
-                message: "Refresh token expired for user",
-                statusCode: 401,
-                success: false,
-            });
-        }
-
-        const cookieOptions = {
-            httpOnly: true,
-            secure: true,
+        decoded = jwt.verify(incomingRefreshToken, env.REFRESH_TOKEN_SECRET);
+    } catch (err) {
+        console.log(chalk.red("Invalid/expired refresh token"), err.message);
+        throw {
+            status: httpStatus.UNAUTHORIZED,
+            message: "Invalid/expired refresh token",
         };
-
-        const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshToken(user._id);
-
-        console.log(`Access token refreshed successfully for userId -> [${user.userId}]`);
-
-        return res
-            .status(200)
-            .cookie("accessToken", accessToken, cookieOptions)
-            .cookie("refreshToken", newRefreshToken, cookieOptions)
-            .set("Authorization", `Bearer ${accessToken}`)
-            .json({
-                data: {
-                    accessToken,
-                    refreshToken: newRefreshToken,
-                },
-                message: "Access Token refreshed successfully!",
-                statusCode: 200,
-                success: true,
-            });
-    } catch (error) {
-        console.log("Error while refreshing access token ::", error);
-        return res.status(401).json({
-            data: "",
-            message: "Invalid Refresh Token!",
-            statusCode: 401,
-            success: false,
-        });
     }
+
+    const tokenId = decoded.jti;
+    if (!tokenId) {
+        console.log(chalk.red("Missing jti in refresh token"));
+        throw {
+            status: httpStatus.UNAUTHORIZED,
+            message: "Invalid refresh token",
+        };
+    }
+
+    const user = await User.findById(decoded._id).select("fullName refreshSessions");
+    if (!user) {
+        throw {
+            status: httpStatus.UNAUTHORIZED,
+            message: "User not found",
+        };
+    }
+
+    // Find stored session by tokenId
+    const session = user.refreshSessions.find((s) => s.tokenId === tokenId);
+    const incomingHash = hashToken(incomingRefreshToken);
+
+    // If no session found => possible reuse (or logout) -> revoke all sessions
+    if (!session) {
+        // revoke all: clear refreshSessions
+        user.refreshSessions = [];
+        await user.save({ validateBeforeSave: false });
+        console.log(chalk.red(`Refresh token reuse or invalid jti detected for user ${user._id}`));
+        throw {
+            status: httpStatus.UNAUTHORIZED,
+            message: "Refresh token revoked. Please login again.",
+        };
+    }
+
+    // Compare stored hash with incoming
+    if (!timingSafeCompare(incomingHash, session.tokenHash)) {
+        // hash mismatch -> compromise: remove that session or all sessions
+        user.refreshSessions = user.refreshSessions.filter((s) => s.tokenId !== tokenId);
+        await user.save({ validateBeforeSave: false });
+        console.log(chalk.red("Refresh token hash mismatch — removed session"));
+        throw {
+            status: httpStatus.UNAUTHORIZED,
+            message: "Invalid refresh token. Please login again.",
+        };
+    }
+
+    // Optional: check session.expiresAt
+    if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
+        // expired
+        user.refreshSessions = user.refreshSessions.filter((s) => s.tokenId !== tokenId);
+        await user.save({ validateBeforeSave: false });
+        throw {
+            status: httpStatus.UNAUTHORIZED,
+            message: "Refresh token expired. Please login again.",
+        };
+    }
+
+    // Rotate: remove the previous session, create a new refresh token and session
+    user.refreshSessions = user.refreshSessions.filter((s) => s.tokenId !== tokenId);
+
+    const {
+        accessToken,
+        refreshToken,
+        tokenId: newTokenId,
+    } = await generateAccessAndRefreshToken(user._id, {
+        ip: opts.ip,
+        userAgent: opts.userAgent,
+    });
+
+    // send tokens in response body (frontend will attach refresh token to header on next requests)
+    return {
+        message: "Access token refreshed",
+        accessToken,
+        refreshToken,
+    };
 };
 
 /**

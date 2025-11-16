@@ -3,6 +3,27 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import env from "#configs/env";
+import { userAndAdminStatus, userTypes } from "#utils/constants";
+
+const RefreshSessionSchema = new Schema({
+    tokenId: {
+        type: String,
+        required: true,
+    }, // jti
+    tokenHash: {
+        type: String,
+        required: true,
+    }, // sha256(refreshToken)
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    expiresAt: {
+        type: Date,
+    },
+    ip: String,
+    userAgent: String,
+});
 
 const userSchema = new Schema(
     {
@@ -10,60 +31,68 @@ const userSchema = new Schema(
             type: String,
             required: [true, "Not Provided"],
         },
-        userId: {
-            type: String,
-            required: [true, "Not Provided"],
-            unique: true,
-            trim: true,
-            index: true, // helps to make searchable in DB
-        },
+
         password: {
             type: String,
             required: [true, "Not Provided"],
         },
+
+        mobile: {
+            type: String,
+            trim: true,
+        },
+
         email: {
             type: String,
             required: [true, "Not Provided"],
             lowercase: true,
-            unique: true,
-            minLength: 10,
             trim: true,
-            index: true,
         },
+
         isEmailVerified: {
             type: Boolean,
             default: false,
         },
+
         loginType: {
             type: String,
             default: "",
         },
+
         avatar: {
             type: String,
             default: "",
         },
-        userType: {
+
+        role: {
             type: String,
+            enum: Object.values(userTypes),
             required: true,
-            uppercase: true,
-            default: "CUSTOMER",
         },
-        userStatus: {
+
+        status: {
             type: String,
-            required: true,
-            uppercase: true,
-            default: "APPROVED",
+            enum: Object.values(userAndAdminStatus),
+            default: userAndAdminStatus.inactive, // keep users inactive by default
         },
-        refreshToken: {
-            type: String,
+
+        refreshSessions: {
+            type: [RefreshSessionSchema],
+            default: [],
         },
-        ticketsCreated: {
-            type: [Schema.Types.ObjectId],
-            ref: "Ticket",
-        },
-        ticketsAssigned: {
-            type: [Schema.Types.ObjectId],
-            ref: "Ticket",
+
+        // ticketsCreated: {
+        //     type: [Schema.Types.ObjectId],
+        //     ref: "Ticket",
+        // },
+
+        // ticketsAssigned: {
+        //     type: [Schema.Types.ObjectId],
+        //     ref: "Ticket",
+        // },
+
+        lastLogin: {
+            type: Date,
         },
     },
     {
@@ -72,18 +101,22 @@ const userSchema = new Schema(
     }
 );
 
+// EMail Unique index for faster searching
+userSchema.index({ email: 1 }, { unique: true });
+
 /**
  * Hash the password before saving the user models
  */
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
 
-    this.password = await bcrypt.hash(this.password, 10);
+    this.password = await bcrypt.hash(this.password, 12);
     next();
 });
 
 /**
  * Compare the password to check if it's correct
+ * This method is accessible by calling user document instance
  */
 userSchema.methods.isValidPassword = async function (password) {
     return await bcrypt.compare(password, this.password);
@@ -94,9 +127,7 @@ userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         {
             _id: this._id,
-            userId: this.userId,
-            userType: this.userType,
-            userStatus: this.userStatus,
+            role: this.role,
         },
         env.ACCESS_TOKEN_SECRET,
         {
@@ -106,10 +137,11 @@ userSchema.methods.generateAccessToken = function () {
 };
 
 // Generate JWT Refresh tokens
-userSchema.methods.generateRefreshToken = function () {
+userSchema.methods.generateRefreshToken = function (jti) {
     return jwt.sign(
         {
             _id: this._id,
+            jti,
         },
         env.REFRESH_TOKEN_SECRET,
         {
