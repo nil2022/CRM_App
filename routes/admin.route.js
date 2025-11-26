@@ -1,5 +1,6 @@
 // routes/admin.route.js
-import { adminLogin, createSubAdmin, deleteSubAdmin, getAllSubAdmins, updateSubAdmin } from "#controllers/admins";
+import { adminLogin, createSubAdmin, deleteSubAdmin, getAdmin, getAllSubAdmins, updateSubAdmin } from "#controllers/admins";
+import { verifyAdminToken } from "#middlewares/adminAuth";
 import { sendResponse } from "#utils/sendResponse";
 import { Router } from "express";
 
@@ -7,11 +8,22 @@ const adminRouter = Router();
 
 // Create a Sub-admin
 adminRouter.route("/login").post(signIn);
+adminRouter.route("/current-user").get(verifyAdminToken, fetchCurrenAdmin);
 adminRouter.route("/").post(create).get(get).patch(update).delete(removeSubAdmin);
 
 // -------------------------------------------------------------
 // ------------------- ADMIN CRUD ------------------------------
 // -------------------------------------------------------------
+async function fetchCurrenAdmin(req, res, next) {
+    try {
+        const adminId = req.admin._id;
+        const admin = await getAdmin(adminId);
+        return res.status(200).json({ message: "Admin fetched successfully", data: admin });
+    } catch (error) {
+        next(error);
+    }
+}
+
 async function create(req, res, next) {
     try {
         const payload = req.body;

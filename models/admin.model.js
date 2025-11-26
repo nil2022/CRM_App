@@ -80,11 +80,7 @@ adminSchema.methods.generateAuthToken = function () {
     return jwt.sign(
         {
             _id: this._id,
-            email: this.email,
-            isEmailVerified: this.isEmailVerified,
             role: this.role,
-            lastLogin: this.lastLogin,
-            status: this.status,
         },
         env.ACCESS_TOKEN_SECRET,
         {

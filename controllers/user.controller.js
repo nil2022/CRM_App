@@ -1,199 +1,68 @@
 // controllers/user.controller.js
-/**
- * Controllers for the user resources.
- * Only the user of type ADMIN should be able to perform the operations
- * defined in the User Controller
- */
 import User from "#models/user";
-
-/**
- * * This controller fetches all users in database
- */
-const fetchAll = async () => {
-    try {
-        const users = await User.find().select("-password -refreshToken -__v");
-        // users.length = 0;
-
-        // console.log("fetched all users success");
-        return users;
-    } catch (err) {
-        console.log(err);
-        throw err;
-    }
-};
-
-/**
- * * This controller fetch user by name
- */
-const fetchByName = async (userNameReq) => {
-    try {
-        const users = await User.find({
-            fullName: {
-                $regex: userNameReq.replace(/\n|\r/g, ""),
-                $options: "i",
-            }, // $regex operator to find all documents in a collection, $options parameter to specify case-insensitivity
-        }).select(" -password -refreshToken -__v ");
-        // console.log("fetch by name success");
-        return users;
-    } catch (err) {
-        console.log(
-            `Error while fetching the user for Name : ${userNameReq.replace(/\n|\r/g, "")}`,
-            err
-        );
-        throw err;
-    }
-};
-
-/**
- * * This controller fetch user by usertype and userstatus
- */
-const fetchByTypeAndStatus = async (userTypeReq, userStatusReq) => {
-    try {
-        const users = await User.find({
-            userType: { $eq: userTypeReq },
-            userStatus: { $eq: userStatusReq }, // $eq operator userStatusReq
-        }).select(" -password -refreshToken -__v ");
-
-        // console.log("fetch by usertype and userstatus success");
-        return users;
-    } catch (err) {
-        console.log(
-            `Error while fetching users for userType [${userTypeReq}] and userStatus [${userStatusReq}]`,
-            err
-        );
-        throw err;
-    }
-};
-
-/**
- * * This controller fetch user by usertype
- */
-const fetchByType = async (userTypeReq) => {
-    try {
-        const users = await User.find({
-            userType: { $eq: userTypeReq },
-        });
-        // console.log("fetch by usertype success");
-        return users;
-    } catch (err) {
-        console.log(
-            `Error while fetching users for userType [${userTypeReq}] `,
-            err
-        );
-        throw err;
-    }
-};
-
-/**
- * * This controller fetch user by userstatus
- */
-const fetchByStatus = async (userStatusReq) => {
-    try {
-        const users = await User.find({
-            userStatus: { $eq: userStatusReq },
-        }).select(" -password -refreshToken -__v ");
-        // console.log("fetch by userstatus success");
-        return users;
-    } catch (err) {
-        console.log(
-            `Error while fetching users for userStatus [${userStatusReq}] `,
-            err
-        );
-        throw err;
-    }
-};
+import mongoose from "mongoose";
 
 /**
  * * Fetch the list of all users by different query params
  */
-export const findAll = async (req, res) => {
-    let users;
-    const userTypeReq = req.query.userType
-        ? req.query.userType.toUpperCase().replace(/\n|\r/g, "")
-        : "";
-    const userStatusReq = req.query.userStatus
-        ? req.query.userStatus.toUpperCase().replace(/\n|\r/g, "")
-        : "";
-    const userNameReq = req.query.fullName;
-    // sillyLogger.debug(
-    //     `userTypeReq: ${userTypeReq} userStatusReq: ${userStatusReq} userNameReq: ${userNameReq} userIdReq: ${userIdReq} `
-    // );
-    try {
-        if (userNameReq) {
-            users = await fetchByName(userNameReq);
-        } else if (userTypeReq && userStatusReq) {
-            users = await fetchByTypeAndStatus(userTypeReq, userStatusReq);
-        } else if (userTypeReq) {
-            users = await fetchByType(userTypeReq);
-        } else if (userStatusReq) {
-            users = await fetchByStatus(userStatusReq);
-        } else {
-            users = await fetchAll();
-        }
+export const fetchAllUsers = async (query) => {
+    const { userType, userStatus, fullName } = query || {};
 
-        if (users.length === 0) {
-            // console.log("No users found in database ! (findall)");
-            return res.status(200).json({
-                data: "",
-                message: "No users found in database !",
-                statusCode: 200,
-                success: true,
-            });
-        }
-        res.status(200).json({
-            data: users,
-            message: "Users fetched successfully!",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (err) {
-        // console.log(err);
-        res.status(500).json({
-            data: "",
-            message: "Some internal error occured (findall)",
-            statusCode: 500,
-            success: false,
-        });
+    // sanitize inputs
+    const userTypeReq = userType ? userType.toString().toUpperCase().replace(/\n|\r/g, "").trim() : null;
+    const userStatusReq = userStatus ? userStatus.toString().toUpperCase().replace(/\n|\r/g, "").trim() : null;
+    const userNameReq = fullName ? fullName.toString().replace(/\n|\r/g, "").trim() : null;
+
+    // build filter dynamically
+    const filter = {};
+    if (userTypeReq) filter.role = { $eq: userTypeReq };
+    if (userStatusReq) filter.status = { $eq: userStatusReq };
+    if (userNameReq) filter.fullName = { $regex: userNameReq, $options: "i" };
+
+    // projection: exclude sensitive/internal fields
+    const projection = "-password -refreshToken -__v -refreshSessions";
+
+    const users = await User.find(filter).select(projection);
+
+    if (!users || users.length === 0) {
+        throw {
+            status: 200,
+            message: "No users found in database !",
+        };
     }
+    return users;
 };
 
 /**
- * * This controller fetch user by userId
+ * Fetch a user by userId (accepts either Mongo _id or a custom userId string).
+ * Returns a plain JS object (lean).
  */
-export const findByUserId = async (req, res) => {
-    const userIdReq = req.query.userId.replace(/\s/g, "");
-    try {
-        const user = await User.findOne({
-            userId: { $eq: userIdReq },
-        }).select(" -password -refreshToken -__v");
-
-        if (user.length === 0) {
-            console.log(` userId -> [${userIdReq}] not found in server`);
-            return res.status(400).json({
-                data: "",
-                message: `User not found in server`,
-                statusCode: 400,
-                success: false,
-            });
-        }
-
-        console.log("fetch user by userId success");
-
-        return res.status(200).json({
-            data: user,
-            message: "User fetched successfully!",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (err) {
-        console.log(`Error fetching user data ::`, err);
-        res.status(500).json({
-            data: "",
-            message: "Something went wrong",
-            failure: 500,
-            success: false,
-        });
+export const findByUserId = async (userId) => {
+    // basic validation
+    if (!userId || typeof userId !== "string") {
+        throw { status: 400, message: "Invalid or missing userId" };
     }
+
+    // sanitize
+    const userIdReq = userId.replace(/\s/g, "");
+
+    // determine filter: if valid ObjectId, search by _id; otherwise search by userId field
+    const isObjectId = mongoose.Types.ObjectId.isValid(userIdReq);
+    const filter = isObjectId ? { _id: userIdReq } : { userId: { $eq: userIdReq } };
+
+    // projection: exclude sensitive/internal fields
+    const projection = "-password -refreshToken -__v -refreshSessions";
+
+    // use lean() for performance (returns plain JS object)
+    const user = await User.findOne(filter).select(projection).lean();
+
+    if (!user) {
+        // 404 for not found — caller (controller) can map this to HTTP response
+        console.info(`User not found for identifier: [${userIdReq}]`);
+        throw { status: 404, message: "User not found" };
+    }
+
+    return user;
 };
 
 /**
@@ -201,61 +70,62 @@ export const findByUserId = async (req, res) => {
  * * i.e. PENDING -> APPROVED
  * * (This is to be updated only by MASTER(SYSTEM) ADMIN and other ADMINs)
  */
-export const updateUserStatus = async (req, res) => {
-    const { userStatus } = req.body;
-    const userIdReq = req.query.userId.replace(/\s/g, "");
-    try {
-        const fetchedUser = await User.findOne({
-            userId: { $eq: userIdReq },
-        }).select(" -password -refreshToken ");
-
-        const user = await User.findOneAndUpdate(
-            {
-                userId: { $eq: userIdReq },
-            },
-            {
-                updatedAt: Date.now(),
-                userStatus:
-                    userStatus !== "" ? userStatus : fetchedUser.userStatus,
-            },
-            {
-                new: true,
-            }
-        ).select(
-            " -password -__v -refreshToken"
-        );
-
-        if (user.length === 0) {
-            // console.log('User is not in server !!');
-            return res.status(400).json({
-                data: '',
-                message: "User is not in server !!",
-                statusCode: 400,
-                success: false,
-            });
-        }
-        // console.log(`userId -> [${userIdReq}] data has been updated `);
-
-        return res.status(200).json({
-            data: user,
-            message: "User record has been updated successfully",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (err) {
-        // console.log(`Error while updating the record: ${err.message}`, err);
-        res.status(500).json({
-            data: '',
-            message: "Something went wrong !",
-            statusCode: 500,
-            success: false,
-        });
+export const updateUserStatus = async (payload) => {
+    const { userId, status } = payload || {};
+    // validate
+    if (!userId || typeof userId !== "string") {
+        throw { status: 400, message: "Invalid or missing userId" };
     }
+
+    // sanitize
+    const userIdReq = userId.replace(/\s/g, "");
+    const statusReq =
+        typeof status === "string" && status.trim() !== "" ? status.trim().toUpperCase() : null;
+
+    // valid ObjectId?
+    const isObjectId = mongoose.Types.ObjectId.isValid(userIdReq);
+    const filter = isObjectId ? { _id: userIdReq } : { userId: { $eq: userIdReq } };
+
+    // projection
+    const projection = "-password -refreshToken -__v -refreshSessions";
+
+    // fetch user first
+    const existingUser = await User.findOne(filter).select(projection).lean();
+
+    if (!existingUser) {
+        console.info(`User not found for identifier: [${userIdReq}]`);
+        throw { status: 404, message: "User not found" };
+    }
+
+    // if no status provided, keep existing
+    const newStatus = statusReq || existingUser.status;
+
+    const updated = await User.findOneAndUpdate(
+        filter,
+        {
+            $set: {
+                status: newStatus,
+                updatedAt: Date.now(),
+            },
+        },
+        {
+            new: true,
+            runValidators: true,
+            context: "query",
+        }
+    )
+        .select(projection)
+        .lean();
+
+    if (!updated) {
+        throw { status: 500, message: "Failed to update user" };
+    }
+
+    return updated;
 };
 
 // ? Make controllers for all users having features
 // ? change password, email, avatar, etc. as per requirement
-
 
 // ! This controller is to delete a user [USE by CAUTION !!]
 /**
@@ -265,8 +135,9 @@ export const updateUserStatus = async (req, res) => {
 export const deleteUser = async (req, res) => {
     const userIdReq = req.query.userId.replace(/\s/g, "");
     try {
-        const user = await User.findOneAndDelete({ userId: userIdReq })
-        .select(" -ticketsCreated -ticketsAssigned -password -__v");
+        const user = await User.findOneAndDelete({ userId: userIdReq }).select(
+            " -ticketsCreated -ticketsAssigned -password -__v"
+        );
 
         if (!user || user.length === 0) {
             // console.log(` userId -> [${userIdReq}] not found in server`);
@@ -288,7 +159,7 @@ export const deleteUser = async (req, res) => {
     } catch (err) {
         // console.log(`Error while deleting the record for userId -> ${userIdReq}`, err);
         res.status(500).json({
-            data: '',
+            data: "",
             message: "Something went wrong !",
             statusCode: 500,
             success: false,

@@ -1,4 +1,5 @@
 // midllewares/adminAuth.middleware.js
+import env from "#configs/env";
 import chalk from "chalk";
 import jwt from "jsonwebtoken";
 

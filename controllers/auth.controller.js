@@ -4,7 +4,7 @@ import Otp from "#models/otp";
 import User from "#models/user";
 import { Octokit } from "octokit";
 import { loginType, userAndAdminStatus } from "#utils/constants";
-import { sendMail } from "#utils/mailSender";
+import { sendMail } from "#utils/mailer";
 import env from "#configs/env";
 import httpStatus from "http-status";
 import chalk from "chalk";
@@ -130,7 +130,7 @@ export const signin = async (payload, opts = {}) => {
     if (!user) {
         throw {
             status: httpStatus.BAD_REQUEST,
-            message: "Failed! UserId doesn't exist!",
+            message: "User doesn't exist, Please register first!",
         };
     }
 
@@ -195,7 +195,7 @@ export const signin = async (payload, opts = {}) => {
  */
 export const getLoggedInUser = async (loggedInUser) => {
     const { _id } = loggedInUser;
-    const user = await User.findById(_id).select("-password -__v -refreshToken");
+    const user = await User.findById(_id).select("-password -__v -refreshSessions");
     if (!user) {
         throw {
             status: httpStatus.BAD_REQUEST,

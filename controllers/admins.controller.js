@@ -56,3 +56,14 @@ export const adminLogin = async (payload) => {
 
     return { data: adminObject, token };
 };
+
+export const getAdmin = async (adminId) => {
+    const admin = await Admin.findById(adminId).select("-password -__v");
+    if (!admin) {
+        throw {
+            statusCode: 404,
+            message: "Admin not found",
+        };
+    }
+    return admin;
+};

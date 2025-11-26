@@ -22,7 +22,7 @@ export const loginSchema = Joi.object({
             "Password must contain at least 1 uppercase, 1 lowercase, 1 digit, and 1 special character (@$!%*?&).",
         "any.required": "Password is required.",
     }),
-}).options({ abortEarly: false, allowUnknown: true });
+}).options({ abortEarly: true, allowUnknown: true });
 
 export const userSignupSchema = Joi.object({
     fullName: Joi.string().required().messages({
