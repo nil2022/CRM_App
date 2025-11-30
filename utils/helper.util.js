@@ -40,42 +40,6 @@ export const storeError = async (error) => {
 
 /**
  *
- * @param {*} res :- response
- * @param {*} statusCode :- status code
- * @param {*} message :- message
- * @param {*} data :- data
- * @param {*} totalCount :- total count
- *# Function for success return message
- * @example
- * sendSuccessResponse(res, statusCode, message, data, totalCount)
- */
-export const sendSuccessResponse = (res, statusCode, message, data = [], totalCount = null) => {
-    return res.status(statusCode).json({
-        status: true,
-        message: message,
-        data,
-        totalCount,
-    });
-};
-
-/**
- *
- * @param {*} res :- response
- * @param {*} statusCode :- status code
- * @param {*} message :- message
- *# Function for error return message
- * @example
- * sendErrorResponse(res, statusCode, message)
- */
-export const sendErrorResponse = (res, statusCode, message) => {
-    return res.status(statusCode).json({
-        status: false,
-        message: message,
-    });
-};
-
-/**
- *
  * @param {*} folder :- folder name
  * @param {*} file :- file name
  *# Function to upload file to folder

@@ -71,54 +71,6 @@ export const verifyUser = async (payload) => {
 /**
  * * This controller logs in User into the system
  */
-// export const signin = async (payload) => {
-//     const { email, password } = payload;
-//     const user = await User.findOne({ email: { $eq: email } }).select(
-//         "fullName password isEmailVerified status role loginType lastLogin"
-//     );
-//     if (!user) {
-//         throw {
-//             status: httpStatus.BAD_REQUEST,
-//             message: "Failed! UserId doesn't exist!",
-//         };
-//     }
-
-//     if (!user.isEmailVerified) {
-//         throw {
-//             status: httpStatus.BAD_REQUEST,
-//             message: "Please verify your Email!",
-//         };
-//     }
-//     const passwordIsValid = await user.isValidPassword(password);
-//     if (!passwordIsValid) {
-//         throw {
-//             status: httpStatus.BAD_REQUEST,
-//             message: "Invalid Password!",
-//         };
-//     }
-//     /** CHECK IF USER IS APPROVED */
-//     if (user.status !== userAndAdminStatus.active) {
-//         console.log(chalk.yellow(`User not approved, Contact ADMIN !`));
-//         throw {
-//             status: httpStatus.BAD_REQUEST,
-//             message: "Access Denied, Verification Pending!",
-//         };
-//     }
-//     const { accessToken, refreshToken, tokenId } = await generateAccessAndRefreshToken(user._id);
-//     user.refreshToken = refreshToken;
-//     user.loginType = loginType.password;
-//     user.lastLogin = Date.now();
-//     await user.save({ validateBeforeSave: false });
-//     console.log(
-//         chalk.grey(`[${user.lastLogin}] User:-> [${user.fullName}], Role:-> [${user.role}]  signed in successfully!`)
-//     );
-
-//     return {
-//         message: "User Logged in successfully !",
-//         accessToken,
-//     };
-// };
-
 export const signin = async (payload, opts = {}) => {
     const { email, password } = payload;
 

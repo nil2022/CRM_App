@@ -41,11 +41,12 @@ export const userSignupSchema = Joi.object({
     }),
 
     mobile: Joi.string()
+        .optional()
+        .allow("")
         .pattern(/^[0-9]{10}$/)
         .messages({
             "string.pattern.base": "Mobile number must be 10 digits",
             "string.base": "Invalid mobile number",
-            "string.empty": "Mobile number cannot be empty",
         }),
 
     email: Joi.string()

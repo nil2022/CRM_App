@@ -6,7 +6,12 @@ import mongoose from "mongoose";
  * * Fetch the list of all users by different query params
  */
 export const fetchAllUsers = async (query) => {
-    const { userType, userStatus, fullName } = query || {};
+    const { userType, userStatus, fullName, page, limit } = query || {};
+
+    // pagination defaults
+    const pageNumber = page ? parseInt(page) : 1;
+    const limitNumber = limit ? parseInt(limit) : 10;
+    const skip = (pageNumber - 1) * limitNumber;
 
     // sanitize inputs
     const userTypeReq = userType ? userType.toString().toUpperCase().replace(/\n|\r/g, "").trim() : null;
@@ -19,18 +24,27 @@ export const fetchAllUsers = async (query) => {
     if (userStatusReq) filter.status = { $eq: userStatusReq };
     if (userNameReq) filter.fullName = { $regex: userNameReq, $options: "i" };
 
-    // projection: exclude sensitive/internal fields
+    // projection
     const projection = "-password -refreshToken -__v -refreshSessions";
 
-    const users = await User.find(filter).select(projection);
+    // parallel queries: count + paginated data
+    const [count, users] = await Promise.all([
+        User.countDocuments(filter),
+        User.find(filter).select(projection).skip(skip).limit(limitNumber),
+    ]);
 
     if (!users || users.length === 0) {
-        throw {
-            status: 200,
+        return {
+            count: 0,
+            data: [],
             message: "No users found in database !",
         };
     }
-    return users;
+
+    return {
+        count,
+        data: users,
+    };
 };
 
 /**
@@ -79,8 +93,7 @@ export const updateUserStatus = async (payload) => {
 
     // sanitize
     const userIdReq = userId.replace(/\s/g, "");
-    const statusReq =
-        typeof status === "string" && status.trim() !== "" ? status.trim().toUpperCase() : null;
+    const statusReq = typeof status === "string" && status.trim() !== "" ? status.trim().toUpperCase() : null;
 
     // valid ObjectId?
     const isObjectId = mongoose.Types.ObjectId.isValid(userIdReq);

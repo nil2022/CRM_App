@@ -86,12 +86,8 @@ async function loginUser(req, res, next) {
             return sendResponse(res, httpStatus.BAD_REQUEST, null, error.message);
         }
         const { accessToken, refreshToken, message } = await signin(validatedPayload);
-        return res.status(200).json({
-            status: true,
-            message,
-            accessToken,
-            refreshToken,
-        });
+        console.log('accessToken: ', accessToken);
+        return sendResponse(res, httpStatus.OK, null, message, accessToken);
     } catch (error) {
         next(error);
     }

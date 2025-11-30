@@ -81,16 +81,6 @@ const userSchema = new Schema(
             default: [],
         },
 
-        // ticketsCreated: {
-        //     type: [Schema.Types.ObjectId],
-        //     ref: "Ticket",
-        // },
-
-        // ticketsAssigned: {
-        //     type: [Schema.Types.ObjectId],
-        //     ref: "Ticket",
-        // },
-
         lastLogin: {
             type: Date,
         },

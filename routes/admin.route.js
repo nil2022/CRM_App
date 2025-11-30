@@ -72,7 +72,7 @@ async function signIn(req, res, next) {
     try {
         const payload = req.body;
         const { data, token } = await adminLogin(payload);
-        return sendResponse(res, 200, data, "Admin logged in successfully", { token });
+        return sendResponse(res, 200, data, "Admin logged in successfully", token);
     } catch (error) {
         next(error);
     }
