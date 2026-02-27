@@ -8,6 +8,22 @@ import httpStatus from "http-status";
 import { otpMailTemplate } from "#root/assets/templates/otpTemplate";
 
 export async function sendMail(fullName, ownerId, ownerModel, toAddress) {
+    // Basic input validation
+    if (!fullName || !ownerId || !ownerModel || !toAddress) {
+        throw { status: httpStatus.BAD_REQUEST, message: "Missing required parameters for sendMail" };
+    }
+    // Simple email format validation
+    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    if (!emailRegex.test(toAddress)) {
+        throw { status: httpStatus.BAD_REQUEST, message: `Invalid email address: ${toAddress}` };
+    }
+    // Ensure mail configuration variables are present
+    const requiredEnv = ["MAIL_HOST", "MAIL_PORT", "MAIL_AUTH_SECURE", "MAIL_USER", "MAIL_PASS", "MAIL_FROM_ADDRESS"];
+    for (const key of requiredEnv) {
+        if (!env[key]) {
+            throw { status: httpStatus.INTERNAL_SERVER_ERROR, message: `Missing environment variable: ${key}` };
+        }
+    }
     try {
         const existingOtp = await Otp.findById(ownerId);
         if (existingOtp) {
@@ -42,6 +58,8 @@ export async function sendMail(fullName, ownerId, ownerModel, toAddress) {
         }
         return info;
     } catch (error) {
-        console.log(chalk.red("sendMail :: Error ::", error.message));
+        console.log(chalk.red("sendMail :: Error ::", error.message || error));
+        // Propagate the error so callers can handle it appropriately
+        throw error;
     }
 }

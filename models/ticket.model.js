@@ -46,7 +46,7 @@ const ticketSchema = new Schema(
         attachments: {
             type: [String],
             default: [],
-        }
+        },
     },
     {
         timestamps: true,
@@ -56,6 +56,12 @@ const ticketSchema = new Schema(
 
 // Index for unique ticket created per unique user
 ticketSchema.index({ title: 1, reporterId: 1 }, { unique: true });
+// Index for querying by reporter
+ticketSchema.index({ reporterId: 1 });
+// Index for querying by assignee
+ticketSchema.index({ assigneeId: 1 });
+// Index for querying by status
+ticketSchema.index({ status: 1 });
 
 // Index for each ticket is assigned to single engineer
 ticketSchema.index({ title: 1, assigneeId: 1 });

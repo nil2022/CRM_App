@@ -30,7 +30,7 @@ export const fetchAllUsers = async (query) => {
     // parallel queries: count + paginated data
     const [count, users] = await Promise.all([
         User.countDocuments(filter),
-        User.find(filter).select(projection).skip(skip).limit(limitNumber),
+        User.find(filter).select(projection).skip(skip).limit(limitNumber).lean(),
     ]);
 
     if (!users || users.length === 0) {

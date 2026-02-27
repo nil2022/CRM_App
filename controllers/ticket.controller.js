@@ -84,12 +84,10 @@ export const createTicket = async (req, res) => {
                 `🎫Ticket with id : ${ticket._id} created, STATUS:${ticketStatus.open}`,
                 ticket.description,
                 `${user.fullName} <${user.email}>`,
-                `${engineer.fullName} <${engineer.email}>` +
-                    "," +
-                    `${env.ADMIN_NAME} <${env.ADMIN_EMAIL}>`,
+                `${engineer.fullName} <${engineer.email}>` + "," + `${env.ADMIN_NAME} <${env.ADMIN_EMAIL}>`,
                 user.fullName,
                 engineer.fullName
-            )
+            );
 
             console.log(`Ticket created successfully by userId -> [${user.userId}]`);
 
@@ -115,9 +113,7 @@ export const createTicket = async (req, res) => {
  * * Logic to allow ticket update ONLY by ADMIN OR ENGINEER(whom being assigned to)
  */
 const canUpdate = (user, ticket) => {
-    return (
-        user.userId === ticket.assignee || user.userType === userTypes.admin
-    );
+    return user.userId === ticket.assignee || user.userType === userTypes.admin;
 };
 
 /**
@@ -153,10 +149,10 @@ export const updateTicket = async (req, res) => {
         /** get user information who is logged in now [ENGINEER OR CUSTOMER] */
         const savedUser = await User.findOne({
             userId: req.decoded.userId,
-        });
+        }).lean();
 
         if (savedUser.userType === userTypes.customer) {
-            console.log('Unauthorized Access, requires ADMIN or ENGINEER');
+            console.log("Unauthorized Access, requires ADMIN or ENGINEER");
             return res.status(400).json({
                 data: "",
                 message: "Unauthorized Access !",
@@ -176,17 +172,15 @@ export const updateTicket = async (req, res) => {
             });
         }
 
-
         if (canUpdate(savedUser, ticket)) {
-            // ! ticket TITLE and DESCRIPTION are provided by Customer, hence DO NOT CHANGE ! 
+            // ! ticket TITLE and DESCRIPTION are provided by Customer, hence DO NOT CHANGE !
             // ticket.title = title !== ''
             //   ? title
             //   : ticket.title
             // ticket.description = description !== ''
             //   ? description
             //   : ticket.description
-            ticket.ticketPriority =
-                ticketPriority !== "" ? ticketPriority : ticket.ticketPriority;
+            ticket.ticketPriority = ticketPriority !== "" ? ticketPriority : ticket.ticketPriority;
             ticket.status = status !== "" ? status : ticket.status;
             ticket.assignee = assignee !== "" ? assignee : ticket.assignee;
             await ticket.save({ validateBeforeSave: false });
@@ -206,9 +200,7 @@ export const updateTicket = async (req, res) => {
                 `🎫Ticket with id: '${ticket._id}' updated, STATUS:${status.toUpperCase()}`,
                 ticket.description,
                 `${reporter.fullName} <${reporter.email}>`,
-                `${engineer.fullName} <${engineer.email}>` +
-                    "," +
-                    `${env.ADMIN_NAME} <${env.ADMIN_EMAIL}>`,
+                `${engineer.fullName} <${engineer.email}>` + "," + `${env.ADMIN_NAME} <${env.ADMIN_EMAIL}>`,
                 reporter.fullName,
                 engineer.fullName
             );
@@ -219,7 +211,6 @@ export const updateTicket = async (req, res) => {
                 statusCode: 200,
                 success: true,
             });
-
         } else {
             console.log(`Unauthorized access by userId -> [${savedUser.userId}]`);
             return res.status(401).json({
@@ -230,9 +221,9 @@ export const updateTicket = async (req, res) => {
             });
         }
     } catch (error) {
-        console.log('Error occured while updating ticket !', error);
+        console.log("Error occured while updating ticket !", error);
         return res.status(500).json({
-            data: '',
+            data: "",
             message: "Something went wrong",
             statusCode: 500,
             success: false,
@@ -255,14 +246,14 @@ export const getAllTickets = async (req, res) => {
         assignee: { $eq: "" },
     };
 
-    if(req.query.status) {
+    if (req.query.status) {
         queryObj.status = { $eq: req.query.status };
     }
 
     try {
         const loggedInUser = await User.findOne({
             userId: { $eq: req.decoded.userId },
-        });
+        }).lean();
 
         if (!loggedInUser) {
             console.log("No user in DB !!!");
@@ -276,7 +267,6 @@ export const getAllTickets = async (req, res) => {
 
         if (loggedInUser.userType === userTypes.admin) {
             // * ADMIN should get all tickets regardless of usertype and ticket status
-
         } else if (loggedInUser.userType === userTypes.customer) {
             // * CUSTOMER should get all tickets created by him/her
             queryObj.reporter.$eq = loggedInUser.userId;
@@ -296,7 +286,7 @@ export const getAllTickets = async (req, res) => {
             delete queryObj.reporter;
         }
 
-        const tickets = await Ticket.find(queryObj);
+        const tickets = await Ticket.find(queryObj).lean();
 
         if (tickets.length === 0) {
             console.log(`There is NO tickets`);
@@ -309,7 +299,7 @@ export const getAllTickets = async (req, res) => {
         }
 
         // console.log(`Tickets fetched successfully`);
-        
+
         return res.status(200).json({
             data: tickets,
             message: "Tickets fetched successfully",
@@ -317,7 +307,7 @@ export const getAllTickets = async (req, res) => {
             success: true,
         });
     } catch (error) {
-        console.log('Error occured while fetching tickets !', error);
+        console.log("Error occured while fetching tickets !", error);
         return res.status(500).json({
             data: "",
             message: "Something went wrong",
@@ -344,7 +334,7 @@ export const getOneTicket = async (req, res) => {
                 success: false,
             });
         }
-        
+
         console.log(`Ticket fetched successfully`);
 
         res.status(200).json({

@@ -35,3 +35,6 @@ jspm_packages/
 .idea
 
 *.txt
+
+.claude
+.claude/settings.local.json

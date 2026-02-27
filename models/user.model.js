@@ -93,6 +93,8 @@ const userSchema = new Schema(
 
 // EMail Unique index for faster searching
 userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ role: 1 });
+userSchema.index({ status: 1 });
 
 /**
  * Hash the password before saving the user models
