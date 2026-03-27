@@ -42,7 +42,7 @@ app.use(limiter);
 app.use("/crm/api/v1", router); // serve all routes here
 app.use("/crm/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs)); // serve swagger docs for all routes here
 app.get("/crm", (req, res) => {
-    return sendResponse(res, 200, null, `✅ CRM Backend service is healthy`);
+    return sendResponse(res, 200, null, `CRM Backend service is healthy`);
 });
 
 // Global Error Handler
