@@ -327,9 +327,31 @@ export const getAllTickets = async (req, res) => {
 
 /**
  * * This controller fetch ticket by id
+ *
+ * Authorization mirrors getAllTickets:
+ *   - ADMIN    : may read any ticket
+ *   - CUSTOMER : may read only tickets they reported
+ *   - ENGINEER : may read only tickets assigned to them
+ *
+ * Without this scope, any authenticated user could read any other user's
+ * private support ticket (which may contain account details, error logs,
+ * or internal discussion) by scanning ticket ids — an IDOR.
  */
 export const getOneTicket = async (req, res) => {
     try {
+        const loggedInUser = await User.findOne({
+            userId: { $eq: req.decoded.userId },
+        });
+        if (!loggedInUser) {
+            console.log("No user in DB !!!");
+            return res.status(403).json({
+                data: "",
+                message: "No user in DB !!!",
+                statusCode: 403,
+                success: false,
+            });
+        }
+
         const ticket = await Ticket.findOne({
             _id: req.query.id,
         });
@@ -342,7 +364,24 @@ export const getOneTicket = async (req, res) => {
                 success: false,
             });
         }
-        
+
+        // Role-based scope, matching getAllTickets.
+        if (loggedInUser.userType !== userTypes.admin) {
+            const isReporter =
+                ticket.reporter && ticket.reporter === loggedInUser.userId;
+            const isAssignee =
+                ticket.assignee && ticket.assignee === loggedInUser.userId;
+            if (!isReporter && !isAssignee) {
+                console.log(`Unauthorized ticket access by userId -> [${loggedInUser.userId}]`);
+                return res.status(403).json({
+                    data: "",
+                    message: "Unauthorized Access !",
+                    statusCode: 403,
+                    success: false,
+                });
+            }
+        }
+
         console.log(`Ticket fetched successfully`);
 
         res.status(200).json({
