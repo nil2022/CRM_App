@@ -1,14 +1,5 @@
 // configs/env.config.js
 import { str, num, bool, cleanEnv, port } from "envalid";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const envPath = path.resolve(__dirname, "../", ".env");
-dotenv.config({ path: envPath });
 
 const envVariables = process.env;
 
@@ -17,6 +8,7 @@ const env = cleanEnv(envVariables, {
     PORT: port(),
     NODE_ENV: str({ choices: ["development", "production"], default: "development" }),
     MONGODB_URI: str(),
+    FORCE_GOOGLE_DNS: str({ default: "false" }),
 
     NOTIFICATION_URL: str(),
 
