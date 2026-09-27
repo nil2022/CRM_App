@@ -177,13 +177,21 @@ export const findByUserId = asyncHandler(async (req, res) => {
  */
 export const updateUserStatus = asyncHandler(async (req, res) => {
     const { userStatus } = req.body;
-    if (userStatus && !Object.values(userStatusValues).includes(userStatus)) {
+    // Resolve against the known allow-list instead of writing the client's
+    // value straight into the update - the value that reaches the query
+    // below always comes from `allowedStatuses`, never directly from req.body.
+    const allowedStatuses = Object.values(userStatusValues);
+    const matchedIndex = allowedStatuses.indexOf(userStatus);
+    if (userStatus && matchedIndex === -1) {
         throw new BadRequestError("Invalid userStatus provided!");
     }
+
     const userIdReq = req.query.userId.replace(/\s/g, "");
     const fetchedUser = await User.findOne({
         userId: { $eq: userIdReq },
     }).select(" -password -refreshToken ");
+
+    const nextUserStatus = matchedIndex !== -1 ? allowedStatuses[matchedIndex] : fetchedUser.userStatus;
 
     const user = await User.findOneAndUpdate(
         {
@@ -191,8 +199,7 @@ export const updateUserStatus = asyncHandler(async (req, res) => {
         },
         {
             updatedAt: Date.now(),
-            userStatus:
-                userStatus !== "" ? userStatus : fetchedUser.userStatus,
+            userStatus: nextUserStatus,
         },
         {
             new: true,
