@@ -156,7 +156,7 @@ export const findByUserId = asyncHandler(async (req, res) => {
     }).select(" -password -refreshToken -__v");
 
     if (user.length === 0) {
-        console.log(` userId -> [${userIdReq}] not found in server`);
+        console.log(` userId -> [${userIdReq.replace(/[\r\n]/g, "")}] not found in server`);
         throw new BadRequestError(`User not found in server`);
     }
 
