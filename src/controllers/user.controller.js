@@ -6,6 +6,7 @@
 import { User } from "../models/user.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { BadRequestError } from "../utils/ApiError.js";
+import { userStatus as userStatusValues } from "../utils/constants.js";
 
 /**
  * * This controller fetches all users in database
@@ -176,6 +177,9 @@ export const findByUserId = asyncHandler(async (req, res) => {
  */
 export const updateUserStatus = asyncHandler(async (req, res) => {
     const { userStatus } = req.body;
+    if (userStatus && !Object.values(userStatusValues).includes(userStatus)) {
+        throw new BadRequestError("Invalid userStatus provided!");
+    }
     const userIdReq = req.query.userId.replace(/\s/g, "");
     const fetchedUser = await User.findOne({
         userId: { $eq: userIdReq },

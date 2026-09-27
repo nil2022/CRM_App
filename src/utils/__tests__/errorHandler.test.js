@@ -7,7 +7,7 @@ jest.unstable_mockModule("../helper.js", () => ({
 }));
 
 const { default: errorHandler } = await import("../errorHandler.js");
-const { BadRequestError } = await import("../ApiError.js");
+const { BadRequestError, InternalServerError } = await import("../ApiError.js");
 
 const buildRes = () => {
     const res = {};
@@ -85,9 +85,19 @@ describe("errorHandler", () => {
     test("still sends a response even if logging the error fails", () => {
         const res = buildRes();
         storeErrorMock.mockRejectedValue(new Error("disk full"));
-        const err = new BadRequestError("bad input");
+        const err = new InternalServerError("db is down");
 
         expect(() => errorHandler(err, {}, res, jest.fn())).not.toThrow();
-        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.status).toHaveBeenCalledWith(500);
+    });
+
+    test("does not persist expected client errors (4xx), only unexpected server errors (5xx)", () => {
+        const res = buildRes();
+
+        errorHandler(new BadRequestError("bad input"), {}, res, jest.fn());
+        expect(storeErrorMock).not.toHaveBeenCalled();
+
+        errorHandler(new InternalServerError("boom"), {}, res, jest.fn());
+        expect(storeErrorMock).toHaveBeenCalledTimes(1);
     });
 });

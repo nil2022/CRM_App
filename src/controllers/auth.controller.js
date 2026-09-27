@@ -329,7 +329,7 @@ export const logout = asyncHandler(async (req, res) => {
         secure: true,
     };
 
-    console.log(`userId -> [${req.decoded.userId}], Logged Out Successfully !!`);
+    console.log(`userId -> [${String(req.decoded.userId).replace(/[\r\n]/g, "")}], Logged Out Successfully !!`);
 
     res.status(200)
         .clearCookie("refreshToken", cookieOptions)

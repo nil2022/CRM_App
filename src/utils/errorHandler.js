@@ -52,8 +52,13 @@ const normalizeError = (err) => {
 const errorHandler = (err, req, res, next) => {
     const apiError = normalizeError(err);
 
-    // Logging must never block or fail the error response itself.
-    storeError(err).catch((logErr) => console.error("Failed to persist error log:", logErr));
+    // Only persist genuinely unexpected (server-side) failures. Expected
+    // client errors (400/401/403/404/...) are attacker-triggerable at will -
+    // logging every one of them would let repeated bad requests grow the log
+    // file without bound. Logging must also never block or fail the response.
+    if (apiError.statusCode >= 500) {
+        storeError(err).catch((logErr) => console.error("Failed to persist error log:", logErr));
+    }
 
     return res.status(apiError.statusCode).json({
         data: apiError.data,

@@ -136,7 +136,7 @@ export const updateTicket = asyncHandler(async (req, res) => {
         throw new BadRequestError("Unauthorized Access !");
     }
 
-    const ticket = await Ticket.findOne({ _id: req.query.id });
+    const ticket = await Ticket.findOne({ _id: { $eq: req.query.id } });
     if (!ticket) {
         console.log("Ticket not found in DB !!!");
         throw new NotFoundError("Ticket not found !!!");
@@ -284,7 +284,7 @@ export const getOneTicket = asyncHandler(async (req, res) => {
     }
 
     const ticket = await Ticket.findOne({
-        _id: req.query.id,
+        _id: { $eq: req.query.id },
     });
     if (!ticket) {
         console.log("No tickets in server ");
