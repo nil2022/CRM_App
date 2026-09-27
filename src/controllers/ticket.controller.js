@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 import { Ticket } from "../models/ticket.model.js";
 import { userTypes, userStatus, ticketStatus } from "../utils/constants.js";
@@ -136,6 +137,9 @@ export const updateTicket = asyncHandler(async (req, res) => {
         throw new BadRequestError("Unauthorized Access !");
     }
 
+    if (!mongoose.isValidObjectId(req.query.id)) {
+        throw new BadRequestError("Invalid ticket id");
+    }
     const ticket = await Ticket.findOne({ _id: { $eq: req.query.id } });
     if (!ticket) {
         console.log("Ticket not found in DB !!!");
@@ -283,6 +287,9 @@ export const getOneTicket = asyncHandler(async (req, res) => {
         throw new ForbiddenError("No user in DB !!!");
     }
 
+    if (!mongoose.isValidObjectId(req.query.id)) {
+        throw new BadRequestError("Invalid ticket id");
+    }
     const ticket = await Ticket.findOne({
         _id: { $eq: req.query.id },
     });
