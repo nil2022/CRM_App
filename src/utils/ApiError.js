@@ -47,6 +47,13 @@ class NotFoundError extends ApiError {
     }
 }
 
+/** 409 - request conflicts with the current state of the resource (duplicates, already-pending actions) */
+class ConflictError extends ApiError {
+    constructor(message = "Conflict", errors = []) {
+        super(409, message, errors);
+    }
+}
+
 /** 500 - unexpected failure, safe to show a generic message to clients */
 class InternalServerError extends ApiError {
     constructor(message = "Something went wrong", errors = []) {
@@ -55,4 +62,12 @@ class InternalServerError extends ApiError {
 }
 
 export default ApiError;
-export { ApiError, BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError };
+export {
+    ApiError,
+    BadRequestError,
+    UnauthorizedError,
+    ForbiddenError,
+    NotFoundError,
+    ConflictError,
+    InternalServerError,
+};

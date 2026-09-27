@@ -1,19 +1,16 @@
-const constants = require('../utils/constants')
+import { ticketStatus } from "../utils/constants.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import { BadRequestError } from "../utils/ApiError.js";
 
-exports.validateTicketStatus = async (req, res, next) => {
-  // Validating the user type
-  const status = req.body.status
-  const statusTypes = [constants.ticketStatus.open,
-    constants.ticketStatus.closed, constants.ticketStatus.inProgress,
-    constants.ticketStatus.blocked]
+/* -------- CHECK WHETHER TICKET STATUS IS ONE OF THE ALLOWED VALUES ----------- */
+export const validateTicketStatus = asyncHandler(async (req, res, next) => {
+    const status = req.body.status;
+    const statusTypes = Object.values(ticketStatus);
 
-  if (status && !statusTypes.includes(status)) {
-    console.log(status)
-    res.status(400).send({
-      message: `status provided is invalid. Possible values CLOSED
-                | BLOCKED | IN_PROGESS | OPEN `
-    })
-    return
-  }
-  next()
-}
+    if (status && !statusTypes.includes(status)) {
+        throw new BadRequestError(
+            `status provided is invalid. Possible values: ${statusTypes.join(" | ")}`
+        );
+    }
+    next();
+});

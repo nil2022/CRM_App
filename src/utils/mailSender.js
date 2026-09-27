@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import generateRandomString from "./randomString.js";
 import { Otp } from "../models/otp.model.js";
+import { ConflictError } from "./ApiError.js";
 
 // const currentTime = new Date(Date.now());
 // console.log(currentTime)
@@ -10,7 +11,7 @@ export async function sendMail(fullName, userId, fromAddress, toAddress) {
     try {
         const existingOtp = await Otp.findOne({ userId: { $eq: userId } })
         if (existingOtp) {
-            throw new Error(`OTP already sent to user with 'userId' => [${userId}]`)
+            throw new ConflictError(`OTP already sent to user with 'userId' => [${userId}]`)
         }
         // generate new OTP
         const OTP = generateRandomString(6);
