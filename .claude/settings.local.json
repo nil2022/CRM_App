@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir utils)",
+      "Bash(dir controllers)"
+    ]
+  }
+}

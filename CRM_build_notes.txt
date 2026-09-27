@@ -1,0 +1,16 @@
+## CRM App Ticketing system ##
+# Build Notes (10-11-2025)
+
+# Issues:-
+-> cannot add ticket as approved engineers not available ! 
+make this accept tickets for instant user gratification then later in queqe when engineers avaibale add the ticket.
+
+# Features to be Added/Updated:-
+-> User Schema - Customer, Engineer
+Customer (Approved by default) - Creats a Ticket
+Engineer (needs admin approval) - Resolves the Ticket
+
+--- NEW ---
+-> Admin Schema - Admin users - Manages all data, manages all tickets (Approve/Reject/re-assign tickets)
+Admin CRUD - middlewares, routes
+Roles - SUPER_ADMIN, SUB_ADMIN

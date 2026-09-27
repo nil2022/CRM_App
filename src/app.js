@@ -43,6 +43,7 @@ app.get("/health", (_, res) => {
 });
 
 import errorHandler from "./utils/errorHandler.js";
+import { NotFoundError } from "./utils/ApiError.js";
 // import router from "./routes/githubRoutes.js";
 import router from "./routes/index.js";
 
@@ -53,13 +54,8 @@ app.use('/api/v1',router);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Route not found middleware
-app.use((req, res) => {
-    // console.log("Route not found!");
-    return res.status(404).json({
-        message: "Route not found",
-        statusCode: 404,
-        success: false,
-    });
+app.use((req, res, next) => {
+    next(new NotFoundError("Route not found"));
 });
 
 app.use(errorHandler);

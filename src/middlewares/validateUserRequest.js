@@ -1,46 +1,33 @@
 import { User } from '../models/user.model.js'
 import validator from 'validator'
+import asyncHandler from '../utils/asyncHandler.js'
+import { BadRequestError, ForbiddenError } from '../utils/ApiError.js'
 
 /* -------- CHECK WHETHER PASSWORD IS PROVIDED OR NOT (FOR BOTH SIGNUP & SIGNIN) ----------- */
-const isPasswordProvided = async (req, res, next) => {
+const isPasswordProvided = asyncHandler(async (req, res, next) => {
   const passwordReq = req.body.password
 
   if (!passwordReq) {
-    return res.status(403).send({
-      message: 'No Password provided!'
-    })
-  } else next()
-}
+    throw new ForbiddenError('No Password provided!')
+  }
+  next()
+})
 
 /* -------- CHECK WHETHER EMAIL IS PROVIDED OR NOT & ALREADY REGISTERED OR NOT ----------- */
-const isEmailRegisteredOrProvided = async (req, res, next) => {
+const isEmailRegisteredOrProvided = asyncHandler(async (req, res, next) => {
   const emailReq = req.body.email
   if (typeof emailReq !== 'string') {
     console.log('Invalid Email Format')
-    return res.status(403).json({
-      data: '',
-      message: 'Invalid Email',
-      statusCode: 403,
-      success: false
-    })
+    throw new ForbiddenError('Invalid Email')
   }
 
   if (!emailReq) {
-    return res.status(403).json({
-      data: '',
-      message: 'No Email provided',
-      statusCode: 403,
-      success: false
-    })
+    throw new ForbiddenError('No Email provided')
     // Also checks if Email is in Valid format or not
   } else if (!validator.isEmail(emailReq)) {
-    return res.status(403).json({
-      data: '',
-      message: 'Invalid Email Format',
-      statusCode: 403,
-      success: false
-    })
+    throw new ForbiddenError('Invalid Email Format')
   }
+
   // EMAIL check in DB
   const user = await User.findOne({
     email: emailReq
@@ -50,51 +37,39 @@ const isEmailRegisteredOrProvided = async (req, res, next) => {
     next()
   } else {
     console.log('Email already registered!', user)
-    return res.status(400).json({
-      message: 'Email already registered!'
-    })
+    throw new BadRequestError('Email already registered!')
   }
-}
+})
 
 /* -------- CHECK WHETHER USERID IS PROVIDED OR NOT & ALREADY REGISTERED OR NOT (FOR SIGNUP PURPOSE) ----------- */
-const isUserIdRegisteredOrProvided = async (req, res, next) => {
+const isUserIdRegisteredOrProvided = asyncHandler(async (req, res, next) => {
   const userIdReq = req.body.userId
 
   if (!userIdReq) {
-    return res.status(403).send({
-      message: 'No userId provided!'
-    })
+    throw new ForbiddenError('No userId provided!')
   }
   // userId check in DB
   const user = await User.findOne({ userId: { $eq: req.body.userId } })
   if (user) {
-    // console.log(`'${user.userId}' user already present in DB`)
     console.log(`'${user.userId}' user already present in DB`)
-    return res.status(403).send({
-      message: `'${user.userId}' user already present`
-    })
+    throw new ForbiddenError(`'${user.userId}' user already present`)
   } else next()
-}
+})
 
 /* -------- CHECK WHETHER USERID IS PROVIDED OR NOT (FOR SIGNIN PURPOSE) ----------- */
-const isUserIdProvided = async (req, res, next) => {
+const isUserIdProvided = asyncHandler(async (req, res, next) => {
   const userIdReq = req.body.userId
 
   if (!userIdReq) {
-    return res.status(403).json({
-      message: 'No userId provided!'
-    })
+    throw new ForbiddenError('No userId provided!')
   }
   // userId check in DB
   const user = await User.findOne({ userId: { $eq: userIdReq } })
-  // console.log('user', user)
   if (!user) {
     console.log('User not present in DB, please Register/Signup')
-    return res.status(403).send({
-      message: 'User not found, please Register!'
-    })
+    throw new ForbiddenError('User not found, please Register!')
   } else next()
-}
+})
 
 export {
   isPasswordProvided,

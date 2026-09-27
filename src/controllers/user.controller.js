@@ -4,6 +4,9 @@
  * defined in the User Controller
  */
 import { User } from "../models/user.model.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import { BadRequestError } from "../utils/ApiError.js";
+import { userStatus as userStatusValues } from "../utils/constants.js";
 
 /**
  * * This controller fetches all users in database
@@ -105,7 +108,7 @@ const fetchByStatus = async (userStatusReq) => {
 /**
  * * Fetch the list of all users by different query params
  */
-export const findAll = async (req, res) => {
+export const findAll = asyncHandler(async (req, res) => {
     let users;
     const userTypeReq = req.query.userType
         ? req.query.userType.toUpperCase().replace(/\n|\r/g, "")
@@ -114,143 +117,108 @@ export const findAll = async (req, res) => {
         ? req.query.userStatus.toUpperCase().replace(/\n|\r/g, "")
         : "";
     const userNameReq = req.query.fullName;
-    // sillyLogger.debug(
-    //     `userTypeReq: ${userTypeReq} userStatusReq: ${userStatusReq} userNameReq: ${userNameReq} userIdReq: ${userIdReq} `
-    // );
-    try {
-        if (userNameReq) {
-            users = await fetchByName(userNameReq);
-        } else if (userTypeReq && userStatusReq) {
-            users = await fetchByTypeAndStatus(userTypeReq, userStatusReq);
-        } else if (userTypeReq) {
-            users = await fetchByType(userTypeReq);
-        } else if (userStatusReq) {
-            users = await fetchByStatus(userStatusReq);
-        } else {
-            users = await fetchAll();
-        }
 
-        if (users.length === 0) {
-            // console.log("No users found in database ! (findall)");
-            return res.status(200).json({
-                data: "",
-                message: "No users found in database !",
-                statusCode: 200,
-                success: true,
-            });
-        }
-        res.status(200).json({
-            data: users,
-            message: "Users fetched successfully!",
+    if (userNameReq) {
+        users = await fetchByName(userNameReq);
+    } else if (userTypeReq && userStatusReq) {
+        users = await fetchByTypeAndStatus(userTypeReq, userStatusReq);
+    } else if (userTypeReq) {
+        users = await fetchByType(userTypeReq);
+    } else if (userStatusReq) {
+        users = await fetchByStatus(userStatusReq);
+    } else {
+        users = await fetchAll();
+    }
+
+    if (users.length === 0) {
+        return res.status(200).json({
+            data: "",
+            message: "No users found in database !",
             statusCode: 200,
             success: true,
         });
-    } catch (err) {
-        // console.log(err);
-        res.status(500).json({
-            data: "",
-            message: "Some internal error occured (findall)",
-            statusCode: 500,
-            success: false,
-        });
     }
-};
+    res.status(200).json({
+        data: users,
+        message: "Users fetched successfully!",
+        statusCode: 200,
+        success: true,
+    });
+});
 
 /**
  * * This controller fetch user by userId
  */
-export const findByUserId = async (req, res) => {
+export const findByUserId = asyncHandler(async (req, res) => {
     const userIdReq = req.query.userId.replace(/\s/g, "");
-    try {
-        const user = await User.findOne({
-            userId: { $eq: userIdReq },
-        }).select(" -password -refreshToken -__v");
+    const user = await User.findOne({
+        userId: { $eq: userIdReq },
+    }).select(" -password -refreshToken -__v");
 
-        if (user.length === 0) {
-            console.log(` userId -> [${userIdReq}] not found in server`);
-            return res.status(400).json({
-                data: "",
-                message: `User not found in server`,
-                statusCode: 400,
-                success: false,
-            });
-        }
-
-        console.log("fetch user by userId success");
-
-        return res.status(200).json({
-            data: user,
-            message: "User fetched successfully!",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (err) {
-        console.log(`Error fetching user data ::`, err);
-        res.status(500).json({
-            data: "",
-            message: "Something went wrong",
-            failure: 500,
-            success: false,
-        });
+    if (user.length === 0) {
+        console.log(` userId -> [${userIdReq.replace(/[\r\n]/g, "")}] not found in server`);
+        throw new BadRequestError(`User not found in server`);
     }
-};
+
+    console.log("fetch user by userId success");
+
+    return res.status(200).json({
+        data: user,
+        message: "User fetched successfully!",
+        statusCode: 200,
+        success: true,
+    });
+});
 
 /**
  * * This controller is to update userstatus
  * * i.e. PENDING -> APPROVED
  * * (This is to be updated only by MASTER(SYSTEM) ADMIN and other ADMINs)
  */
-export const updateUserStatus = async (req, res) => {
+export const updateUserStatus = asyncHandler(async (req, res) => {
     const { userStatus } = req.body;
-    const userIdReq = req.query.userId.replace(/\s/g, "");
-    try {
-        const fetchedUser = await User.findOne({
-            userId: { $eq: userIdReq },
-        }).select(" -password -refreshToken ");
-
-        const user = await User.findOneAndUpdate(
-            {
-                userId: { $eq: userIdReq },
-            },
-            {
-                updatedAt: Date.now(),
-                userStatus:
-                    userStatus !== "" ? userStatus : fetchedUser.userStatus,
-            },
-            {
-                new: true,
-            }
-        ).select(
-            " -password -__v -refreshToken"
-        );
-
-        if (user.length === 0) {
-            // console.log('User is not in server !!');
-            return res.status(400).json({
-                data: '',
-                message: "User is not in server !!",
-                statusCode: 400,
-                success: false,
-            });
-        }
-        // console.log(`userId -> [${userIdReq}] data has been updated `);
-
-        return res.status(200).json({
-            data: user,
-            message: "User record has been updated successfully",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (err) {
-        // console.log(`Error while updating the record: ${err.message}`, err);
-        res.status(500).json({
-            data: '',
-            message: "Something went wrong !",
-            statusCode: 500,
-            success: false,
-        });
+    // Resolve against the known allow-list instead of writing the client's
+    // value straight into the update - the value that reaches the query
+    // below always comes from `allowedStatuses`, never directly from req.body.
+    const allowedStatuses = Object.values(userStatusValues);
+    const matchedIndex = allowedStatuses.indexOf(userStatus);
+    if (userStatus && matchedIndex === -1) {
+        throw new BadRequestError("Invalid userStatus provided!");
     }
-};
+
+    const userIdReq = req.query.userId.replace(/\s/g, "");
+    const fetchedUser = await User.findOne({
+        userId: { $eq: userIdReq },
+    }).select(" -password -refreshToken ");
+
+    const nextUserStatus = matchedIndex !== -1 ? allowedStatuses[matchedIndex] : fetchedUser.userStatus;
+
+    const user = await User.findOneAndUpdate(
+        {
+            userId: { $eq: userIdReq },
+        },
+        {
+            updatedAt: Date.now(),
+            userStatus: nextUserStatus,
+        },
+        {
+            new: true,
+        }
+    ).select(
+        " -password -__v -refreshToken"
+    );
+
+    if (user.length === 0) {
+        throw new BadRequestError("User is not in server !!");
+    }
+
+    return res.status(200).json({
+        data: user,
+        message: "User record has been updated successfully",
+        statusCode: 200,
+        success: true,
+    });
+});
 
 // ? Make controllers for all users having features
 // ? change password, email, avatar, etc. as per requirement
@@ -261,36 +229,19 @@ export const updateUserStatus = async (req, res) => {
  * * This controller is to delete a user
  * * (This is to be DONE only by MASTER(SYSTEM) ADMIN and other ADMINs)
  */
-export const deleteUser = async (req, res) => {
+export const deleteUser = asyncHandler(async (req, res) => {
     const userIdReq = req.query.userId.replace(/\s/g, "");
-    try {
-        const user = await User.findOneAndDelete({ userId: userIdReq })
+    const user = await User.findOneAndDelete({ userId: userIdReq })
         .select(" -ticketsCreated -ticketsAssigned -password -__v");
 
-        if (!user || user.length === 0) {
-            // console.log(` userId -> [${userIdReq}] not found in server`);
-            return res.status(400).json({
-                data: "",
-                message: `User not found in server`,
-                statusCode: 400,
-                success: false,
-            });
-        }
-        // console.log(`userId -> [${userIdReq}] data has been deleted !`);
-
-        res.status(200).json({
-            data: user,
-            message: `User record has been deleted successfully`,
-            statusCode: 200,
-            success: true,
-        });
-    } catch (err) {
-        // console.log(`Error while deleting the record for userId -> ${userIdReq}`, err);
-        res.status(500).json({
-            data: '',
-            message: "Something went wrong !",
-            statusCode: 500,
-            success: false,
-        });
+    if (!user || user.length === 0) {
+        throw new BadRequestError(`User not found in server`);
     }
-};
+
+    res.status(200).json({
+        data: user,
+        message: `User record has been deleted successfully`,
+        statusCode: 200,
+        success: true,
+    });
+});
