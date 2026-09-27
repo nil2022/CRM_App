@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { userTypes } from '../utils/constants.js'
+import { ForbiddenError, UnauthorizedError } from '../utils/ApiError.js'
 
 /* -------- CHECK IF TOKEN IS PROVIDED & VERIFY TOKEN ----------- */
 const verifyToken = (req, res, next) => {
@@ -9,23 +10,13 @@ const verifyToken = (req, res, next) => {
 
   if (!token) {
     console.log('User not logged in or Token not provided, Please Login!')
-    return res.status(403).json({
-      data: '',
-      message: 'User not logged in or Token not provided, Please Login!',
-      statusCode: 403,
-      success: false
-    })
+    return next(new ForbiddenError('User not logged in or Token not provided, Please Login!'))
   }
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       console.log(`Session(JWT Token) Expired! Please Re-Login! -> [${err.message}]`)
-      return res.status(401).json({
-        data: '',
-        message: 'Session Expired, Please Re-Login!',
-        statusCode: 401,
-        success: false
-      })
+      return next(new UnauthorizedError('Session Expired, Please Re-Login!'))
     }
     req.decoded = decoded
     next()
@@ -39,12 +30,7 @@ const isAdmin = async (req, res, next) => {
     next()
   } else {
     console.log('Access denied, Require Admin Role!')
-    return res.status(401).json({
-      data: '',
-      message: 'Access denied, Require Admin Role!',
-      statusCode: 401,
-      success: false
-    })
+    return next(new UnauthorizedError('Access denied, Require Admin Role!'))
   }
 }
 

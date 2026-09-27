@@ -5,6 +5,21 @@ import { userStatus, userTypes } from "./utils/constants.js";
 const PORT = process.env.PORT || 3000
 
 /**
+ * * Safety net for errors that occur outside the Express request lifecycle
+ * (e.g. a rejected promise with no `.catch`), so the process is logged and
+ * shut down cleanly instead of failing silently or crashing unnoticed.
+ */
+process.on("unhandledRejection", (reason) => {
+    console.error("Unhandled Promise Rejection:", reason);
+    process.exit(1);
+});
+
+process.on("uncaughtException", (err) => {
+    console.error("Uncaught Exception:", err);
+    process.exit(1);
+});
+
+/**
  * * Create Master Administrator User and Login to the System
  */
 // async function initialize() {

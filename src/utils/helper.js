@@ -20,9 +20,9 @@ export const storeError = async (error) => {
     });
     const errorMessage = `${currentTime} - Error: ${error.stack}\n`;
     try {
-        if(!fs.existsSync("public/logs")) {
-            await fs.mkdir("public/logs");
-        }
+        // `fs/promises` has no `existsSync`; `recursive: true` is a no-op
+        // (and doesn't throw) when the directory already exists.
+        await fs.mkdir("public/logs", { recursive: true });
         await fs.appendFile("public/logs/error.log", errorMessage);
     } catch (err) {
         console.error("Error writing to error log:", err);

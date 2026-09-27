@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import { sendMail } from "../utils/mailSender.js";
 import { Otp } from "../models/otp.model.js";
 import { Octokit } from "octokit";
+import asyncHandler from "../utils/asyncHandler.js";
+import { BadRequestError, NotFoundError, UnauthorizedError, ForbiddenError } from "../utils/ApiError.js";
 const senderAddress = process.env.MAIL_FROM_ADDRESS;
 
 /**
@@ -24,7 +26,7 @@ async function generateAccessAndRefreshToken(userId) {
 /**
  * * This controller Registers User
  */
-export const signup = async (req, res) => {
+export const signup = asyncHandler(async (req, res) => {
     let userStatusReq;
     const { fullName, userId, email, password, userType } = req.body;
 
@@ -34,168 +36,103 @@ export const signup = async (req, res) => {
         userStatusReq = userStatus.approved;
     }
 
-    try {
-        const user = await User.create({
-            fullName,
-            userId,
-            email,
-            loginType: "OTP",
-            userType: userType ? userType.toUpperCase() : userTypes.customer,
-            password,
-            userStatus: userStatusReq,
-        });
+    const user = await User.create({
+        fullName,
+        userId,
+        email,
+        loginType: "OTP",
+        userType: userType ? userType.toUpperCase() : userTypes.customer,
+        password,
+        userStatus: userStatusReq,
+    });
 
-        const registeredUser = {
-            _id: user._id,
-            fullName: user.fullName,
-            userId: user.userId,
-            email: user.email,
-            avatar: user.avatar,
-            loginType: user.loginType,
-            isEmailVerified: user.isEmailVerified,
-            userType: user.userType,
-            userStatus: user.userStatus,
-            createdAt: user.createdAt,
-        };
+    const registeredUser = {
+        _id: user._id,
+        fullName: user.fullName,
+        userId: user.userId,
+        email: user.email,
+        avatar: user.avatar,
+        loginType: user.loginType,
+        isEmailVerified: user.isEmailVerified,
+        userType: user.userType,
+        userStatus: user.userStatus,
+        createdAt: user.createdAt,
+    };
 
-        // console.log({
-        //     data: {
-        //         email: registeredUser.email,
-        //     },
-        //     message: "User Registered Successfully",
-        // });
-        console.log("User Registered Successfully");
+    console.log("User Registered Successfully");
 
-        // Send Email with OTP to verify User Email
-        const emailResponse = await sendMail(fullName, userId, senderAddress, `${fullName} <${email}>`);
+    // Send Email with OTP to verify User Email
+    await sendMail(fullName, userId, senderAddress, `${fullName} <${email}>`);
 
-        // res.send('OK')
+    res.status(201).json({
+        data: {
+            user: registeredUser,
+        },
+        message: "Users registered successfully and verification email has been sent on your email.",
+        statusCode: 200,
+        success: true,
+    });
+});
 
-        res.status(201).json({
-            data: {
-                user: registeredUser,
-            },
-            message: "Users registered successfully and verification email has been sent on your email.",
+/** CONTROLLER TO VERIFY USER EMAIL ID USING OTP */
+export const verifyUser = asyncHandler(async (req, res) => {
+    const { userId, otp } = req.body;
+
+    const savedOtp = await Otp.findOne({ userId: { $eq: userId } });
+
+    if (!savedOtp) throw new NotFoundError("OTP not found!");
+
+    if (savedOtp.otp === otp) {
+        console.log({ message: "User verified" });
+        await User.findOneAndUpdate({ userId: { $eq: userId } }, { isEmailVerified: true });
+        await Otp.deleteOne({ userId: { $eq: userId } });
+
+        return res.status(200).json({
+            data: "",
+            message: "User verified successfully!",
             statusCode: 200,
             success: true,
         });
-    } catch (err) {
-        console.log(`${err.message}`, `${err.name}:${err.message}`, err);
-        res.status(500).json({
-            data: "",
-            message: "Something went wrong!",
-            statusCode: 500,
-            success: false,
-        });
+    } else {
+        console.log("Invalid OTP");
+        throw new BadRequestError("Invalid OTP!");
     }
-};
-
-/** CONTROLLER TO VERIFY USER EMAIL ID USING OTP */
-export const verifyUser = async (req, res) => {
-    const { userId, otp } = req.body;
-
-    // console.log('otp', otp)
-
-    try {
-        const savedOtp = await Otp.findOne({ userId: { $eq: userId } });
-        // console.log('savedOtp', savedOtp)
-
-        if (!savedOtp)
-            return res.status(404).json({
-                data: "",
-                message: "OTP not found!",
-                statusCode: 404,
-                success: false,
-            });
-
-        if (savedOtp.otp === otp) {
-            console.log({ message: "User verified" });
-            await User.findOneAndUpdate({ userId: { $eq: userId } }, { isEmailVerified: true });
-            await Otp.deleteOne({ userId: { $eq: userId } });
-
-            return res.status(200).json({
-                data: "",
-                message: "User verified successfully!",
-                statusCode: 200,
-                success: true,
-            });
-        } else {
-            console.log("Invalid OTP");
-            return res.status(400).json({
-                data: "",
-                message: "Invalid OTP!",
-                statusCode: 400,
-                success: false,
-            });
-        }
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            data: "",
-            message: error.message,
-            statusCode: 500,
-            success: false,
-        });
-    }
-};
+});
 
 /**
  * * This controller logs in User into the system
  */
-export const signin = async (req, res) => {
+export const signin = asyncHandler(async (req, res) => {
     const { userId, password } = req.body;
 
     const user = await User.findOne({ userId: { $eq: userId } });
-    console.log(`Signin Request for userId -> [${user.userId}]`);
 
     if (!user) {
-        return res.status(400).json({
-            data: "",
-            message: "Failed! UserId doesn't exist!",
-            statusCode: 400,
-            success: false,
-        });
+        console.log("Failed! UserId doesn't exist!");
+        throw new BadRequestError("Failed! UserId doesn't exist!");
     }
 
+    console.log(`Signin Request for userId -> [${user.userId}]`);
+
     if (!user.isEmailVerified) {
-        return res.status(400).json({
-            data: "",
-            message: "Please verify your Email!",
-            statusCode: 400,
-            success: false,
-        });
+        console.log("Please verify your Email!");
+        throw new BadRequestError("Please verify your Email!");
     }
     /** CHECK IF PASSWORD IS IN STRING FORMAT */
     if (typeof password !== "string") {
         console.log(`Invalid Password! Password type is [${typeof password}]`);
-
-        return res.status(400).json({
-            data: "",
-            message: "Invalid Password!",
-            statusCode: 400,
-            success: false,
-        });
+        throw new BadRequestError("Invalid Password!");
     }
     const passwordIsValid = bcrypt.compareSync(password, user.password);
     /** CHECK IF PASSWORD IS VALID */
     if (!passwordIsValid) {
         console.log(`Invalid Password!`);
-        return res.status(401).json({
-            data: "",
-            message: "Invalid Password!",
-            statusCode: 401,
-            success: false,
-        });
+        throw new UnauthorizedError("Invalid Password!");
     }
     /** CHECK IF USER IS APPROVED */
     if (user.userStatus !== userStatus.approved) {
         console.log(`User NOT APPROVED, Contact \n ADMIN !`);
-        return res.status(403).json({
-            data: "",
-            message: "User NOT APPROVED, Contact \n ADMIN !",
-            statusCode: 403,
-            success: false,
-        });
+        throw new ForbiddenError("User NOT APPROVED, Contact \n ADMIN !");
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
@@ -237,58 +174,41 @@ export const signin = async (req, res) => {
             statusCode: 200,
             success: true,
         });
-};
+});
 
 /**
  * This controller fethes current logged in user
  */
-export const getLoggedInUser = async (req, res) => {
-    try {
-        const user = await User.findById({ _id: req.decoded._id });
+export const getLoggedInUser = asyncHandler(async (req, res) => {
+    const user = await User.findById({ _id: req.decoded._id });
 
-        if (!user) {
-            console.log("User not found");
-            return res.status(404).json({
-                data: "",
-                message: "User not found",
-                statusCode: 404,
-                success: false,
-            });
-        }
-
-        const userData = {
-            __v: user.__v,
-            _id: user._id,
-            fullName: user.fullName,
-            userId: user.userId,
-            email: user.email,
-            avatar: user.avatar,
-            loginType: user.loginType,
-            isEmailVerified: user.isEmailVerified,
-            userType: user.userType,
-            userStatus: user.userStatus,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-        };
-
-        // console.log(`Current Logged in User (userId) -> [${user.userId}] fetched success`);
-
-        res.status(200).json({
-            data: userData,
-            message: "Current user fetched successfully",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            data: "",
-            message: "Internal server error",
-            statusCode: 500,
-            success: false,
-        });
+    if (!user) {
+        console.log("User not found");
+        throw new NotFoundError("User not found");
     }
-};
+
+    const userData = {
+        __v: user.__v,
+        _id: user._id,
+        fullName: user.fullName,
+        userId: user.userId,
+        email: user.email,
+        avatar: user.avatar,
+        loginType: user.loginType,
+        isEmailVerified: user.isEmailVerified,
+        userType: user.userType,
+        userStatus: user.userStatus,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+    };
+
+    res.status(200).json({
+        data: userData,
+        message: "Current user fetched successfully",
+        statusCode: 200,
+        success: true,
+    });
+});
 
 // TODO: controllers to design
 /**
@@ -300,180 +220,131 @@ export const getLoggedInUser = async (req, res) => {
 /**
  * This controller changes current user password
  */
-export const changeCurrentUserPassword = async (req, res) => {
+export const changeCurrentUserPassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body;
 
-    try {
-        if (newPassword === "" || newPassword === null || oldPassword === "" || oldPassword === null) {
-            console.log("Passwords can't be empty!");
-            return res.status(400).json({
-                data: "",
-                message: "Passwords can't be empty!",
-                statusCode: 400,
-                success: false,
-            });
-        }
-
-        const user = await User.findById(req.decoded._id);
-        const isPasswordValid = await user.isValidPassword(oldPassword);
-
-        if (!isPasswordValid) {
-            console.log("Invalid Old Password!");
-            return res.status(400).json({
-                data: "",
-                message: "Invalid Old Password!",
-                statusCode: 400,
-                success: false,
-            });
-        }
-
-        user.password = newPassword;
-        await user.save({ validateBeforeSave: false });
-
-        console.log(`Password changed successfully for userId -> [${user.userId}]`);
-
-        return res.status(200).json({
-            data: "",
-            message: "Password changed successfully!",
-            statusCode: 200,
-            success: true,
-        });
-    } catch (err) {
-        console.log(`Error occured in updating password`, err);
-        return res.status(500).json({
-            data: "",
-            message: "Internal server error",
-            statusCode: 500,
-            success: false,
-        });
+    if (newPassword === "" || newPassword === null || oldPassword === "" || oldPassword === null) {
+        console.log("Passwords can't be empty!");
+        throw new BadRequestError("Passwords can't be empty!");
     }
-};
+
+    const user = await User.findById(req.decoded._id);
+    const isPasswordValid = await user.isValidPassword(oldPassword);
+
+    if (!isPasswordValid) {
+        console.log("Invalid Old Password!");
+        throw new BadRequestError("Invalid Old Password!");
+    }
+
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false });
+
+    console.log(`Password changed successfully for userId -> [${user.userId}]`);
+
+    return res.status(200).json({
+        data: "",
+        message: "Password changed successfully!",
+        statusCode: 200,
+        success: true,
+    });
+});
 
 /**
  * This controller refreshes access token
  */
-export const refreshAccessToken = async (req, res) => {
+export const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken =
         req.cookies.refreshToken || req.body.refreshToken || req.header("Authorization")?.replace("Bearer ", "");
 
     if (!incomingRefreshToken) {
         console.log("Unauthorized request!");
-        return res.status(401).json({
-            data: "",
-            message: "Unauthorized request!",
-            statusCode: 401,
-            success: false,
-        });
+        throw new UnauthorizedError("Unauthorized request!");
     }
 
+    let decodedToken;
     try {
-        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-
-        const user = await User.findById(decodedToken._id);
-
-        if (!user) {
-            console.log("Invalid refresh token!");
-            return res.status(401).json({
-                data: "",
-                message: "Invalid Refresh Token!",
-                statusCode: 401,
-                success: false,
-            });
-        }
-
-        if (incomingRefreshToken !== user?.refreshToken) {
-            console.log("Invalid refresh token!");
-            return res.status(401).json({
-                data: "",
-                message: "Refresh token expired for user",
-                statusCode: 401,
-                success: false,
-            });
-        }
-
-        const cookieOptions = {
-            httpOnly: true,
-            secure: true,
-        };
-
-        const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshToken(user._id);
-
-        console.log(`Access token refreshed successfully for userId -> [${user.userId}]`);
-
-        return res
-            .status(200)
-            .cookie("accessToken", accessToken, cookieOptions)
-            .cookie("refreshToken", newRefreshToken, cookieOptions)
-            .set("Authorization", `Bearer ${accessToken}`)
-            .json({
-                data: {
-                    accessToken,
-                    refreshToken: newRefreshToken,
-                },
-                message: "Access Token refreshed successfully!",
-                statusCode: 200,
-                success: true,
-            });
+        decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
     } catch (error) {
         console.log("Error while refreshing access token ::", error);
-        return res.status(401).json({
-            data: "",
-            message: "Invalid Refresh Token!",
-            statusCode: 401,
-            success: false,
-        });
+        throw new UnauthorizedError("Invalid Refresh Token!");
     }
-};
+
+    const user = await User.findById(decodedToken._id);
+
+    if (!user) {
+        console.log("Invalid refresh token!");
+        throw new UnauthorizedError("Invalid Refresh Token!");
+    }
+
+    if (incomingRefreshToken !== user?.refreshToken) {
+        console.log("Invalid refresh token!");
+        throw new UnauthorizedError("Refresh token expired for user");
+    }
+
+    const cookieOptions = {
+        httpOnly: true,
+        secure: true,
+    };
+
+    const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshToken(user._id);
+
+    console.log(`Access token refreshed successfully for userId -> [${user.userId}]`);
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", newRefreshToken, cookieOptions)
+        .set("Authorization", `Bearer ${accessToken}`)
+        .json({
+            data: {
+                accessToken,
+                refreshToken: newRefreshToken,
+            },
+            message: "Access Token refreshed successfully!",
+            statusCode: 200,
+            success: true,
+        });
+});
 
 /**
  * This controller logs out the user
  */
-export const logout = async (req, res) => {
+export const logout = asyncHandler(async (req, res) => {
     // remove the refresh token field
     // clear the cookies
-    try {
-        await User.findByIdAndUpdate(
-            req.decoded._id,
-            {
-                $unset: {
-                    refreshToken: 1,
-                },
+    await User.findByIdAndUpdate(
+        req.decoded._id,
+        {
+            $unset: {
+                refreshToken: 1,
             },
-            {
-                new: true,
-            }
-        );
+        },
+        {
+            new: true,
+        }
+    );
 
-        const cookieOptions = {
-            httpOnly: true,
-            secure: true,
-        };
+    const cookieOptions = {
+        httpOnly: true,
+        secure: true,
+    };
 
-        console.log(`userId -> [${req.decoded.userId}], Logged Out Successfully !!`);
+    console.log(`userId -> [${req.decoded.userId}], Logged Out Successfully !!`);
 
-        res.status(200)
-            .clearCookie("refreshToken", cookieOptions)
-            .clearCookie("accessToken", cookieOptions)
-            .set("Authorization", "")
-            .json({
-                data: "",
-                message: "User Logged Out Successfully !",
-                statusCode: 200,
-                success: true,
-            });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
+    res.status(200)
+        .clearCookie("refreshToken", cookieOptions)
+        .clearCookie("accessToken", cookieOptions)
+        .set("Authorization", "")
+        .json({
             data: "",
-            message: "Internal server error",
-            statusCode: 500,
-            success: false,
+            message: "User Logged Out Successfully !",
+            statusCode: 200,
+            success: true,
         });
-    }
-};
+});
 
 /* Change logic as per requirement*/
-export const handleSocialAuth = async (req, res) => {
+export const handleSocialAuth = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
@@ -523,4 +394,4 @@ export const handleSocialAuth = async (req, res) => {
             // redirect user to the frontend with access and refresh token in case user is not using cookies
             `http://localhost:3000/api/v1/auth/success?accessToken=${accessToken}&refreshToken=${refreshToken}`
         );
-};
+});
