@@ -12,97 +12,52 @@ import { userStatus as userStatusValues } from "../utils/constants.js";
  * * This controller fetches all users in database
  */
 const fetchAll = async () => {
-    try {
-        const users = await User.find().select("-password -refreshToken -__v");
-        // users.length = 0;
-
-        // console.log("fetched all users success");
-        return users;
-    } catch (err) {
-        console.log(err);
-        throw err;
-    }
+    const users = await User.find().select("-password -refreshToken -__v");
+    return users;
 };
 
 /**
  * * This controller fetch user by name
  */
 const fetchByName = async (userNameReq) => {
-    try {
-        const users = await User.find({
-            fullName: {
-                $regex: userNameReq.replace(/\n|\r/g, ""),
-                $options: "i",
-            }, // $regex operator to find all documents in a collection, $options parameter to specify case-insensitivity
-        }).select(" -password -refreshToken -__v ");
-        // console.log("fetch by name success");
-        return users;
-    } catch (err) {
-        console.log(
-            `Error while fetching the user for Name : ${userNameReq.replace(/\n|\r/g, "")}`,
-            err
-        );
-        throw err;
-    }
+    const users = await User.find({
+        fullName: {
+            $regex: userNameReq.replace(/\n|\r/g, ""),
+            $options: "i",
+        }, // $regex operator to find all documents in a collection, $options parameter to specify case-insensitivity
+    }).select(" -password -refreshToken -__v ");
+    return users;
 };
 
 /**
  * * This controller fetch user by usertype and userstatus
  */
 const fetchByTypeAndStatus = async (userTypeReq, userStatusReq) => {
-    try {
-        const users = await User.find({
-            userType: { $eq: userTypeReq },
-            userStatus: { $eq: userStatusReq }, // $eq operator userStatusReq
-        }).select(" -password -refreshToken -__v ");
-
-        // console.log("fetch by usertype and userstatus success");
-        return users;
-    } catch (err) {
-        console.log(
-            `Error while fetching users for userType [${userTypeReq}] and userStatus [${userStatusReq}]`,
-            err
-        );
-        throw err;
-    }
+    const users = await User.find({
+        userType: { $eq: userTypeReq },
+        userStatus: { $eq: userStatusReq }, // $eq operator userStatusReq
+    }).select(" -password -refreshToken -__v ");
+    return users;
 };
 
 /**
  * * This controller fetch user by usertype
  */
 const fetchByType = async (userTypeReq) => {
-    try {
-        const users = await User.find({
-            userType: { $eq: userTypeReq },
-        });
-        // console.log("fetch by usertype success");
-        return users;
-    } catch (err) {
-        console.log(
-            `Error while fetching users for userType [${userTypeReq}] `,
-            err
-        );
-        throw err;
-    }
+    const users = await User.find({
+        userType: { $eq: userTypeReq },
+    });
+    return users;
 };
 
 /**
  * * This controller fetch user by userstatus
  */
 const fetchByStatus = async (userStatusReq) => {
-    try {
-        const users = await User.find({
-            userStatus: { $eq: userStatusReq },
-        }).select(" -password -refreshToken -__v ");
-        // console.log("fetch by userstatus success");
-        return users;
-    } catch (err) {
-        console.log(
-            `Error while fetching users for userStatus [${userStatusReq}] `,
-            err
-        );
-        throw err;
-    }
+    const users = await User.find({
+        userStatus: { $eq: userStatusReq },
+    }).select(" -password -refreshToken -__v ");
+    return users;
 };
 
 /**

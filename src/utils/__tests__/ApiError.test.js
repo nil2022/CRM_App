@@ -4,6 +4,7 @@ import {
     UnauthorizedError,
     ForbiddenError,
     NotFoundError,
+    ConflictError,
     InternalServerError,
 } from "../ApiError.js";
 
@@ -32,6 +33,7 @@ describe("ApiError", () => {
         [UnauthorizedError, 401],
         [ForbiddenError, 403],
         [NotFoundError, 404],
+        [ConflictError, 409],
         [InternalServerError, 500],
     ])("%p maps to statusCode %d", (ErrorClass, statusCode) => {
         const err = new ErrorClass("custom message");

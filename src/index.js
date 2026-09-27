@@ -101,21 +101,17 @@ async function initialize() {
 }
 
 
-try {
-    connectDB()
-        .then(() => {
-            initialize();
-            // app.listen(process.env.PORT || 3000, () => {
-            //     console.log(`⚙️ Listening all requests at http://localhost:${process.env.PORT}`);
-            // });
-        })
-        // .catch((error) => {
-        //     console.log("MongoDB Connection FAILED !!! : ", error);
-        //     throw new Error("MongoDB Connection FAILED !!! : ");
-        // });
-} catch (error) {
-    throw new Error("Server Connection FAILED !!! : ", error);
-}
+connectDB()
+    .then(() => initialize())
+    .catch((error) => {
+        // `connectDB()` already logs and exits on its own connection failures,
+        // so reaching here means `initialize()` itself rejected - a wrapping
+        // try/catch around this chain can never observe that (the .then
+        // callback runs after the synchronous block has already returned),
+        // so the rejection is handled explicitly right on the promise instead.
+        console.error("Server Initialization FAILED !!! :", error);
+        process.exit(1);
+    });
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`⚙️ Listening all requests at http://localhost:${process.env.PORT}`);

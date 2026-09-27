@@ -1,4 +1,4 @@
-import { ApiError, InternalServerError } from "./ApiError.js";
+import { ApiError, ConflictError, InternalServerError } from "./ApiError.js";
 import { storeError } from "./helper.js";
 
 /**
@@ -22,7 +22,7 @@ const normalizeError = (err) => {
     // Duplicate key (unique index) violations, e.g. userId/email already exists
     if (err.code === 11000) {
         const field = Object.keys(err.keyValue || {})[0] || "field";
-        return new ApiError(409, `Duplicate value for '${field}'`);
+        return new ConflictError(`Duplicate value for '${field}'`);
     }
 
     // Invalid/expired JWTs that reach here without being handled locally
