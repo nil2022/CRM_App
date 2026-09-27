@@ -10,9 +10,35 @@ import session from "express-session";
 import passport from "passport";
 
 const app = express();
+
+// Security headers must apply to every response, including static files
+// served below - mount helmet before anything else in the chain.
+app.use(helmet());
+
+// `CORS_ORIGIN` is documented in .env.sample as mandatory; without it we fall
+// back to the previous wide-open behavior (unchanged risk) but call it out
+// loudly. Credentials are only ever enabled for an explicit, configured
+// origin allow-list - never combine `credentials: true` with the wide-open
+// fallback, or any site could ride a logged-in user's cookies.
+const corsOriginConfigured = Boolean(process.env.CORS_ORIGIN);
+const corsOrigin = corsOriginConfigured
+    ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
+    : true;
+if (!corsOriginConfigured) {
+    console.warn(
+        "[security] CORS_ORIGIN is not set - allowing all origins. Set CORS_ORIGIN in production."
+    );
+}
+app.use(
+    cors({
+        origin: corsOrigin,
+        credentials: corsOriginConfigured,
+        allowedHeaders: process.env.CORS_ALLOWED_HEADERS?.split(",").map((h) => h.trim()),
+    })
+);
+
 app.use(express.urlencoded({ extended: true })); // parse URL-encoded data & add it to the req.body object
 app.use(express.json()); // parse JSON data & add it to the req.body object
-app.use(cors());
 app.use(cookieParser());
 
 
@@ -20,7 +46,10 @@ app.use(
     session({
         secret: process.env.SESSION_SECRET,
         resave: false,
-        saveUninitialized: true,
+        // Only persist a session once something is actually stored in it
+        // (e.g. during the passport OAuth handshake) - otherwise every
+        // anonymous visitor gets a stored session for nothing.
+        saveUninitialized: false,
     })
 );
 
@@ -28,9 +57,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(express.static("public"));
-app.use(helmet()); // helmet middleware for additional security
 app.use(limiter);
-app.use(fileUpload());
+app.use(
+    fileUpload({
+        limits: { fileSize: 5 * 1024 * 1024 }, // 5MB - no route currently consumes req.files
+        abortOnLimit: true,
+    })
+);
 
 /* ---------HOME PAGE ROUTE-------- */
 app.get("/health", (_, res) => {

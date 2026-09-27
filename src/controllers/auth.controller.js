@@ -1,6 +1,5 @@
 import { User } from "../models/user.model.js";
 import { userStatus, userTypes } from "../utils/constants.js";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendMail } from "../utils/mailSender.js";
 import { Otp } from "../models/otp.model.js";
@@ -123,7 +122,7 @@ export const signin = asyncHandler(async (req, res) => {
         console.log(`Invalid Password! Password type is [${typeof password}]`);
         throw new BadRequestError("Invalid Password!");
     }
-    const passwordIsValid = bcrypt.compareSync(password, user.password);
+    const passwordIsValid = await user.isValidPassword(password);
     /** CHECK IF PASSWORD IS VALID */
     if (!passwordIsValid) {
         console.log(`Invalid Password!`);
@@ -362,7 +361,7 @@ export const handleSocialAuth = asyncHandler(async (req, res) => {
         },
     });
 
-    let user = await User.findOne({ email: data[0].email });
+    const user = await User.findOne({ email: data[0].email });
 
     console.log('================= git hub user email =================');
     console.log( data[0].email);
@@ -380,9 +379,11 @@ export const handleSocialAuth = asyncHandler(async (req, res) => {
         // userStatus: userStatusReq,
     // });
     // }
+    if (!user) {
+        throw new NotFoundError("No account is linked to this GitHub email. Please register first.");
+    }
     // if user exists, just generate tokens and redirect
-    // const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken("67398a5004e171d92456b1fa");
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
 
 

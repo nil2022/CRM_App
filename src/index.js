@@ -20,6 +20,26 @@ process.on("uncaughtException", (err) => {
 });
 
 /**
+ * * Fail fast when critical configuration is missing, instead of booting
+ * "successfully" and only surfacing the problem on the first login/token
+ * request (e.g. `jsonwebtoken` throwing because ACCESS_TOKEN_SECRET is
+ * undefined).
+ */
+const REQUIRED_ENV_VARS = [
+    "MONGODB_URI",
+    "ACCESS_TOKEN_SECRET",
+    "ACCESS_TOKEN_EXPIRY",
+    "REFRESH_TOKEN_SECRET",
+    "REFRESH_TOKEN_EXPIRY",
+    "SESSION_SECRET",
+];
+const missingEnvVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+if (missingEnvVars.length > 0) {
+    console.error(`Missing required environment variable(s): ${missingEnvVars.join(", ")}`);
+    process.exit(1);
+}
+
+/**
  * * Create Master Administrator User and Login to the System
  */
 // async function initialize() {

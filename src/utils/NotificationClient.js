@@ -16,6 +16,7 @@ export const notificationClient = async (
         await axios({
             url: process.env.NOTIFICATION_URL,
             method: "POST",
+            timeout: 10000, // don't let a hung Notification Service pile up open requests
             data: {
                 subject,
                 ticketId,

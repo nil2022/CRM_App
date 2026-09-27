@@ -155,10 +155,17 @@ export const updateTicket = asyncHandler(async (req, res) => {
         // ticket.description = description !== ''
         //   ? description
         //   : ticket.description
-        ticket.ticketPriority =
-            ticketPriority !== "" ? ticketPriority : ticket.ticketPriority;
-        ticket.status = status !== "" ? status : ticket.status;
-        ticket.assignee = assignee !== "" ? assignee : ticket.assignee;
+
+        // Per the spec above: ADMIN may change priority/status/assignee, but
+        // an ENGINEER (who only passes canUpdate() via ticket.assignee match)
+        // may only change status - otherwise they could reassign the ticket
+        // away or reprioritize it themselves.
+        if (savedUser.userType === userTypes.admin) {
+            ticket.ticketPriority =
+                ticketPriority !== "" && ticketPriority !== undefined ? ticketPriority : ticket.ticketPriority;
+            ticket.assignee = assignee !== "" && assignee !== undefined ? assignee : ticket.assignee;
+        }
+        ticket.status = status !== "" && status !== undefined ? status : ticket.status;
         await ticket.save({ validateBeforeSave: false });
 
         console.log(`Ticket updated successfully by userId -> [${savedUser.userId}]`);
@@ -173,7 +180,7 @@ export const updateTicket = asyncHandler(async (req, res) => {
 
         notificationClient(
             ticket._id,
-            `🎫Ticket with id: '${ticket._id}' updated, STATUS:${status.toUpperCase()}`,
+            `🎫Ticket with id: '${ticket._id}' updated, STATUS:${ticket.status.toUpperCase()}`,
             ticket.description,
             `${reporter.fullName} <${reporter.email}>`,
             `${engineer.fullName} <${engineer.email}>` +

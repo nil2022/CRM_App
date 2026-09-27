@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { createTicket, getAllTickets, getOneTicket, updateTicket } from '../controllers/ticket.controller.js'
 import { verifyToken } from '../middlewares/auth.jwt.js'
+import { validateTicketStatus } from '../middlewares/validateTicket.js'
 
 /**
  * @swagger
@@ -154,7 +155,7 @@ const ticketRouter = Router();
    *               statusCode: 500
    *               success: false
    */
-  ticketRouter.patch('/update-ticket', [verifyToken], updateTicket)
+  ticketRouter.patch('/update-ticket', [verifyToken, validateTicketStatus], updateTicket)
 
   /**
    * @swagger
