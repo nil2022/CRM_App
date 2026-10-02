@@ -52,4 +52,14 @@ describe("sendMail", () => {
         expect(sendMailMock).toHaveBeenCalled();
         expect(info.accepted).toEqual(["user@example.com"]);
     });
+
+    test("HTML-escapes the user's name in the mail body", async () => {
+        otpFindOneMock.mockResolvedValue(null);
+
+        await sendMail('<img src=x onerror="alert(1)">', "john123", "from@example.com", "john@example.com");
+
+        const { html } = sendMailMock.mock.calls[0][0];
+        expect(html).not.toContain("<img");
+        expect(html).toContain("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;");
+    });
 });

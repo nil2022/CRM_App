@@ -7,6 +7,7 @@ import { Otp } from "../models/otp.model.js";
 import { Octokit } from "octokit";
 import asyncHandler from "../utils/asyncHandler.js";
 import { BadRequestError, NotFoundError, UnauthorizedError, ForbiddenError } from "../utils/ApiError.js";
+import { CSRF_COOKIE, csrfCookieOptions, generateCsrfToken } from "../middlewares/csrf.js";
 const senderAddress = process.env.MAIL_FROM_ADDRESS;
 
 /**
@@ -155,6 +156,7 @@ export const signin = asyncHandler(async (req, res) => {
     const cookieOptions = {
         httpOnly: true,
         secure: true,
+        sameSite: "strict",
     };
 
     console.log(`[${loggedInUser.fullName}] signed in successfully!`);
@@ -163,6 +165,7 @@ export const signin = asyncHandler(async (req, res) => {
         .status(201)
         .cookie("accessToken", accessToken, cookieOptions)
         .cookie("refreshToken", refreshToken, cookieOptions)
+        .cookie(CSRF_COOKIE, generateCsrfToken(), csrfCookieOptions)
         .set("Authorization", `Bearer ${accessToken}`)
         .json({
             data: {
@@ -284,6 +287,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     const cookieOptions = {
         httpOnly: true,
         secure: true,
+        sameSite: "strict",
     };
 
     const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshToken(user._id);
@@ -294,6 +298,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
         .status(200)
         .cookie("accessToken", accessToken, cookieOptions)
         .cookie("refreshToken", newRefreshToken, cookieOptions)
+        .cookie(CSRF_COOKIE, generateCsrfToken(), csrfCookieOptions)
         .set("Authorization", `Bearer ${accessToken}`)
         .json({
             data: {
@@ -327,6 +332,7 @@ export const logout = asyncHandler(async (req, res) => {
     const cookieOptions = {
         httpOnly: true,
         secure: true,
+        sameSite: "strict",
     };
 
     console.log(`userId -> [${String(req.decoded.userId).replace(/[\r\n]/g, "")}], Logged Out Successfully !!`);
@@ -334,6 +340,7 @@ export const logout = asyncHandler(async (req, res) => {
     res.status(200)
         .clearCookie("refreshToken", cookieOptions)
         .clearCookie("accessToken", cookieOptions)
+        .clearCookie(CSRF_COOKIE, csrfCookieOptions)
         .set("Authorization", "")
         .json({
             data: "",
@@ -349,6 +356,7 @@ export const handleSocialAuth = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
     };
     console.log('====================================');
     console.log(req.user);
@@ -390,6 +398,7 @@ export const handleSocialAuth = asyncHandler(async (req, res) => {
         .status(200)
         .cookie("accessToken", accessToken, options) // set the access token in the cookie
         .cookie("refreshToken", refreshToken, options) // set the refresh token in the cookie
+        .cookie(CSRF_COOKIE, generateCsrfToken(), { ...csrfCookieOptions, secure: options.secure })
         .redirect(
             // redirect user to the frontend with access and refresh token in case user is not using cookies
             `http://localhost:3000/api/v1/auth/success?accessToken=${accessToken}&refreshToken=${refreshToken}`
