@@ -50,4 +50,26 @@ describe("centralized error handling (integration)", () => {
             })
         );
     });
+
+    test("a cookie-authenticated write without a CSRF token is rejected with 403", async () => {
+        const res = await request(app)
+            .patch("/api/v1/auth/change-password")
+            .set("Cookie", "accessToken=some-token")
+            .send({ oldPassword: "a", newPassword: "b" });
+
+        expect(res.status).toBe(403);
+        expect(res.body).toEqual(
+            expect.objectContaining({ message: "Invalid or missing CSRF token", statusCode: 403, success: false })
+        );
+    });
+
+    test("a header-authenticated write is not blocked by the CSRF check", async () => {
+        const res = await request(app)
+            .patch("/api/v1/auth/change-password")
+            .set("Cookie", "accessToken=some-token")
+            .set("Authorization", "Bearer not-a-real-token")
+            .send({ oldPassword: "a", newPassword: "b" });
+
+        expect(res.status).toBe(401);
+    });
 });

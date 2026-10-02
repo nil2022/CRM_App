@@ -4,9 +4,9 @@ import { ForbiddenError, UnauthorizedError } from '../utils/ApiError.js'
 
 /* -------- CHECK IF TOKEN IS PROVIDED & VERIFY TOKEN ----------- */
 const verifyToken = (req, res, next) => {
-  // get accessToken from cookies
-
-  const token = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '') || req.headers['x-access-token']
+  // header token takes priority over the cookie, so header-authenticated requests never fall back to
+  // cookie auth (they are exempt from the CSRF check in csrf.js)
+  const token = req.header('Authorization')?.replace('Bearer ', '') || req.headers['x-access-token'] || req.cookies?.accessToken
 
   if (!token) {
     console.log('User not logged in or Token not provided, Please Login!')

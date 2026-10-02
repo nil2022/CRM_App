@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import validator from "validator";
 import generateRandomString from "./randomString.js";
 import { Otp } from "../models/otp.model.js";
 import { ConflictError } from "./ApiError.js";
@@ -28,7 +29,7 @@ export async function sendMail(fullName, userId, fromAddress, toAddress) {
         });
 
         const mailBody = `
-            <h3>Hello ${fullName} !</h3>
+            <h3>Hello ${validator.escape(String(fullName))} !</h3>
             <p>Enter the following <strong>OTP</strong> when prompted to verify your email.</p>
             <p>This code will expire in 2 hours.</p>
             <h1>${OTP}</h1>
